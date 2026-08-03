@@ -811,7 +811,9 @@
                 id_empresa: data.id_empresa,
                 email: data.email,
                 nome: data.nome || data.nome_empresa,
-                nome_empresa: data.nome_empresa
+                nome_empresa: data.nome_empresa,
+                validade: data.validade,
+                licencas_totais: data.licencas_totais || 1
               };
               localStorage.setItem('oppah_session', JSON.stringify(sessao));
               showToast(`Login efetuado via Nuvem!`, 'success');
@@ -878,10 +880,11 @@
       document.getElementById('gestor-dashboard').style.display = 'block';
       
       const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || {
+        id_empresa: sessao.id_empresa,
         nome_empresa: sessao.nome_empresa || 'Empresa Cadastrada',
         email: sessao.email,
-        validade: new Date(Date.now() + 7*24*60*60*1000).toISOString(),
-        licencas_totais: 1
+        validade: sessao.validade || new Date(Date.now() + 7*24*60*60*1000).toISOString(),
+        licencas_totais: sessao.licencas_totais || 1
       };
 
       document.getElementById('gestorCompanyName').innerText = empresa.nome_empresa;
@@ -933,10 +936,16 @@
     async function createOperador(e) {
       e.preventDefault();
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
-      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(emp => emp.id_empresa === sessao.id_empresa);
+      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(emp => emp.id_empresa === sessao.id_empresa) || {
+        id_empresa: sessao.id_empresa,
+        licencas_totais: sessao.licencas_totais || 1
+      };
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
 
-      if (empresa && operadores.filter(op => op.id_empresa === empresa.id_empresa).length >= empresa.licencas_totais) return;
+      if (operadores.filter(op => op.id_empresa === empresa.id_empresa).length >= empresa.licencas_totais) {
+          showToast('Limite de licenças atingido!', 'error');
+          return;
+      }
 
       const email = document.getElementById('op-email').value.trim();
       const nome = document.getElementById('op-name').value.trim();
@@ -961,7 +970,7 @@
       operadores.push(novoOperador);
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores));
       e.target.reset();
-      atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
+      atualizarListaOperadores(empresa);
       showToast('Funcionário cadastrado!', 'success');
     }
 
@@ -970,8 +979,11 @@
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
-      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
-      atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
+      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || {
+          id_empresa: sessao.id_empresa,
+          licencas_totais: sessao.licencas_totais || 1
+      };
+      atualizarListaOperadores(empresa);
       showToast('Operador removido.', 'success');
     }
 
