@@ -562,7 +562,7 @@
     // Função que busca as URLs diretamente do seu GitHub
     async function carregarConfiguracoes() {
       try {
-        const url_config = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/main/config.json';
+        const url_config = 'config.json';
         const response = await fetch(url_config);
         
         if (!response.ok) throw new Error("Não foi possível alcançar o config.json do GitHub.");
