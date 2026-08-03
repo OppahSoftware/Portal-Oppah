@@ -529,7 +529,7 @@
       }
       toast.style.transform = 'translateY(0)';
       toast.style.opacity = '1';
-      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 3000);
+      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 4000);
     }
 
     function switchTab(tab) {
@@ -555,14 +555,13 @@
       webhookLogin: "",
       webhookRegister: "",
       webhookCreateOp: "",
-      webhookDeleteOp: "", // <-- Adicionado Webhook de Exclusão
+      webhookDeleteOp: "", 
       webhookFeedback: ""
     };
 
     // Função que busca as URLs diretamente do seu GitHub
     async function carregarConfiguracoes() {
       try {
-        // ATENÇÃO: Substitua pelo link raw correto se mudar de repositório
         const url_config = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/main/config.json';
         const response = await fetch(url_config);
         
@@ -570,22 +569,20 @@
         
         const configNuvem = await response.json();
         
-        // Mescla as variáveis: o que vem da nuvem preenche a estrutura vazia
+        // Mescla as variáveis
         OPPAH_CONFIG = { ...OPPAH_CONFIG, ...configNuvem };
-        console.log("Sucesso: Configurações da nuvem (GitHub) carregadas!", OPPAH_CONFIG);
+        console.log("Sucesso: Configurações da nuvem (GitHub) carregadas!");
 
       } catch (error) {
         console.warn("Aviso: Falha ao baixar config.json. O sistema tentará usar fallback local.", error);
       }
     }
 
-    // Função auxiliar para permitir que o modal de desenvolvedor sobreponha as configs da nuvem (para testes locais)
     function getActiveConfig() {
       const localCfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
       return { ...OPPAH_CONFIG, ...localCfg };
     }
 
-    // HASH SHA-256 DA SENHA MASTER DO DESENVOLVEDOR (oppah2026)
     const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
 
     async function sha256(message) {
@@ -710,9 +707,10 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(novaEmpresa)
           });
-          if (!resp.ok) throw new Error("Erro ao salvar no SharePoint");
+          if (!resp.ok) throw new Error("Erro de HTTP ao salvar no SharePoint. Status: " + resp.status);
         } catch (err) {
           console.warn("Falha no envio da nuvem, salvando em fallback local:", err);
+          showToast("Aviso: Não foi possível conectar ao banco de dados. Conta salva localmente.", "error");
         }
       }
 
@@ -735,15 +733,17 @@
       e.preventDefault();
       const btnText = document.getElementById('btn-login-text');
       const btnIcon = document.getElementById('btn-login-icon');
-      btnText.innerText = "Autenticando...";
+      btnText.innerText = "Conectando à Nuvem...";
       btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
       const email = document.getElementById('login-email').value.trim();
       const senha = document.getElementById('login-password').value;
       const cfg = getActiveConfig();
 
+      console.log("Tentando login na URL da Nuvem:", cfg.webhookLogin);
+
       // Tentativa de Login na Nuvem (SharePoint via Power Automate)
-      if (cfg.webhookLogin) {
+      if (cfg.webhookLogin && cfg.webhookLogin !== "") {
         try {
           const resp = await fetch(cfg.webhookLogin, {
             method: 'POST',
@@ -780,10 +780,15 @@
               btnIcon.className = "fa-solid fa-arrow-right text-xs";
               return;
             }
+          } else {
+             throw new Error(`Servidor retornou erro: ${resp.status}`);
           }
         } catch (err) {
-          console.warn("SharePoint indisponível, chaveando para validação local...", err);
+          console.error("Falha ao comunicar com o Power Automate:", err);
+          showToast("Aviso: Nuvem indisponível. Acessando via modo offline (Local).", "error");
         }
+      } else {
+        showToast("Aviso: Nenhuma URL de nuvem configurada. Acessando modo offline.", "error");
       }
 
       btnText.innerText = "Acessar Portal";
@@ -797,7 +802,7 @@
       if (gestor) {
         const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome_empresa: gestor.nome_empresa };
         localStorage.setItem('oppah_session', JSON.stringify(sessao));
-        showToast('Login de Gestor efetuado.', 'success');
+        showToast('Acesso de Gestor (Offline/Local) efetuado.', 'success');
         loadGestorDashboard(sessao);
         return;
       }
@@ -810,7 +815,7 @@
         }
         const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
         localStorage.setItem('oppah_session', JSON.stringify(sessao));
-        showToast(`Bem-vindo, ${operador.nome}!`, 'success');
+        showToast(`Bem-vindo, ${operador.nome} (Acesso Offline)!`, 'success');
         loadAppDashboard(sessao);
         return;
       }
@@ -870,7 +875,6 @@
 
       const cfg = getActiveConfig();
 
-      // Tenta enviar para o Webhook do Power Automate
       if (cfg.webhookFeedback) {
         try {
           const resp = await fetch(cfg.webhookFeedback, {
@@ -890,7 +894,6 @@
         }
       }
 
-      // Fallback: Se não houver webhook, redireciona para o WhatsApp de Suporte da Oppah
       const numeroSuporte = "5511999999999"; 
       const textoZap = `*Novo Feedback - Portal Oppah*%0A%0A*Categoria:* ${tipo}%0A*Empresa:* ${usuario.nome_empresa}%0A*Usuário:* ${usuario.nome}%0A*Mensagem:* ${mensagem}`;
       
@@ -1005,7 +1008,6 @@
     }
 
     async function removerOperador(email) {
-      // 1. Chama o Webhook do Power Automate para deletar no SharePoint
       const cfg = getActiveConfig();
       
       if (cfg.webhookDeleteOp) {
@@ -1025,14 +1027,12 @@
         }
       }
 
-      // 2. Remove do localStorage localmente
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
       
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
       const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
       
-      // 3. Atualiza a tabela na tela
       atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
       showToast('Operador excluído com sucesso!', 'success');
     }
