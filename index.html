@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah 2.2.9 - Otimizador e Gestão SaaS Cloud</title>
+  <title>Portal Oppah 2.3.0 - Otimizador e Gestão SaaS Cloud</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -88,7 +88,7 @@
       <div onclick="handleLogoDevClick(event)" title="Portal Oppah" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.2.9 Cloud</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.3.0 Cloud</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -244,15 +244,15 @@
     </div>
   </div>
 
-  <!-- Modal Configuração Power Automate / SharePoint (Uso exclusivo Oppah Softwares) -->
+  <!-- Modal Configuração Power Automate / SharePoint -->
   <div id="modal-config-sharepoint" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
     <div class="glass-card max-w-lg w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-server text-sky-400"></i> Configuração do Servidor Nuvem (Oppah Admin)</h3>
+        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-server text-sky-400"></i> Sobreposições Locais (Opcional)</h3>
         <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-[11px] text-amber-200">
-        <i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Atenção Desenvolvedor:</strong> Cole aqui as URLs do Power Automate do servidor Oppah. Certifique-se de que o gatilho HTTP no Power Automate está configurado para <em>"Qualquer pessoa"</em> (Anyone).
+      <div class="bg-sky-500/10 border border-sky-500/30 p-3 rounded-xl text-[11px] text-sky-200">
+        <i class="fa-solid fa-circle-info mr-1"></i> O sistema já carrega a configuração principal direto do GitHub. Preencha os campos abaixo apenas se você for o Desenvolvedor e quiser testar Webhooks locais específicos neste computador.
       </div>
       <div class="space-y-3">
         <div>
@@ -274,7 +274,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
         <button onclick="toggleConfigModal()" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl">Cancelar</button>
-        <button onclick="saveSharepointConfig()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl">Salvar URLs do Servidor</button>
+        <button onclick="saveSharepointConfig()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl">Salvar Teste Local</button>
       </div>
     </div>
   </div>
@@ -476,7 +476,6 @@
   <!-- SCRIPTS GLOBAIS E LÓGICA CLOUD  -->
   <!-- =============================== -->
   <script>
-    // Função para Máscara de CPF e CNPJ Dinâmica
     function applyMaskCpfCnpj(event) {
       let v = event.target.value.replace(/\D/g, "");
       if (v.length <= 11) { // Máscara de CPF
@@ -492,13 +491,39 @@
       event.target.value = v.substring(0, 18);
     }
 
-    // CONFIGURAÇÃO PADRÃO DO DESENVOLVEDOR (OPPAH SOFTWARES)
-    const OPPAH_DEFAULT_CONFIG = {
-      webhookLogin: "https://default5ece166262074a36acdc0ed40aabda.dd.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/16/workflows/d28ae09d92344d46a68a3379709b3a5f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=of8_Gd-c8L49wqjnZGxPW4XBHy0tKHI9R1-4iOKGpWs",
-      webhookRegister: "https://default5ece166262074a36acdc0ed40aabda.dd.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/14/workflows/cde7f7f5ddbb42f1bd28da90ffab3578/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nIpKsz5mwG0A9pGL89LIaBujYviT0PmhXDbHNGdn6YI",
-      webhookCreateOp: "https://default5ece166262074a36acdc0ed40aabda.dd.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/29/workflows/ef15ce3da0c0478c9e913b7f6fbd3b47/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SA4WYVkZHMU0KRTrG5-gpF4o2ZRekr5o8wAGMLvnIMA",
+    // Estrutura vazia inicial
+    let OPPAH_CONFIG = {
+      webhookLogin: "",
+      webhookRegister: "",
+      webhookCreateOp: "",
       webhookFeedback: ""
     };
+
+    // Função que busca as URLs diretamente do seu GitHub!
+    async function carregarConfiguracoes() {
+      try {
+        // ATENÇÃO: SUBSTITUA 'SEU_USUARIO' PELO SEU USUÁRIO NO GITHUB
+        const url_config = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json';
+        const response = await fetch(url_config);
+        
+        if (!response.ok) throw new Error("Não foi possível alcançar o config.json do GitHub.");
+        
+        const configNuvem = await response.json();
+        
+        // Mescla as variáveis: o que vem da nuvem preenche a estrutura vazia
+        OPPAH_CONFIG = { ...OPPAH_CONFIG, ...configNuvem };
+        console.log("Sucesso: Configurações da nuvem (GitHub) carregadas!", OPPAH_CONFIG);
+
+      } catch (error) {
+        console.warn("Aviso: Falha ao baixar config.json. O sistema tentará usar fallback local.", error);
+      }
+    }
+
+    // Função auxiliar para permitir que o modal de desenvolvedor sobreponha as configs da nuvem (para testes)
+    function getActiveConfig() {
+      const localCfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+      return { ...OPPAH_CONFIG, ...localCfg };
+    }
 
     // HASH SHA-256 DA SENHA MASTER DO DESENVOLVEDOR
     const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
@@ -555,17 +580,20 @@
       }
     }
 
-    window.onload = function() {
+    window.onload = async function() {
+      // 1. CARREGA AS CONFIGURAÇÕES DO GITHUB ANTES DE QUALQUER COISA
+      await carregarConfiguracoes();
+
       if (!localStorage.getItem('oppah_empresas')) localStorage.setItem('oppah_empresas', JSON.stringify([]));
       if (!localStorage.getItem('oppah_operadores')) localStorage.setItem('oppah_operadores', JSON.stringify([]));
       
-      let cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
-      if (!cfg.webhookLogin && OPPAH_DEFAULT_CONFIG.webhookLogin) cfg = OPPAH_DEFAULT_CONFIG;
+      const activeCfg = getActiveConfig();
 
-      if (cfg.webhookLogin) document.getElementById('webhook-login').value = cfg.webhookLogin;
-      if (cfg.webhookRegister) document.getElementById('webhook-register').value = cfg.webhookRegister;
-      if (cfg.webhookCreateOp) document.getElementById('webhook-create-op').value = cfg.webhookCreateOp;
-      if (cfg.webhookFeedback) document.getElementById('webhook-feedback').value = cfg.webhookFeedback;
+      // Preenche os campos do modal do desenvolvedor com os dados consolidados
+      if (activeCfg.webhookLogin) document.getElementById('webhook-login').value = activeCfg.webhookLogin;
+      if (activeCfg.webhookRegister) document.getElementById('webhook-register').value = activeCfg.webhookRegister;
+      if (activeCfg.webhookCreateOp) document.getElementById('webhook-create-op').value = activeCfg.webhookCreateOp;
+      if (activeCfg.webhookFeedback) document.getElementById('webhook-feedback').value = activeCfg.webhookFeedback;
 
       const sessaoStr = localStorage.getItem('oppah_session');
       if (sessaoStr) {
@@ -606,12 +634,9 @@
       };
       localStorage.setItem('oppah_config_api', JSON.stringify(cfg));
       toggleConfigModal();
-      showToast("Configuração do Servidor Oppah salva!", "success");
+      showToast("Sobrescrita Local Salva! (Apenas neste navegador)", "success");
     }
 
-    // ==========================================
-    // MÓDULO 1: AUTENTICAÇÃO E SHAREPOINT NUVEM
-    // ==========================================
     async function handleRegister(e) {
       e.preventDefault();
       const btnText = document.getElementById('btn-register-text');
@@ -637,7 +662,7 @@
         validade: validade.toISOString()
       };
 
-      const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+      const cfg = getActiveConfig();
 
       if (cfg.webhookRegister) {
         try {
@@ -675,7 +700,7 @@
 
       const email = document.getElementById('login-email').value.trim();
       const senha = document.getElementById('login-password').value;
-      const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+      const cfg = getActiveConfig();
 
       if (cfg.webhookLogin) {
         try {
@@ -756,9 +781,6 @@
       document.getElementById('login-card').style.display = 'block';
     }
 
-    // ==========================================
-    // MÓDULO DE FEEDBACK
-    // ==========================================
     function openFeedbackModal() {
       const modal = document.getElementById('modal-feedback');
       const content = document.getElementById('modal-feedback-content');
@@ -798,7 +820,7 @@
         mensagem: mensagem
       };
 
-      const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+      const cfg = getActiveConfig();
 
       // Tenta enviar para o Webhook do Power Automate
       if (cfg.webhookFeedback) {
@@ -821,7 +843,6 @@
       }
 
       // Fallback: Se não houver webhook, redireciona para o WhatsApp de Suporte da Oppah
-      // Substitua o '5511999999999' pelo número oficial da sua empresa
       const numeroSuporte = "5511999999999"; 
       const textoZap = `*Novo Feedback - Portal Oppah*%0A%0A*Categoria:* ${tipo}%0A*Empresa:* ${usuario.nome_empresa}%0A*Usuário:* ${usuario.nome}%0A*Mensagem:* ${mensagem}`;
       
@@ -834,9 +855,6 @@
       }, 1000);
     }
 
-    // ==========================================
-    // MÓDULO 2: GESTÃO DA EMPRESA E OPERADORES
-    // ==========================================
     function loadGestorDashboard(sessao) {
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('gestor-dashboard').style.display = 'block';
@@ -909,7 +927,7 @@
 
       const novoOperador = { id_empresa: sessao.id_empresa, nome, email, senha, documento };
 
-      const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+      const cfg = getActiveConfig();
       if (cfg.webhookCreateOp) {
         try {
           const resp = await fetch(cfg.webhookCreateOp, {
@@ -938,9 +956,6 @@
       atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
     }
 
-    // ==========================================
-    // MÓDULO 3: OTIMIZADOR DE CORTE
-    // ==========================================
     let stocks = [];
     let pieces = [];
     let loteSaved = [];
@@ -954,7 +969,6 @@
       document.getElementById('operatorCompanyName').innerText = `Licença: ${sessao.nome_empresa || 'SaaS'}`;
       document.getElementById('operatorGreeting').innerText = `👤 ${sessao.nome}`;
       
-      // Se quiser usar o preference-modal do antigo arquivo, implementaria aqui
       document.getElementById('angleModeInput').value = sessao.preferencia_corte || 'direct';
 
       renderLists();
