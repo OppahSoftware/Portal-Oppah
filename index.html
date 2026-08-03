@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark" class="dark">
 <head>
+  <!-- ========================================== -->
+  <!-- CONFIGURAÇÕES DA PÁGINA E META TAGS        -->
+  <!-- ========================================== -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah 2.3.0 - Otimizador e Gestão SaaS Cloud</title>
+  <title>Portal Oppah 2.3.1 - Otimizador e Gestão SaaS Cloud</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,6 +31,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- ========================================== -->
+  <!-- ESTILOS CSS PERSONALIZADOS                 -->
+  <!-- ========================================== -->
   <style>
     :root {
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
@@ -67,7 +73,9 @@
 </head>
 <body class="p-3 sm:p-6 antialiased">
 
-  <!-- Toast Notification -->
+  <!-- ========================================== -->
+  <!-- SISTEMA DE NOTIFICAÇÕES (TOAST)            -->
+  <!-- ========================================== -->
   <div id="toast" class="fixed top-5 right-5 bg-slate-900 border border-slate-700 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 translate-y-[-150%] opacity-0 transition-all duration-300 z-50">
     <div id="toast-icon" class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
       <i class="fa-solid fa-check text-sm"></i>
@@ -78,9 +86,9 @@
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- TELA DE LOGIN & CADASTRO        -->
-  <!-- =============================== -->
+  <!-- ========================================== -->
+  <!-- TELA DE LOGIN & CADASTRO                   -->
+  <!-- ========================================== -->
   <main id="login-card" class="max-w-md mx-auto my-12 glass-card rounded-3xl p-8 shadow-2xl border border-slate-700/80 transition-all relative">
     
     <div class="text-center mb-6">
@@ -88,7 +96,7 @@
       <div onclick="handleLogoDevClick(event)" title="Portal Oppah" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.3.0 Cloud</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.3.1 Cloud</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -164,9 +172,9 @@
     </form>
   </main>
 
-  <!-- =============================== -->
-  <!-- PAINEL DO GESTOR (DONO)         -->
-  <!-- =============================== -->
+  <!-- ========================================== -->
+  <!-- PAINEL DO GESTOR (DONO DA EMPRESA)         -->
+  <!-- ========================================== -->
   <div id="gestor-dashboard" style="display:none;" class="max-w-4xl mx-auto space-y-6">
     <header class="glass-card rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
       <div>
@@ -244,7 +252,9 @@
     </div>
   </div>
 
-  <!-- Modal Configuração Power Automate / SharePoint -->
+  <!-- ========================================== -->
+  <!-- MODAL DE CONFIGURAÇÃO (DEV & WEBHOOKS)     -->
+  <!-- ========================================== -->
   <div id="modal-config-sharepoint" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
     <div class="glass-card max-w-lg w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -252,7 +262,7 @@
         <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bg-sky-500/10 border border-sky-500/30 p-3 rounded-xl text-[11px] text-sky-200">
-        <i class="fa-solid fa-circle-info mr-1"></i> O sistema já carrega a configuração principal direto do GitHub. Preencha os campos abaixo apenas se você for o Desenvolvedor e quiser testar Webhooks locais específicos neste computador.
+        <i class="fa-solid fa-circle-info mr-1"></i> O sistema já carrega a configuração principal direto do GitHub. Preencha os campos abaixo apenas se você for o Desenvolvedor e quiser testar Webhooks locais específicos neste navegador.
       </div>
       <div class="space-y-3">
         <div>
@@ -268,6 +278,10 @@
           <input type="url" id="webhook-create-op" placeholder="https://prod-xx.brazilsouth.logic.azure.com..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
         </div>
         <div>
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Excluir Operador</label>
+          <input type="url" id="webhook-delete-op" placeholder="https://prod-xx.brazilsouth.logic.azure.com..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
+        </div>
+        <div>
           <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Enviar Feedback (Opcional)</label>
           <input type="url" id="webhook-feedback" placeholder="https://prod-xx.brazilsouth.logic.azure.com..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
         </div>
@@ -279,6 +293,9 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- PAINEL DO OTIMIZADOR DE CORTE (OPERADOR)   -->
+  <!-- ========================================== -->
   <div id="app-dashboard" style="display:none;" class="max-w-6xl mx-auto space-y-6 pb-20">
     <header class="glass-card rounded-3xl p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4 no-print">
       <div class="flex items-center space-x-4">
@@ -421,6 +438,7 @@
       </div>
     </div>
 
+    <!-- Ações e Botões Pós-Cálculo -->
     <div class="flex flex-wrap gap-4 no-print">
       <button onclick="calculate()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
         <i class="fa-solid fa-microchip"></i> CALCULAR PLANO DE CORTE
@@ -438,9 +456,9 @@
 
   </div>
 
-  <!-- =============================== -->
-  <!-- MODAL DE FEEDBACK (NOVO)        -->
-  <!-- =============================== -->
+  <!-- ========================================== -->
+  <!-- MODAL DE FEEDBACK                          -->
+  <!-- ========================================== -->
   <div id="modal-feedback" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden transition-opacity">
     <div class="glass-card max-w-md w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 transform transition-all scale-95 opacity-0" id="modal-feedback-content">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
@@ -472,10 +490,14 @@
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- SCRIPTS GLOBAIS E LÓGICA CLOUD  -->
-  <!-- =============================== -->
+  <!-- ========================================== -->
+  <!-- SCRIPTS GLOBAIS E LÓGICA DA APLICAÇÃO      -->
+  <!-- ========================================== -->
   <script>
+    /* ========================================================================= */
+    /* 1. UTILITÁRIOS E UI BÁSICOS                                               */
+    /* ========================================================================= */
+    
     function applyMaskCpfCnpj(event) {
       let v = event.target.value.replace(/\D/g, "");
       if (v.length <= 11) { // Máscara de CPF
@@ -489,62 +511,6 @@
         v = v.replace(/(\d{4})(\d)/, "$1-$2");
       }
       event.target.value = v.substring(0, 18);
-    }
-
-    // Estrutura vazia inicial
-    let OPPAH_CONFIG = {
-      webhookLogin: "",
-      webhookRegister: "",
-      webhookCreateOp: "",
-      webhookFeedback: ""
-    };
-
-    // Função que busca as URLs diretamente do seu GitHub!
-    async function carregarConfiguracoes() {
-      try {
-        // ATENÇÃO: SUBSTITUA 'SEU_USUARIO' PELO SEU USUÁRIO NO GITHUB
-        const url_config = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/main/config.json';
-        const response = await fetch(url_config);
-        
-        if (!response.ok) throw new Error("Não foi possível alcançar o config.json do GitHub.");
-        
-        const configNuvem = await response.json();
-        
-        // Mescla as variáveis: o que vem da nuvem preenche a estrutura vazia
-        OPPAH_CONFIG = { ...OPPAH_CONFIG, ...configNuvem };
-        console.log("Sucesso: Configurações da nuvem (GitHub) carregadas!", OPPAH_CONFIG);
-
-      } catch (error) {
-        console.warn("Aviso: Falha ao baixar config.json. O sistema tentará usar fallback local.", error);
-      }
-    }
-
-    // Função auxiliar para permitir que o modal de desenvolvedor sobreponha as configs da nuvem (para testes)
-    function getActiveConfig() {
-      const localCfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
-      return { ...OPPAH_CONFIG, ...localCfg };
-    }
-
-    // HASH SHA-256 DA SENHA MASTER DO DESENVOLVEDOR
-    const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
-
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    let logoClickCount = 0;
-    let logoClickTimer = null;
-    function handleLogoDevClick(e) {
-      logoClickCount++;
-      clearTimeout(logoClickTimer);
-      logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 800);
-      if (logoClickCount >= 3) {
-        logoClickCount = 0;
-        toggleConfigModal();
-      }
     }
 
     function showToast(message, type = 'success') {
@@ -580,28 +546,66 @@
       }
     }
 
-    window.onload = async function() {
-      // 1. CARREGA AS CONFIGURAÇÕES DO GITHUB ANTES DE QUALQUER COISA
-      await carregarConfiguracoes();
-
-      if (!localStorage.getItem('oppah_empresas')) localStorage.setItem('oppah_empresas', JSON.stringify([]));
-      if (!localStorage.getItem('oppah_operadores')) localStorage.setItem('oppah_operadores', JSON.stringify([]));
-      
-      const activeCfg = getActiveConfig();
-
-      // Preenche os campos do modal do desenvolvedor com os dados consolidados
-      if (activeCfg.webhookLogin) document.getElementById('webhook-login').value = activeCfg.webhookLogin;
-      if (activeCfg.webhookRegister) document.getElementById('webhook-register').value = activeCfg.webhookRegister;
-      if (activeCfg.webhookCreateOp) document.getElementById('webhook-create-op').value = activeCfg.webhookCreateOp;
-      if (activeCfg.webhookFeedback) document.getElementById('webhook-feedback').value = activeCfg.webhookFeedback;
-
-      const sessaoStr = localStorage.getItem('oppah_session');
-      if (sessaoStr) {
-        const sessao = JSON.parse(sessaoStr);
-        if (sessao.tipo === 'gestor') loadGestorDashboard(sessao);
-        if (sessao.tipo === 'operador') loadAppDashboard(sessao);
-      }
+    /* ========================================================================= */
+    /* 2. CONFIGURAÇÕES CLOUD (GITHUB & LOCAL) E SEGURANÇA                       */
+    /* ========================================================================= */
+    
+    // Estrutura vazia inicial
+    let OPPAH_CONFIG = {
+      webhookLogin: "",
+      webhookRegister: "",
+      webhookCreateOp: "",
+      webhookDeleteOp: "", // <-- Adicionado Webhook de Exclusão
+      webhookFeedback: ""
     };
+
+    // Função que busca as URLs diretamente do seu GitHub
+    async function carregarConfiguracoes() {
+      try {
+        // ATENÇÃO: Substitua pelo link raw correto se mudar de repositório
+        const url_config = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/main/config.json';
+        const response = await fetch(url_config);
+        
+        if (!response.ok) throw new Error("Não foi possível alcançar o config.json do GitHub.");
+        
+        const configNuvem = await response.json();
+        
+        // Mescla as variáveis: o que vem da nuvem preenche a estrutura vazia
+        OPPAH_CONFIG = { ...OPPAH_CONFIG, ...configNuvem };
+        console.log("Sucesso: Configurações da nuvem (GitHub) carregadas!", OPPAH_CONFIG);
+
+      } catch (error) {
+        console.warn("Aviso: Falha ao baixar config.json. O sistema tentará usar fallback local.", error);
+      }
+    }
+
+    // Função auxiliar para permitir que o modal de desenvolvedor sobreponha as configs da nuvem (para testes locais)
+    function getActiveConfig() {
+      const localCfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+      return { ...OPPAH_CONFIG, ...localCfg };
+    }
+
+    // HASH SHA-256 DA SENHA MASTER DO DESENVOLVEDOR (oppah2026)
+    const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    let logoClickCount = 0;
+    let logoClickTimer = null;
+    function handleLogoDevClick(e) {
+      logoClickCount++;
+      clearTimeout(logoClickTimer);
+      logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 800);
+      if (logoClickCount >= 3) {
+        logoClickCount = 0;
+        toggleConfigModal();
+      }
+    }
 
     async function toggleConfigModal() {
       const modal = document.getElementById('modal-config-sharepoint');
@@ -630,6 +634,7 @@
         webhookLogin: document.getElementById('webhook-login').value.trim(),
         webhookRegister: document.getElementById('webhook-register').value.trim(),
         webhookCreateOp: document.getElementById('webhook-create-op').value.trim(),
+        webhookDeleteOp: document.getElementById('webhook-delete-op').value.trim(),
         webhookFeedback: document.getElementById('webhook-feedback').value.trim()
       };
       localStorage.setItem('oppah_config_api', JSON.stringify(cfg));
@@ -637,6 +642,39 @@
       showToast("Sobrescrita Local Salva! (Apenas neste navegador)", "success");
     }
 
+    /* ========================================================================= */
+    /* 3. INICIALIZAÇÃO DA APLICAÇÃO (ONLOAD)                                    */
+    /* ========================================================================= */
+    
+    window.onload = async function() {
+      // 1. CARREGA AS CONFIGURAÇÕES DO GITHUB ANTES DE QUALQUER COISA
+      await carregarConfiguracoes();
+
+      if (!localStorage.getItem('oppah_empresas')) localStorage.setItem('oppah_empresas', JSON.stringify([]));
+      if (!localStorage.getItem('oppah_operadores')) localStorage.setItem('oppah_operadores', JSON.stringify([]));
+      
+      const activeCfg = getActiveConfig();
+
+      // Preenche os campos do modal do desenvolvedor com os dados consolidados
+      if (activeCfg.webhookLogin) document.getElementById('webhook-login').value = activeCfg.webhookLogin;
+      if (activeCfg.webhookRegister) document.getElementById('webhook-register').value = activeCfg.webhookRegister;
+      if (activeCfg.webhookCreateOp) document.getElementById('webhook-create-op').value = activeCfg.webhookCreateOp;
+      if (activeCfg.webhookDeleteOp) document.getElementById('webhook-delete-op').value = activeCfg.webhookDeleteOp;
+      if (activeCfg.webhookFeedback) document.getElementById('webhook-feedback').value = activeCfg.webhookFeedback;
+
+      // Verifica se o usuário já tem uma sessão ativa
+      const sessaoStr = localStorage.getItem('oppah_session');
+      if (sessaoStr) {
+        const sessao = JSON.parse(sessaoStr);
+        if (sessao.tipo === 'gestor') loadGestorDashboard(sessao);
+        if (sessao.tipo === 'operador') loadAppDashboard(sessao);
+      }
+    };
+
+    /* ========================================================================= */
+    /* 4. MÓDULO DE AUTENTICAÇÃO E CADASTRO (LOGIN/LOGOUT)                       */
+    /* ========================================================================= */
+    
     async function handleRegister(e) {
       e.preventDefault();
       const btnText = document.getElementById('btn-register-text');
@@ -644,7 +682,7 @@
       btnText.innerText = "Cadastrando na Nuvem...";
       btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
-      const documento = document.getElementById('reg-documento').value.replace(/\D/g, ""); // Remove formatação para enviar apenas números
+      const documento = document.getElementById('reg-documento').value.replace(/\D/g, ""); // Remove formatação
       const nomeEmpresa = document.getElementById('reg-company').value.trim();
       const email = document.getElementById('reg-email').value.trim();
       const senha = document.getElementById('reg-password').value;
@@ -664,6 +702,7 @@
 
       const cfg = getActiveConfig();
 
+      // Envia para o Power Automate (se configurado)
       if (cfg.webhookRegister) {
         try {
           const resp = await fetch(cfg.webhookRegister, {
@@ -677,6 +716,7 @@
         }
       }
 
+      // Salva localmente (Fallback)
       let empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
       empresas.push(novaEmpresa);
       localStorage.setItem('oppah_empresas', JSON.stringify(empresas));
@@ -702,6 +742,7 @@
       const senha = document.getElementById('login-password').value;
       const cfg = getActiveConfig();
 
+      // Tentativa de Login na Nuvem (SharePoint via Power Automate)
       if (cfg.webhookLogin) {
         try {
           const resp = await fetch(cfg.webhookLogin, {
@@ -712,6 +753,8 @@
           
           if (resp.ok) {
             const data = await resp.json();
+            
+            // Condição baseada na resposta da nuvem (Lógica ajustada do Power Automate)
             if (data && data.autenticado) {
               if (data.validade && new Date(data.validade) < new Date()) {
                 showToast('A licença desta empresa expirou.', 'error');
@@ -746,6 +789,7 @@
       btnText.innerText = "Acessar Portal";
       btnIcon.className = "fa-solid fa-arrow-right text-xs";
 
+      // Fallback de Login Local (se a nuvem falhar ou não estiver configurada)
       const empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
       const operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
 
@@ -780,6 +824,10 @@
       document.getElementById('app-dashboard').style.display = 'none';
       document.getElementById('login-card').style.display = 'block';
     }
+
+    /* ========================================================================= */
+    /* 5. MÓDULO DE FEEDBACK                                                     */
+    /* ========================================================================= */
 
     function openFeedbackModal() {
       const modal = document.getElementById('modal-feedback');
@@ -855,6 +903,10 @@
       }, 1000);
     }
 
+    /* ========================================================================= */
+    /* 6. MÓDULO DO GESTOR (CRIAÇÃO E GESTÃO DE OPERADORES)                      */
+    /* ========================================================================= */
+
     function loadGestorDashboard(sessao) {
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('gestor-dashboard').style.display = 'block';
@@ -906,7 +958,11 @@
           <tr class="hover:bg-slate-900/40">
             <td class="p-3 font-bold text-slate-200">${op.nome}</td>
             <td class="p-3 text-slate-400 font-mono text-[11px]">${op.email}</td>
-            <td class="p-3 text-right"><button onclick="removerOperador('${op.email}')" class="text-rose-400 hover:text-rose-300 text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td>
+            <td class="p-3 text-right">
+              <button onclick="removerOperador('${op.email}')" class="text-rose-400 hover:text-rose-300 text-xs font-bold transition-all">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
           </tr>
         `).join('');
       }
@@ -948,13 +1004,42 @@
       showToast('Funcionário cadastrado!', 'success');
     }
 
-    function removerOperador(email) {
+    async function removerOperador(email) {
+      // 1. Chama o Webhook do Power Automate para deletar no SharePoint
+      const cfg = getActiveConfig();
+      
+      if (cfg.webhookDeleteOp) {
+        try {
+          const resp = await fetch(cfg.webhookDeleteOp, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+          });
+          if(resp.ok){
+            console.log("Exclusão solicitada ao SharePoint com sucesso.");
+          } else {
+            console.warn("SharePoint retornou erro na exclusão.");
+          }
+        } catch (err) {
+          console.error("Erro ao tentar conectar com o SharePoint para deletar", err);
+        }
+      }
+
+      // 2. Remove do localStorage localmente
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
+      
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
       const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
+      
+      // 3. Atualiza a tabela na tela
       atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
+      showToast('Operador excluído com sucesso!', 'success');
     }
+
+    /* ========================================================================= */
+    /* 7. MÓDULO OTIMIZADOR DE CORTE (ALGORITMO E LÓGICA DO OPERADOR)            */
+    /* ========================================================================= */
 
     let stocks = [];
     let pieces = [];
