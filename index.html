@@ -6,7 +6,7 @@
   <!-- ========================================== -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah 2.3.2 - Otimizador e Gestão SaaS Cloud</title>
+  <title>Portal Oppah 2.3.3 - Otimizador e Gestão SaaS Cloud</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -96,7 +96,7 @@
       <div onclick="handleLogoDevClick(event)" title="Portal Oppah" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.3.2 Cloud</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.3.3 Cloud</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -262,7 +262,7 @@
         <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bg-sky-500/10 border border-sky-500/30 p-3 rounded-xl text-[11px] text-sky-200">
-        <i class="fa-solid fa-circle-info mr-1"></i> O sistema já carrega a configuração principal direto do GitHub (`config.json`). Preencha os campos abaixo apenas se você for o Desenvolvedor e quiser testar Webhooks locais específicos neste navegador.
+        <i class="fa-solid fa-circle-info mr-1"></i> O sistema já carrega a configuração principal via `config.json`. Preencha os campos abaixo apenas se você for o Desenvolvedor e quiser testar Webhooks locais específicos.
       </div>
       <div class="space-y-3">
         <div>
@@ -513,23 +513,29 @@
       event.target.value = v.substring(0, 18);
     }
 
-    function showToast(message, type = 'success') {
+    function showToast(message, type = 'success', duration = 4000) {
       const toast = document.getElementById('toast');
       if (!toast) return;
       document.getElementById('toast-message').innerText = message;
       const icon = document.getElementById('toast-icon');
+      
       if (type === 'error') {
-        document.getElementById('toast-title').innerText = 'Erro';
+        document.getElementById('toast-title').innerText = 'Aviso / Erro';
         icon.className = 'w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center';
-        icon.innerHTML = '<i class="fa-solid fa-xmark text-sm"></i>';
+        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-sm"></i>';
+      } else if (type === 'info') {
+        document.getElementById('toast-title').innerText = 'Informação';
+        icon.className = 'w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center';
+        icon.innerHTML = '<i class="fa-solid fa-circle-info text-sm"></i>';
       } else {
         document.getElementById('toast-title').innerText = 'Sucesso';
         icon.className = 'w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center';
         icon.innerHTML = '<i class="fa-solid fa-check text-sm"></i>';
       }
+      
       toast.style.transform = 'translateY(0)';
       toast.style.opacity = '1';
-      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 4000);
+      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, duration);
     }
 
     function switchTab(tab) {
@@ -547,7 +553,7 @@
     }
 
     /* ========================================================================= */
-    /* 2. CONFIGURAÇÕES CLOUD E SEGURANÇA (v2.3.2)                               */
+    /* 2. CONFIGURAÇÕES CLOUD E SEGURANÇA (v2.3.3)                               */
     /* ========================================================================= */
     
     let OPPAH_CONFIG = {
@@ -558,33 +564,46 @@
       webhookFeedback: ""
     };
 
-    // A MÁGICA ESTÁ AQUI: Usa o caminho relativo direto do repositório
     async function carregarConfiguracoes() {
       try {
         const url_config = './config.json';
         const response = await fetch(url_config);
         
-        if (!response.ok) throw new Error("Não foi possível alcançar o config.json local.");
+        if (!response.ok) {
+          throw new Error(`Servidor respondeu com código ${response.status} ao buscar config.json`);
+        }
         
-        const configNuvem = await response.json();
+        let configNuvem;
+        try {
+          configNuvem = await response.json();
+        } catch(jsonErr) {
+           showToast("Erro no arquivo config.json! Verifique a sintaxe (aspas e vírgulas).", "error", 8000);
+           throw new Error("JSON inválido no arquivo config.json");
+        }
+
+        if (!configNuvem.webhookRegister || configNuvem.webhookRegister === "" || configNuvem.webhookRegister === "COLE_AQUI_A_URL_DO_CADASTRO") {
+           console.warn("Aviso: webhookRegister não está configurado corretamente no config.json.");
+        }
+
         OPPAH_CONFIG = { ...OPPAH_CONFIG, ...configNuvem };
         console.log("Sucesso: Configurações da nuvem carregadas!", OPPAH_CONFIG);
 
       } catch (error) {
-        console.warn("Aviso: Falha ao baixar config.json. Tentando fallback local.", error);
+        console.warn("Falha Crítica ao ler configurações:", error);
+        showToast("Aviso: Portal Oppah operando em Modo Offline (Sem comunicação com Nuvem)", "info", 5000);
       }
     }
 
-    // CORREÇÃO CRÍTICA DO LOCALSTORAGE (Para não sobrepor com variáveis vazias)
+    // CORREÇÃO: Evita que chaves vazias no localStorage sobrescrevam dados do config.json
     function getActiveConfig() {
       const localCfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
       let finalCfg = { ...OPPAH_CONFIG };
       
-      if (localCfg.webhookLogin) finalCfg.webhookLogin = localCfg.webhookLogin;
-      if (localCfg.webhookRegister) finalCfg.webhookRegister = localCfg.webhookRegister;
-      if (localCfg.webhookCreateOp) finalCfg.webhookCreateOp = localCfg.webhookCreateOp;
-      if (localCfg.webhookDeleteOp) finalCfg.webhookDeleteOp = localCfg.webhookDeleteOp;
-      if (localCfg.webhookFeedback) finalCfg.webhookFeedback = localCfg.webhookFeedback;
+      if (localCfg.webhookLogin && localCfg.webhookLogin.trim() !== "") finalCfg.webhookLogin = localCfg.webhookLogin;
+      if (localCfg.webhookRegister && localCfg.webhookRegister.trim() !== "") finalCfg.webhookRegister = localCfg.webhookRegister;
+      if (localCfg.webhookCreateOp && localCfg.webhookCreateOp.trim() !== "") finalCfg.webhookCreateOp = localCfg.webhookCreateOp;
+      if (localCfg.webhookDeleteOp && localCfg.webhookDeleteOp.trim() !== "") finalCfg.webhookDeleteOp = localCfg.webhookDeleteOp;
+      if (localCfg.webhookFeedback && localCfg.webhookFeedback.trim() !== "") finalCfg.webhookFeedback = localCfg.webhookFeedback;
       
       return finalCfg;
     }
@@ -680,7 +699,7 @@
       e.preventDefault();
       const btnText = document.getElementById('btn-register-text');
       const btnIcon = document.getElementById('btn-register-icon');
-      btnText.innerText = "Cadastrando na Nuvem...";
+      btnText.innerText = "Processando Cadastro...";
       btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
       const documento = document.getElementById('reg-documento').value.replace(/\D/g, ""); // Remove formatação
@@ -702,21 +721,31 @@
       };
 
       const cfg = getActiveConfig();
+      let salvaNaNuvem = false;
 
-      if (cfg.webhookRegister) {
+      // ETAPA NUVEM
+      if (cfg.webhookRegister && cfg.webhookRegister !== "" && !cfg.webhookRegister.includes("COLE_AQUI")) {
         try {
           const resp = await fetch(cfg.webhookRegister, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(novaEmpresa)
           });
-          if (!resp.ok) throw new Error("Erro de HTTP ao salvar no SharePoint. Status: " + resp.status);
+          
+          if (!resp.ok) {
+              throw new Error(`SharePoint rejeitou: HTTP ${resp.status}`);
+          }
+          salvaNaNuvem = true;
+          
         } catch (err) {
-          console.warn("Falha no envio da nuvem, salvando em fallback local:", err);
-          showToast("Aviso: Não foi possível conectar ao banco de dados. Conta salva localmente.", "error");
+          console.warn("Falha no envio da nuvem, caindo para fallback:", err);
+          showToast("Aviso: Conexão com banco de dados falhou. Criando conta no Modo Offline.", "error", 5000);
         }
+      } else {
+        showToast("Aviso: URL de Cadastro na nuvem não está configurada.", "info");
       }
 
+      // ETAPA FALLBACK (Sempre salva localmente por precaução)
       let empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
       empresas.push(novaEmpresa);
       localStorage.setItem('oppah_empresas', JSON.stringify(empresas));
@@ -724,7 +753,13 @@
       btnText.innerText = "Começar Teste Grátis";
       btnIcon.className = "fa-solid fa-rocket text-xs";
 
-      showToast('Conta criada com sucesso!', 'success');
+      // FEEDBACK HONESTO
+      if (salvaNaNuvem) {
+          showToast('Conta criada e sincronizada com a Nuvem!', 'success');
+      } else {
+          showToast('Conta criada e salva localmente (Offline).', 'success');
+      }
+
       document.getElementById('login-email').value = email;
       document.getElementById('login-password').value = senha;
       document.getElementById('form-register').reset();
@@ -735,7 +770,7 @@
       e.preventDefault();
       const btnText = document.getElementById('btn-login-text');
       const btnIcon = document.getElementById('btn-login-icon');
-      btnText.innerText = "Conectando à Nuvem...";
+      btnText.innerText = "Conectando...";
       btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
       const email = document.getElementById('login-email').value.trim();
@@ -744,7 +779,8 @@
 
       console.log("Tentando login na URL da Nuvem:", cfg.webhookLogin);
 
-      if (cfg.webhookLogin && cfg.webhookLogin !== "") {
+      // ETAPA NUVEM
+      if (cfg.webhookLogin && cfg.webhookLogin !== "" && !cfg.webhookLogin.includes("COLE_AQUI")) {
         try {
           const resp = await fetch(cfg.webhookLogin, {
             method: 'POST',
@@ -785,15 +821,14 @@
           }
         } catch (err) {
           console.error("Falha ao comunicar com o Power Automate:", err);
-          showToast("Aviso: Nuvem indisponível. Acessando via modo offline (Local).", "error");
+          showToast("Aviso: Nuvem indisponível. Tentando acessar via modo Offline (Local).", "error", 4000);
         }
-      } else {
-        showToast("Aviso: Nenhuma URL de nuvem configurada. Acessando modo offline.", "error");
       }
 
       btnText.innerText = "Acessar Portal";
       btnIcon.className = "fa-solid fa-arrow-right text-xs";
 
+      // ETAPA FALLBACK LOCAL
       const empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
       const operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
 
@@ -819,7 +854,7 @@
         return;
       }
 
-      showToast('E-mail ou senha incorretos.', 'error');
+      showToast('E-mail ou senha não encontrados localmente ou na nuvem.', 'error');
     }
 
     function handleLogout() {
@@ -874,7 +909,7 @@
 
       const cfg = getActiveConfig();
 
-      if (cfg.webhookFeedback) {
+      if (cfg.webhookFeedback && !cfg.webhookFeedback.includes("COLE_AQUI")) {
         try {
           const resp = await fetch(cfg.webhookFeedback, {
             method: 'POST',
@@ -986,7 +1021,9 @@
       const novoOperador = { id_empresa: sessao.id_empresa, nome, email, senha, documento };
 
       const cfg = getActiveConfig();
-      if (cfg.webhookCreateOp) {
+      let criadoNaNuvem = false;
+
+      if (cfg.webhookCreateOp && !cfg.webhookCreateOp.includes("COLE_AQUI")) {
         try {
           const resp = await fetch(cfg.webhookCreateOp, {
             method: 'POST',
@@ -994,8 +1031,9 @@
             body: JSON.stringify(novoOperador)
           });
           if (!resp.ok) throw new Error("Erro ao salvar no SharePoint");
+          criadoNaNuvem = true;
         } catch (err) {
-          console.warn("Operador criado localmente em fallback:", err);
+          console.warn("Operador não salvo na nuvem, criando em fallback:", err);
         }
       }
 
@@ -1003,38 +1041,33 @@
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores));
       e.target.reset();
       atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
-      showToast('Funcionário cadastrado!', 'success');
+      
+      if (criadoNaNuvem) showToast('Funcionário cadastrado na Nuvem!', 'success');
+      else showToast('Funcionário cadastrado localmente (Offline).', 'success');
     }
 
     async function removerOperador(email) {
-      // 1. Chama o Webhook do Power Automate para deletar no SharePoint
       const cfg = getActiveConfig();
       
-      if (cfg.webhookDeleteOp) {
+      if (cfg.webhookDeleteOp && !cfg.webhookDeleteOp.includes("COLE_AQUI")) {
         try {
           const resp = await fetch(cfg.webhookDeleteOp, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email })
           });
-          if(resp.ok){
-            console.log("Exclusão solicitada ao SharePoint com sucesso.");
-          } else {
-            console.warn("SharePoint retornou erro na exclusão.");
-          }
+          if(resp.ok) console.log("Exclusão solicitada ao SharePoint com sucesso.");
         } catch (err) {
           console.error("Erro ao tentar conectar com o SharePoint para deletar", err);
         }
       }
 
-      // 2. Remove do localStorage localmente
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
       
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
       const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
       
-      // 3. Atualiza a tabela na tela
       atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
       showToast('Operador excluído com sucesso!', 'success');
     }
