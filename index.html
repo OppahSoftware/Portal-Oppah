@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah v2.4.1 | Otimizador v2.2.5</title>
+  <title>Portal Oppah v2.4.2 | Otimizador v2.2.5</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -217,7 +217,7 @@
       <div onclick="handleLogoDevClick(event)" title="Portal Oppah" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.4.1</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.4.2</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -548,7 +548,7 @@
   </div>
 
   <script>
-    const PORTAL_VERSION = "2.4.1";
+    const PORTAL_VERSION = "2.4.2";
     const OPTIMIZER_VERSION = "2.2.5";
     
     // ==========================================
@@ -813,7 +813,7 @@
                 nome: data.nome || data.nome_empresa,
                 nome_empresa: data.nome_empresa,
                 validade: data.validade,
-                licencas_totais: data.licencas_totais || 1
+                licencas_totais: parseInt(data.licencas_totais) || 1
               };
               localStorage.setItem('oppah_session', JSON.stringify(sessao));
               showToast(`Login efetuado via Nuvem!`, 'success');
@@ -879,13 +879,26 @@
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('gestor-dashboard').style.display = 'block';
       
-      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || {
+      const localEmpresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || {};
+
+      // PRIORIDADE TOTAL PARA A SESSÃO (NUVEM). Fallback para local só se a sessão não tiver.
+      const empresa = {
         id_empresa: sessao.id_empresa,
-        nome_empresa: sessao.nome_empresa || 'Empresa Cadastrada',
-        email: sessao.email,
-        validade: sessao.validade || new Date(Date.now() + 7*24*60*60*1000).toISOString(),
-        licencas_totais: sessao.licencas_totais || 1
+        nome_empresa: sessao.nome_empresa || localEmpresa.nome_empresa || 'Empresa Cadastrada',
+        email: sessao.email || localEmpresa.email,
+        validade: sessao.validade || localEmpresa.validade || new Date(Date.now() + 7*24*60*60*1000).toISOString(),
+        licencas_totais: sessao.licencas_totais || localEmpresa.licencas_totais || 1
       };
+
+      // Sincroniza o Cache Local com a verdade absoluta da Nuvem
+      let empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
+      const idx = empresas.findIndex(e => e.id_empresa === empresa.id_empresa);
+      if (idx >= 0) {
+          empresas[idx] = { ...empresas[idx], ...empresa };
+      } else {
+          empresas.push(empresa);
+      }
+      localStorage.setItem('oppah_empresas', JSON.stringify(empresas));
 
       document.getElementById('gestorCompanyName').innerText = empresa.nome_empresa;
       document.getElementById('gestorEmail').innerText = empresa.email;
@@ -1039,7 +1052,7 @@
       const sessaoStr = localStorage.getItem('oppah_session');
       const usuario = sessaoStr ? JSON.parse(sessaoStr) : { nome: 'Desconhecido', email: 'N/A', tipo: 'N/A', nome_empresa: 'N/A' };
       
-      // Se for operador e for sugestão, anexa a subcategoria à mensagem ou envia num campo separado
+      // Se for operador e for sugestão, anexa a subcategoria à mensagem
       let subcategoria = "";
       if (usuario.tipo === 'operador' && tipo === 'sugestao') {
           subcategoria = document.getElementById('feedback-categoria-operador').value;
@@ -1053,7 +1066,7 @@
         email_usuario: usuario.email,
         empresa: usuario.nome_empresa,
         categoria: tipo,
-        subcategoria: subcategoria, // Campo extra para a nuvem
+        subcategoria: subcategoria,
         mensagem: mensagem
       };
 
@@ -1083,7 +1096,7 @@
       
       showToast('Redirecionando para o WhatsApp...', 'success');
       setTimeout(() => {
-        window.open(`https://api.whatsapp.com/send?phone=${numeroSuporte}&text=${textoZap}`, '_blank');
+        window.open(`https://api.whatsapp.com/send?phone=${numeroSuporte}&text=${encodeURIComponent(textoZap)}`, '_blank');
         document.getElementById('form-feedback').reset();
         closeFeedbackModal();
         btn.innerHTML = originalText;
@@ -1110,7 +1123,6 @@
       let p = prefs ? JSON.parse(prefs) : null;
       
       if (!p || !p.name) {
-        // Se ainda não salvou as preferências, exibe o modal
         const modal = document.getElementById('operator-welcome-modal');
         const content = document.getElementById('operator-welcome-content');
         modal.classList.remove('hidden');
@@ -1119,10 +1131,8 @@
           content.classList.add('scale-100', 'opacity-100');
         }, 10);
         
-        // Pré-preenche o nome da sessão de login para facilitar
         document.getElementById('prefName').value = sessao.nome || '';
       } else {
-        // Já possui pref, preenche os inputs do otimizador escondidos
         document.getElementById('bladeSize').value = p.blade || 4;
         document.getElementById('angleModeInput').value = p.strategy || 'direct';
         
