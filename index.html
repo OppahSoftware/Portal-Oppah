@@ -149,12 +149,54 @@
     </div>
   </div>
 
+  <!-- MODAL DE NOVIDADES DA VERSÃO (CHANGELOG) -->
+  <div id="modal-changelog" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden transition-opacity">
+    <div class="glass-card max-w-md w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 transform transition-all scale-95 opacity-0" id="modal-changelog-content">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-bullhorn text-amber-400"></i> Novidades da Versão</h3>
+        <button onclick="closeChangelogModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="max-h-72 overflow-y-auto pr-2 space-y-6">
+        <!-- Versão Atual -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.3</span>
+            <span class="text-xs text-slate-400 font-semibold">Última Atualização</span>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-300">
+            <li class="flex items-start gap-2"><i class="fa-solid fa-lock text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Criptografia avançada (SHA-256) ativada para todas as senhas.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-shield-halved text-emerald-400 mt-0.5"></i> <span><strong>Senhas Fortes:</strong> O sistema agora exige letras e números (mínimo de 8 caracteres).</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-user-tie text-sky-400 mt-0.5"></i> <span><strong>Novo Campo:</strong> Inclusão do Nome do Gestor no cadastro inicial.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-comment-dots text-indigo-400 mt-0.5"></i> <span><strong>Feedback Aprimorado:</strong> O sistema agora identifica perfeitamente o remetente ao enviar mensagens.</span></li>
+          </ul>
+        </div>
+
+        <!-- Versão Anterior -->
+        <div class="opacity-75">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.0</span>
+            <span class="text-xs text-slate-500 font-semibold">Atualização Anterior</span>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li class="flex items-start gap-2"><i class="fa-solid fa-microchip mt-0.5 text-slate-500"></i> <span>Integração do motor do otimizador na nuvem.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-bug mt-0.5 text-slate-500"></i> <span>Correção no controle e limite do estoque de barras.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+        <button onclick="closeChangelogModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all">Entendi, fechar</button>
+      </div>
+    </div>
+  </div>
+
   <main id="login-card" class="max-w-md mx-auto my-12 glass-card rounded-3xl p-8 shadow-2xl border border-slate-700/80 transition-all relative">
     <div class="text-center mb-6">
       <div onclick="handleLogoDevClick(event)" title="Acesso Dev" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">TESTE v2.4.3</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">TESTE v2.4.3</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -241,7 +283,7 @@
   <div id="gestor-dashboard" style="display:none;" class="max-w-4xl mx-auto space-y-6">
     <header class="glass-card rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa</h1>
+        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.4.3</span></h1>
         <p id="gestorCompanyName" class="text-sm text-sky-400 font-bold mt-1"></p>
         <p id="gestorManagerName" class="text-xs text-slate-300 font-semibold mt-1"></p>
         <p id="gestorEmail" class="text-xs text-slate-400"></p>
@@ -322,7 +364,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte</h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.4.3</span></h1>
           <p id="operatorCompanyName" class="text-xs text-slate-400"></p>
         </div>
       </div>
@@ -805,6 +847,27 @@
     function closeFeedbackModal() {
       const modal = document.getElementById('modal-feedback');
       const content = document.getElementById('modal-feedback-content');
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
+
+    // ----------------------------------------------------
+    // MÓDULO DE NOVIDADES (CHANGELOG)
+    // ----------------------------------------------------
+    function openChangelogModal() {
+      const modal = document.getElementById('modal-changelog');
+      const content = document.getElementById('modal-changelog-content');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function closeChangelogModal() {
+      const modal = document.getElementById('modal-changelog');
+      const content = document.getElementById('modal-changelog-content');
       content.classList.remove('scale-100', 'opacity-100');
       content.classList.add('scale-95', 'opacity-0');
       setTimeout(() => { modal.classList.add('hidden'); }, 300);
