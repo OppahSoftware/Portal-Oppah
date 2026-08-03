@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah 2.3.1 - Otimizador e Gestão SaaS Cloud</title>
+  <title>Portal Oppah 2.3.0 - Otimizador e Gestão SaaS Cloud</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -949,22 +949,11 @@
     }
 
     function removerOperador(email) {
-         const cfg = getActiveConfig();
-         if (cfg.webhookDeleteOp) {
-            try {
-                 await fetch(cfg.webhookDeleteOp, {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ email: email })
-                 });
-                 showToast('Operador excluído no SharePoint!', 'success');
-             } catch (err) { console.error("Erro SharePoint:", err); }
-         }
-        let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
-        localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
-        const sessao = JSON.parse(localStorage.getItem('oppah_session'));
-        const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
-        atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
+      let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
+      localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
+      const sessao = JSON.parse(localStorage.getItem('oppah_session'));
+      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
+      atualizarListaOperadores(empresa || { id_empresa: sessao.id_empresa, licencas_totais: 1 });
     }
 
     let stocks = [];
