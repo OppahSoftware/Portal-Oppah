@@ -503,7 +503,7 @@
     async function carregarConfiguracoes() {
       try {
         // ATENÇÃO: SUBSTITUA 'SEU_USUARIO' PELO SEU USUÁRIO NO GITHUB
-        const url_config = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/main/config.json?token=GHSAT0AAAAAAEER7CNLTBL7ZCY3OIMN7KYY2TP7NJA';
+        const url_config = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/main/config.json';
         const response = await fetch(url_config);
         
         if (!response.ok) throw new Error("Não foi possível alcançar o config.json do GitHub.");
