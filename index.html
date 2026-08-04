@@ -744,11 +744,15 @@
           });
           showToast("Código enviado! Verifique seu e-mail.", "success");
         } catch (err) {
-          console.warn("Falha no Webhook OTP, modo fallback acionado.", err);
-          showToast(`[Teste Offline] Seu código é: ${generatedOTP}`, "success");
+          console.warn("Falha no Webhook OTP.", err);
+          showToast("Erro ao conectar com o servidor de e-mail. Tente novamente.", "error");
+          resetRegisterBtn();
+          return; // Aborta o cadastro se o e-mail falhar
         }
       } else {
-        showToast(`[Teste Local] Seu código OTP é: ${generatedOTP}`, "success");
+        showToast("Erro do Servidor: Sistema de e-mail (OTP) não configurado.", "error");
+        resetRegisterBtn();
+        return; // Aborta o cadastro se não tiver o link do Power Automate
       }
 
       resetRegisterBtn();
