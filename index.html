@@ -10,9 +10,10 @@
       const currentDomain = window.location.hostname;
       const isLocal = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
       const isVercel = currentDomain.includes('vercel.app');
+      const isOficial = currentDomain.includes('portaloppah.com.br'); // NOVO: Domínio Oficial Autorizado
       
-      // Se não for 88888 e não for 88888888 (ex: se for file:/// ou outro domínio), bloqueia!
-      if (!isLocal && !isVercel) {
+      // Se não for Oficial, não for Vercel e não for Localhost, bloqueia!
+      if (!isLocal && !isVercel && !isOficial) {
         document.documentElement.innerHTML = '<body style="background:#0f172a;color:#ef4444;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;text-align:center;"><div><h1 style="font-size:2rem;margin-bottom:10px;">🛡️ Acesso Negado</h1><p>Licença de uso inválida ou domínio não autorizado.</p></div></body>';
         window.stop();
         throw new Error("Execução interrompida por violação de segurança.");
