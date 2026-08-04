@@ -1,9 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark" class="dark">
 <head>
+  <!-- ========================================== -->
+  <!-- 🛡️ MÓDULO DE SEGURANÇA (ANTI-PIRATARIA) 🛡️ -->
+  <!-- ========================================== -->
+  <script>
+    // 1. DOMAIN LOCK (Bloqueio de Domínio)
+    (function() {
+      const currentDomain = window.location.hostname;
+      const isLocal = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
+      const isVercel = currentDomain.includes('vercel.app');
+      
+      // Se não for 88888 e não for 88888888 (ex: se for file:/// ou outro domínio), bloqueia!
+      if (!isLocal && !isVercel) {
+        document.documentElement.innerHTML = '<body style="background:#0f172a;color:#ef4444;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;text-align:center;"><div><h1 style="font-size:2rem;margin-bottom:10px;">🛡️ Acesso Negado</h1><p>Licença de uso inválida ou domínio não autorizado.</p></div></body>';
+        window.stop();
+        throw new Error("Execução interrompida por violação de segurança.");
+      }
+    })();
+
+    // 2. ANTI-XERETA (Bloqueio de DevTools e Botão Direito)
+    document.addEventListener('contextmenu', event => event.preventDefault()); // Bloqueia botão direito
+    document.addEventListener('keydown', event => {
+      // Bloqueia F12
+      if (event.key === 'F12') event.preventDefault();
+      // Bloqueia Ctrl+Shift+I (DevTools) / Ctrl+Shift+J (Console) / Ctrl+U (Ver código-fonte) / Ctrl+S (Salvar)
+      if (event.ctrlKey && (
+          (event.shiftKey && (event.key === 'I' || event.key === 'i')) || 
+          (event.shiftKey && (event.key === 'J' || event.key === 'j')) || 
+          event.key === 'U' || event.key === 'u' || 
+          event.key === 'S' || event.key === 's'
+      )) {
+        event.preventDefault();
+      }
+    });
+  </script>
+  <!-- ========================================== -->
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah v2.4.5 | Beta (Staging)</title>
+  <title>Portal Oppah v2.4.6 | Testes (Staging)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -161,24 +197,22 @@
         <!-- Versão Atual -->
         <div>
           <div class="flex items-center gap-2 mb-2">
-            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.5</span>
+            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.6</span>
             <span class="text-xs text-slate-400 font-semibold">Última Atualização</span>
           </div>
           <ul class="space-y-2 text-xs text-slate-300">
-            <li class="flex items-start gap-2"><i class="fa-solid fa-shield-halved text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Remoção da senha de testes em texto puro do código (Painel Dev totalmente criptografado em SHA-256).</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-shield text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Adição de Bloqueio de Domínio (Anti-cópia/Pirataria) e Bloqueio de DevTools.</span></li>
           </ul>
         </div>
         
         <!-- Versão Anterior -->
         <div class="opacity-75">
           <div class="flex items-center gap-2 mb-2">
-            <span class="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.4</span>
+            <span class="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.5</span>
             <span class="text-xs text-slate-500 font-semibold">Atualização Anterior</span>
           </div>
           <ul class="space-y-2 text-xs text-slate-400">
-            <li class="flex items-start gap-2"><i class="fa-solid fa-wrench text-amber-400 mt-0.5"></i> <span><strong>Hotfix:</strong> Fetch Vercel corrigido.</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-lock text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Senhas de login e cadastro agora usam SHA-256.</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-user-tie text-sky-400 mt-0.5"></i> <span><strong>Novo Campo:</strong> Inclusão do Nome do Gestor.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-shield-halved text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Remoção da senha de testes em texto puro do código. Painel Dev totalmente criptografado.</span></li>
           </ul>
         </div>
       </div>
@@ -194,7 +228,7 @@
       <div onclick="handleLogoDevClick(event)" title="Acesso Dev" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">TESTE v2.4.5</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">TESTE v2.4.6</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -279,7 +313,7 @@
   <div id="gestor-dashboard" style="display:none;" class="max-w-4xl mx-auto space-y-6">
     <header class="glass-card rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
+        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.4.6</span></h1>
         <p id="gestorCompanyName" class="text-sm text-sky-400 font-bold mt-1"></p>
         <p id="gestorManagerName" class="text-xs text-slate-300 font-semibold mt-1"></p>
         <p id="gestorEmail" class="text-xs text-slate-400"></p>
@@ -360,7 +394,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.4.6</span></h1>
           <p id="operatorCompanyName" class="text-xs text-slate-400"></p>
         </div>
       </div>
