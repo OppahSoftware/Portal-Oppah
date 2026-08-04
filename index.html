@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah v2.4.2 | Otimizador v2.2.5</title>
+  <title>Portal Oppah v2.4.5 | Testes (Staging)</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,10 +19,7 @@
     }
   </script>
 
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Google Font: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -67,7 +63,6 @@
 </head>
 <body class="p-3 sm:p-6 antialiased">
 
-  <!-- Toast Notification -->
   <div id="toast" class="fixed top-5 right-5 bg-slate-900 border border-slate-700 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 translate-y-[-150%] opacity-0 transition-all duration-300 z-50">
     <div id="toast-icon" class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
       <i class="fa-solid fa-check text-sm"></i>
@@ -78,62 +73,6 @@
     </div>
   </div>
 
-  <!-- Modal de Boas-vindas Otimizador -->
-  <div id="operator-welcome-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm transition-opacity hidden">
-    <div class="glass-card max-w-md w-full p-8 rounded-3xl shadow-2xl border border-slate-700/80 m-4 transform transition-all scale-95 opacity-0" id="operator-welcome-content">
-      <div class="text-center mb-6">
-        <div class="w-16 h-16 bg-sky-500/20 text-sky-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-sky-500/30">
-          <i class="fa-solid fa-gears"></i>
-        </div>
-        <h2 class="text-2xl font-black text-white mb-2">Bem-vindo(a) ao Otimizador!</h2>
-        <p class="text-xs text-slate-400">Configure suas preferências para começar.</p>
-      </div>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Como deseja ser chamado?</label>
-          <div class="flex gap-2">
-            <select id="prefTitle" class="w-1/3 px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-sky-500 outline-none">
-              <option value="">(Nenhum)</option>
-              <option value="Sr.">Sr.</option>
-              <option value="Sra.">Sra.</option>
-              <option value="Mestre">Mestre</option>
-              <option value="Operador">Operador</option>
-            </select>
-            <input type="text" id="prefName" placeholder="Seu Nome" class="w-2/3 px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-sky-500 outline-none">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Unidade de Medida</label>
-          <select id="prefUnit" class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-sky-500 outline-none">
-            <option value="mm">Milímetros (mm)</option>
-            <option value="cm">Centímetros (cm)</option>
-            <option value="m">Metros (m)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Espessura da Serra / Disco (Kerf)</label>
-          <div class="relative">
-            <input type="number" id="prefBlade" value="4" step="0.1" class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-sky-500 outline-none">
-            <span class="absolute right-3 top-2.5 text-xs text-slate-500 font-bold" id="prefUnitDisplay">mm</span>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Estratégia de Refilo Angular</label>
-          <select id="prefStrategy" class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-sky-500 outline-none">
-            <option value="direct">✂️ Grau Direto na Barra</option>
-            <option value="square_first">📐 Reto 90° + Guia de Refilo</option>
-          </select>
-        </div>
-        
-        <button onclick="saveInitialPreferences()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 mt-4">
-          <i class="fa-solid fa-check"></i> Salvar Preferências
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Feedback Unificado -->
   <div id="modal-feedback" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden transition-opacity">
     <div class="glass-card max-w-md w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 transform transition-all scale-95 opacity-0" id="modal-feedback-content">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
@@ -154,7 +93,6 @@
           </select>
         </div>
         
-        <!-- Categoria Dinâmica para Operadores -->
         <div id="feedback-categoria-operador-container" class="hidden">
           <label class="block text-[11px] font-semibold text-slate-300 mb-1">Sobre qual área?</label>
           <select id="feedback-categoria-operador" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-indigo-500 outline-none">
@@ -177,15 +115,14 @@
     </div>
   </div>
 
-  <!-- Modal Configuração Power Automate / SharePoint -->
   <div id="modal-config-sharepoint" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
     <div class="glass-card max-w-lg w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-server text-sky-400"></i> Servidor Nuvem (Acesso Local)</h3>
+        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-server text-sky-400"></i> Servidor API Oppah (Acesso Local)</h3>
         <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-[11px] text-amber-200">
-        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Atenção: Utilize este painel apenas para testar webhooks locais caso o arquivo <code>oppah.json</code> do GitHub não esteja acessível.
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Atenção: Utilize este painel apenas se o arquivo <code>oppah.json</code> do GitHub não estiver carregando ou para testes locais da API.
       </div>
       <div class="space-y-3">
         <div>
@@ -200,28 +137,67 @@
           <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Criar Operador</label>
           <input type="url" id="webhook-create-op" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
         </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Receber Feedback</label>
+          <input type="url" id="webhook-feedback" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
+        </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
         <button onclick="toggleConfigModal()" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl">Cancelar</button>
-        <button onclick="saveSharepointConfig()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl">Salvar Teste Local</button>
+        <button onclick="saveSharepointConfig()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl">Salvar URLs Localmente</button>
       </div>
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- TELA DE LOGIN & CADASTRO        -->
-  <!-- =============================== -->
+  <!-- MODAL DE NOVIDADES DA VERSÃO (CHANGELOG) -->
+  <div id="modal-changelog" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden transition-opacity">
+    <div class="glass-card max-w-md w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 transform transition-all scale-95 opacity-0" id="modal-changelog-content">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-bullhorn text-amber-400"></i> Novidades da Versão</h3>
+        <button onclick="closeChangelogModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="max-h-72 overflow-y-auto pr-2 space-y-6">
+        <!-- Versão Atual -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.5</span>
+            <span class="text-xs text-slate-400 font-semibold">Última Atualização</span>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-300">
+            <li class="flex items-start gap-2"><i class="fa-solid fa-shield-halved text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Remoção da senha de testes em texto puro do código (Painel Dev totalmente criptografado em SHA-256).</span></li>
+          </ul>
+        </div>
+        
+        <!-- Versão Anterior -->
+        <div class="opacity-75">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.4</span>
+            <span class="text-xs text-slate-500 font-semibold">Atualização Anterior</span>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li class="flex items-start gap-2"><i class="fa-solid fa-wrench text-amber-400 mt-0.5"></i> <span><strong>Hotfix:</strong> Fetch Vercel corrigido.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-lock text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Senhas de login e cadastro agora usam SHA-256.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-user-tie text-sky-400 mt-0.5"></i> <span><strong>Novo Campo:</strong> Inclusão do Nome do Gestor.</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+        <button onclick="closeChangelogModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all">Entendi, fechar</button>
+      </div>
+    </div>
+  </div>
+
   <main id="login-card" class="max-w-md mx-auto my-12 glass-card rounded-3xl p-8 shadow-2xl border border-slate-700/80 transition-all relative">
-    
     <div class="text-center mb-6">
-      <div onclick="handleLogoDevClick(event)" title="Portal Oppah" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
+      <div onclick="handleLogoDevClick(event)" title="Acesso Dev" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30">v2.4.2</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">TESTE v2.4.5</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
-    <!-- Navegação por Abas -->
     <div class="flex p-1 bg-slate-900/80 rounded-2xl border border-slate-800 mb-6">
       <button onclick="switchTab('login')" id="tab-login" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all bg-sky-500 text-white shadow-md">
         Entrar
@@ -231,7 +207,7 @@
       </button>
     </div>
 
-    <!-- Formulário de Login -->
+    <!-- Login Form -->
     <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5">E-mail</label>
@@ -253,7 +229,7 @@
       </button>
     </form>
 
-    <!-- Formulário de Cadastro (Gestor) -->
+    <!-- Register Form -->
     <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
       <div class="bg-indigo-500/10 border border-indigo-500/30 p-3 rounded-xl mb-4 text-xs text-indigo-200">
         <i class="fa-solid fa-gift text-indigo-400 mr-1"></i> Ganhe <strong>7 dias grátis</strong> e <strong>1 licença</strong> para testar a ferramenta.
@@ -266,24 +242,31 @@
         </div>
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nome da Esquadria</label>
+        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nome da Empresa / Esquadria</label>
         <div class="relative">
           <i class="fa-solid fa-building absolute left-3.5 top-3 text-slate-500 text-xs"></i>
           <input type="text" id="reg-company" required placeholder="Ex: Vidros & Alumínio Silva" class="w-full pl-9 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-sky-500 transition-all">
         </div>
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">E-mail do Gestor</label>
+        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Seu Nome (Gestor/Proprietário)</label>
+        <div class="relative">
+          <i class="fa-solid fa-user-tie absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+          <input type="text" id="reg-nome-gestor" required placeholder="Ex: Carlos Silva" class="w-full pl-9 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-sky-500 transition-all">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1.5">E-mail Corporativo</label>
         <div class="relative">
           <i class="fa-solid fa-envelope absolute left-3.5 top-3 text-slate-500 text-xs"></i>
           <input type="email" id="reg-email" required placeholder="seu@email.com" class="w-full pl-9 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-sky-500 transition-all">
         </div>
       </div>
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Senha</label>
+        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Senha Segura (Mínimo 8 caracteres, 1 número)</label>
         <div class="relative">
           <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-500 text-xs"></i>
-          <input type="password" id="reg-password" required minlength="6" placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-sky-500 transition-all">
+          <input type="password" id="reg-password" required minlength="8" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$" title="Sua senha deve ter no mínimo 8 caracteres e conter pelo menos 1 letra e 1 número." placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-sky-500 transition-all">
         </div>
       </div>
       <button type="submit" id="btn-register" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
@@ -293,18 +276,16 @@
     </form>
   </main>
 
-  <!-- =============================== -->
-  <!-- PAINEL DO GESTOR (DONO)         -->
-  <!-- =============================== -->
   <div id="gestor-dashboard" style="display:none;" class="max-w-4xl mx-auto space-y-6">
     <header class="glass-card rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa</h1>
+        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
         <p id="gestorCompanyName" class="text-sm text-sky-400 font-bold mt-1"></p>
+        <p id="gestorManagerName" class="text-xs text-slate-300 font-semibold mt-1"></p>
         <p id="gestorEmail" class="text-xs text-slate-400"></p>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="openFeedbackModal()" title="Enviar Sugestão ou Reportar Erro" class="px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-semibold transition-all border border-indigo-500/20 flex items-center gap-2">
+        <button onclick="openFeedbackModal()" title="Enviar Feedback" class="px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-semibold transition-all border border-indigo-500/20 flex items-center gap-2">
           <i class="fa-solid fa-comment-dots"></i> <span class="hidden sm:inline">Feedback</span>
         </button>
         <button onclick="toggleConfigModal()" title="Acesso Local (Dev)" class="px-3 py-2 bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:text-sky-400 rounded-xl text-xs transition-all border border-slate-700">
@@ -320,7 +301,7 @@
           <h2 class="text-sm font-bold text-slate-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-id-card text-sky-400"></i> Meu Plano Atual</h2>
           <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
             <div>
-              <span class="bg-indigo-500/20 text-indigo-400 text-[10px] px-2 py-1 rounded font-bold uppercase">Trial</span>
+              <span class="bg-indigo-500/20 text-indigo-400 text-[10px] px-2 py-1 rounded font-bold uppercase">Plano</span>
               <p id="gestorTrialDays" class="text-2xl font-black mt-1"></p>
               <p id="gestorExpirationDate" class="text-xs text-slate-400 mt-1"></p>
             </div>
@@ -334,7 +315,7 @@
             <h2 class="text-sm font-bold text-slate-300 flex items-center gap-2"><i class="fa-solid fa-users text-emerald-400"></i> Licenças & Acessos</h2>
             <span class="text-xs text-slate-400 font-semibold"><span id="gestorLicensesUsed" class="text-white">0</span> / <span id="gestorLicensesTotal" class="text-emerald-400">1</span> Em uso</span>
           </div>
-          <p class="text-xs text-slate-400 mb-4">Cadastre a conta dos seus cortadores/operadores para acessarem o Otimizador de Corte.</p>
+          <p class="text-xs text-slate-400 mb-4">Crie o login dos seus operadores para eles acessarem o Otimizador de Corte.</p>
         </div>
       </div>
     </div>
@@ -343,11 +324,12 @@
     <div class="glass-card p-6 rounded-3xl space-y-6">
       <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-user-plus text-sky-400"></i> Cadastrar Acesso para Funcionário</h3>
       
+      <!-- SENHA FORTE OPERADOR (Mín 6 chars + Letra + Numero) -->
       <form onsubmit="createOperador(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <input type="text" id="op-name" required placeholder="Nome do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
         <input type="text" id="op-documento" required oninput="applyMaskCpfCnpj(event)" placeholder="CPF do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
-        <input type="email" id="op-email" required placeholder="E-mail do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
-        <input type="password" id="op-password" required minlength="6" placeholder="Senha temporária" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
+        <input type="email" id="op-email" required placeholder="E-mail de Login" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
+        <input type="password" id="op-password" required minlength="6" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$" title="No mínimo 6 caracteres, com pelo menos uma letra e um número." placeholder="Senha Inicial Segura" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
         <button type="submit" id="btn-create-op" class="sm:col-span-2 lg:col-span-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex justify-center items-center gap-2">
           <i class="fa-solid fa-plus"></i> Cadastrar Operador
         </button>
@@ -371,9 +353,6 @@
     </div>
   </div>
 
-  <!-- =============================== -->
-  <!-- OTIMIZADOR DE CORTE (APP)       -->
-  <!-- =============================== -->
   <div id="app-dashboard" style="display:none;" class="max-w-6xl mx-auto space-y-6 pb-20">
     <header class="glass-card rounded-3xl p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4 no-print">
       <div class="flex items-center space-x-4">
@@ -381,28 +360,23 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 text-[10px]">v2.2.5</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
           <p id="operatorCompanyName" class="text-xs text-slate-400"></p>
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <span id="operatorGreeting" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 hidden"></span>
-        
         <button onclick="openFeedbackModal()" title="Enviar Feedback" class="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-semibold transition-all border border-indigo-500/20 shadow-sm flex items-center gap-1">
           <i class="fa-solid fa-comment-dots"></i><span class="hidden sm:inline"> Feedback</span>
         </button>
-        
-        <button onclick="openPreferencesModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all border border-slate-700 shadow-sm hidden sm:inline-block"><i class="fa-solid fa-gear"></i> Preferências</button>
-        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all border border-slate-700 shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+        <span id="operatorGreeting" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20"></span>
+        <button onclick="handleLogout()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
       </div>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 no-print">
-      
-      <!-- COLUNA 1: Configurações do Perfil -->
+      <!-- Coluna 1: Perfil -->
       <div class="glass-card p-5 rounded-3xl">
-        <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-sliders text-sky-400 mr-2"></i> 1. Perfil e Configurações</h2>
-        
+        <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-sliders text-sky-400 mr-2"></i> 1. Perfil e Barras</h2>
         <div class="space-y-3">
           <div class="flex gap-3">
             <div class="flex-1">
@@ -411,40 +385,34 @@
             </div>
             <div class="flex-1">
               <label class="block text-[11px] font-semibold text-slate-400 mb-1">Cor</label>
-              <input type="text" id="profileColor" list="colorsList" value="Branco" placeholder="Ex: Preto" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:border-sky-500 outline-none">
-              <datalist id="colorsList">
-                <option value="Branco"><option value="Preto"><option value="Bronze"><option value="Fosco">
-              </datalist>
+              <input type="text" id="profileColor" list="colorsList" value="Branco" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:border-sky-500 outline-none">
+              <datalist id="colorsList"><option value="Branco"><option value="Preto"><option value="Bronze"><option value="Fosco"></datalist>
             </div>
           </div>
-          
           <div>
             <label class="block text-[11px] font-semibold text-slate-400 mb-1">Tamanho da Barra Nova (mm)</label>
             <input type="number" id="barSize" value="6000" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:border-sky-500 outline-none">
           </div>
-
           <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" id="limitBarsCheckbox" onchange="toggleLimitBarsInput()" class="w-4 h-4 accent-sky-500 rounded">
-              <span class="text-xs text-slate-300">Utilizar barras do estoque</span>
+              <span class="text-xs text-slate-300">Limitar barras do estoque</span>
             </label>
             <div id="limitBarsInputGroup" style="display:none;" class="mt-3">
               <label class="block text-[10px] text-slate-400 mb-1">Qtd Disponível (Estoque Físico)</label>
-              <input type="number" id="availableBarsCount" placeholder="Ex: 3" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white">
+              <input type="number" id="availableBarsCount" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white">
             </div>
           </div>
-
           <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" id="allowSplicesCheckbox" onchange="toggleSplicesInput()" class="w-4 h-4 accent-sky-500 rounded">
-              <span class="text-xs text-slate-300">Permitir emendas no perfil?</span>
+              <span class="text-xs text-slate-300">Permitir emendas?</span>
             </label>
             <div id="maxSplicesInputGroup" style="display:none;" class="mt-3">
               <label class="block text-[10px] text-slate-400 mb-1">Máximo de emendas por peça final</label>
               <input type="number" id="maxSplicesCount" value="1" min="1" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white">
             </div>
           </div>
-
           <div class="flex gap-3">
             <div class="flex-1">
               <label class="block text-[11px] font-semibold text-slate-400 mb-1">Espessura Disco (mm)</label>
@@ -455,10 +423,9 @@
               <input type="number" id="paintSize" value="10" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
             </div>
           </div>
-          
           <div>
             <label class="block text-[11px] font-semibold text-slate-400 mb-1">Estratégia de Refilo Angular</label>
-            <select id="angleModeInput" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-[11px] text-white focus:border-sky-500 outline-none">
+            <select id="angleModeInput" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-[11px] text-white outline-none">
               <option value="direct">✂️ Grau Direto na Barra</option>
               <option value="square_first">📐 Reto 90° + Guia de Refilo</option>
             </select>
@@ -466,20 +433,18 @@
         </div>
       </div>
 
-      <!-- COLUNA 2: Retalhos -->
+      <!-- Coluna 2: Retalhos -->
       <div class="glass-card p-5 rounded-3xl flex flex-col">
         <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-recycle text-amber-500 mr-2"></i> 2. Retalhos Existentes</h2>
         <div class="flex gap-2 mb-3">
           <div class="flex-1">
             <label class="block text-[10px] text-slate-400 mb-1">Tamanho (mm)</label>
-            <input type="number" id="stockInput" placeholder="Ex: 2285" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
+            <input type="number" id="stockInput" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
           </div>
           <div class="flex-1">
             <label class="block text-[10px] text-slate-400 mb-1">Pontas</label>
             <select id="stockEndsSelect" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
-              <option value="90/90">90° / 90°</option>
-              <option value="45/90">45° / 90°</option>
-              <option value="45/45">45° / 45°</option>
+              <option value="90/90">90° / 90°</option><option value="45/90">45° / 90°</option><option value="45/45">45° / 45°</option>
             </select>
           </div>
           <div class="flex items-end">
@@ -491,78 +456,52 @@
         </div>
       </div>
 
-      <!-- COLUNA 3: Peças para Cortar -->
+      <!-- Coluna 3: Peças -->
       <div class="glass-card p-5 rounded-3xl flex flex-col">
         <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i> 3. Lista de Corte</h2>
-        
         <div class="flex gap-2 mb-2">
           <div class="flex-1">
             <input type="text" id="pieceClient" placeholder="Cliente/Obra" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
           </div>
           <div class="flex-1">
-            <input type="text" id="pieceName" placeholder="Etiqueta/Janela" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
+            <input type="text" id="pieceName" placeholder="Etiqueta" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
           </div>
         </div>
-        
         <div class="flex gap-2 mb-3">
-          <div class="w-20">
-            <input type="number" id="pieceSize" placeholder="Medida" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none">
-          </div>
+          <div class="w-20"><input type="number" id="pieceSize" placeholder="Medida" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none"></div>
           <div class="flex-1 flex gap-1">
-            <select id="angleEsqSelect" class="w-full px-1 py-2 bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white outline-none">
-              <option value="90">90°</option><option value="45">45°</option><option value="22.5">22.5°</option>
-            </select>
-            <select id="angleDirSelect" class="w-full px-1 py-2 bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white outline-none">
-              <option value="45">45°</option><option value="90">90°</option><option value="22.5">22.5°</option>
-            </select>
+            <select id="angleEsqSelect" class="w-full px-1 py-2 bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white outline-none"><option value="90">90°</option><option value="45">45°</option><option value="22.5">22.5°</option></select>
+            <select id="angleDirSelect" class="w-full px-1 py-2 bg-slate-900 border border-slate-700 rounded-lg text-[10px] text-white outline-none"><option value="45">45°</option><option value="90">90°</option><option value="22.5">22.5°</option></select>
           </div>
-          <div class="w-12">
-            <input type="number" id="pieceQty" value="1" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-center text-white outline-none">
-          </div>
-          <div>
-            <button onclick="addPiece()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all"><i class="fa-solid fa-plus"></i></button>
-          </div>
+          <div class="w-12"><input type="number" id="pieceQty" value="1" class="w-full px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-center text-white outline-none"></div>
+          <div><button onclick="addPiece()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all"><i class="fa-solid fa-plus"></i></button></div>
         </div>
-
         <div class="flex-1 overflow-y-auto max-h-32 border border-slate-800 rounded-xl bg-slate-950/50 p-2">
           <ul id="pieceList" class="space-y-1"></ul>
         </div>
       </div>
     </div>
 
+    <!-- Botões Base de Calculo -->
     <div class="flex flex-wrap gap-4 no-print">
-      <button onclick="calculate()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
+      <button onclick="calculate()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
         <i class="fa-solid fa-microchip"></i> CALCULAR PLANO DE CORTE
       </button>
-      
       <div id="postCalcActions" class="hidden flex-wrap gap-4 w-full sm:w-auto">
         <button onclick="saveToLote()" class="flex-1 sm:flex-none px-6 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-2xl shadow-lg transition-all"><i class="fa-solid fa-floppy-disk mr-2"></i> Salvar no Lote</button>
         <button onclick="clearForNextProfile()" class="flex-1 sm:flex-none px-6 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-2xl shadow-lg transition-all"><i class="fa-solid fa-broom mr-2"></i> Próximo Perfil</button>
       </div>
     </div>
 
-    <!-- Area de Resultados -->
+    <!-- Area de Resultados do Otimizador -->
     <div id="loteSummary" class="mt-6"></div>
     <div id="output" class="mt-6 text-sm"></div>
-
   </div>
 
   <script>
-    const PORTAL_VERSION = "2.4.2";
-    const OPTIMIZER_VERSION = "2.2.5";
-    
-    // ==========================================
-    // ESTADO GLOBAL & CONFIGURAÇÃO NUVEM
-    // ==========================================
-    let OPPAH_CONFIG = {
-      webhookLogin: "",
-      webhookRegister: "",
-      webhookCreateOp: "",
-      webhookFeedback: ""
-    };
-
-    const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
-    
+    // ----------------------------------------------------
+    // FUNÇÕES DE SEGURANÇA E HASHING (Criptografia Web)
+    // ----------------------------------------------------
     async function sha256(message) {
       const msgBuffer = new TextEncoder().encode(message);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -570,42 +509,49 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
+    // Hash Mestre para Devs (A única forma de validar o painel dev, sem fallback em texto puro)
+    const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
+
+    // ----------------------------------------------------
+    // CARREGAMENTO DE CONFIGURAÇÕES EXTERNAS (Vercel/GitHub)
+    // ----------------------------------------------------
+    let OPPAH_CONFIG = {};
+
     async function carregarConfiguracoes() {
-      try {
-        const url_config = 'oppah.json';
-        const response = await fetch(url_config);
-        
-        if (!response.ok) {
-           showToast(`Arquivo oppah.json não encontrado (Erro 404)`, 'error');
-           throw new Error("Não foi possível alcançar o oppah.json.");
+        try {
+            console.log("Buscando oppah.json localmente na Vercel...");
+            const response = await fetch('./oppah.json');
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status} (Arquivo não encontrado)`);
+            
+            OPPAH_CONFIG = await response.json();
+            console.log("✅ Configurações Cloud Carregadas!", OPPAH_CONFIG);
+        } catch (error) {
+            console.error("❌ Falha ao tentar carregar o oppah.json:", error);
+            console.warn("Aviso: O sistema tentará usar o cache local (Plano B).");
         }
-        
-        const configNuvem = await response.json();
-        OPPAH_CONFIG = { ...OPPAH_CONFIG, ...configNuvem };
-        console.log("Sucesso: Configurações do Power Automate carregadas!");
-      } catch (error) {
-        console.warn("Aviso: Falha ao baixar oppah.json.", error);
-        showToast(`Aviso: Portal Oppah operando em Modo Offline`, 'error');
-      }
+    }
+
+    function getActiveConfig() {
+      const localCfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+      return {
+        webhookLogin: localCfg.webhookLogin || OPPAH_CONFIG.webhookLogin || "",
+        webhookRegister: localCfg.webhookRegister || OPPAH_CONFIG.webhookRegister || "",
+        webhookCreateOp: localCfg.webhookCreateOp || OPPAH_CONFIG.webhookCreateOp || "",
+        webhookFeedback: localCfg.webhookFeedback || OPPAH_CONFIG.webhookFeedback || ""
+      };
     }
 
     window.onload = async function() {
-      console.log(`Oppah Portal ${PORTAL_VERSION} | Otimizador ${OPTIMIZER_VERSION}`);
-      
       await carregarConfiguracoes();
-
-      // Previne ghosts do cache (Ignora se as URLs do localStorage forem vazias)
-      let cfg_local = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
-      if (cfg_local.webhookLogin) OPPAH_CONFIG.webhookLogin = cfg_local.webhookLogin;
-      if (cfg_local.webhookRegister) OPPAH_CONFIG.webhookRegister = cfg_local.webhookRegister;
-      if (cfg_local.webhookCreateOp) OPPAH_CONFIG.webhookCreateOp = cfg_local.webhookCreateOp;
-      if (cfg_local.webhookFeedback) OPPAH_CONFIG.webhookFeedback = cfg_local.webhookFeedback;
 
       if (!localStorage.getItem('oppah_empresas')) localStorage.setItem('oppah_empresas', JSON.stringify([]));
       if (!localStorage.getItem('oppah_operadores')) localStorage.setItem('oppah_operadores', JSON.stringify([]));
-
-      // Inicializa listas do otimizador
-      renderLists();
+      
+      const cfg = getActiveConfig();
+      if (cfg.webhookLogin) document.getElementById('webhook-login').value = cfg.webhookLogin;
+      if (cfg.webhookRegister) document.getElementById('webhook-register').value = cfg.webhookRegister;
+      if (cfg.webhookCreateOp) document.getElementById('webhook-create-op').value = cfg.webhookCreateOp;
+      if (cfg.webhookFeedback) document.getElementById('webhook-feedback').value = cfg.webhookFeedback;
 
       const sessaoStr = localStorage.getItem('oppah_session');
       if (sessaoStr) {
@@ -615,13 +561,42 @@
       }
     };
 
+    // ----------------------------------------------------
+    // UTILITÁRIOS DA INTERFACE (UI)
+    // ----------------------------------------------------
+    function applyMaskCpfCnpj(event) {
+      let v = event.target.value.replace(/\D/g, "");
+      if (v.length <= 11) {
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      } else {
+        v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+        v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+        v = v.replace(/(\d{4})(\d)/, "$1-$2");
+      }
+      event.target.value = v.substring(0, 18);
+    }
+
+    let logoClickCount = 0, logoClickTimer = null;
+    async function handleLogoDevClick(e) {
+      logoClickCount++;
+      clearTimeout(logoClickTimer);
+      logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 800);
+      if (logoClickCount >= 3) {
+        logoClickCount = 0;
+        await toggleConfigModal();
+      }
+    }
+
     function showToast(message, type = 'success') {
       const toast = document.getElementById('toast');
       if (!toast) return;
       document.getElementById('toast-message').innerText = message;
       const icon = document.getElementById('toast-icon');
       if (type === 'error') {
-        document.getElementById('toast-title').innerText = 'Aviso';
+        document.getElementById('toast-title').innerText = 'Erro';
         icon.className = 'w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center';
         icon.innerHTML = '<i class="fa-solid fa-xmark text-sm"></i>';
       } else {
@@ -631,7 +606,7 @@
       }
       toast.style.transform = 'translateY(0)';
       toast.style.opacity = '1';
-      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 3500);
+      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 4000);
     }
 
     function switchTab(tab) {
@@ -648,46 +623,21 @@
       }
     }
 
-    function applyMaskCpfCnpj(event) {
-      let v = event.target.value.replace(/\D/g, "");
-      if (v.length <= 11) {
-        v = v.replace(/(\d{3})(\d)/, "$1.$2");
-        v = v.replace(/(\d{3})(\d)/, "$1.$2");
-        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-      } else {
-        v = v.replace(/^(\d{2})(\d)/, "$1.$2");
-        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-        v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
-        v = v.replace(/(\d{4})(\d)/, "$1-$2");
-      }
-      event.target.value = v.substring(0, 18);
-    }
-
-    let logoClickCount = 0;
-    let logoClickTimer = null;
-    function handleLogoDevClick(e) {
-      logoClickCount++;
-      clearTimeout(logoClickTimer);
-      logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 800);
-      if (logoClickCount >= 3) {
-        logoClickCount = 0;
-        toggleConfigModal();
-      }
-    }
-
+    // CORREÇÃO v2.4.5: Totalmente blindado. Nenhuma senha hardcoded aqui.
     async function toggleConfigModal() {
       const modal = document.getElementById('modal-config-sharepoint');
-      if (modal.classList.contains('hidden')) {
-        const pass = prompt("🔒 Acesso Restrito - Dev\nDigite a Senha Master:");
+      const isHidden = modal.classList.contains('hidden');
+
+      if (isHidden) {
+        const pass = prompt("🔒 Acesso Restrito Dev - Digite a Senha:");
         if (!pass) return;
+
         const inputHash = await sha256(pass.trim());
-        const expectedHash = await sha256("oppah2026");
-        if (inputHash !== expectedHash && inputHash !== MASTER_DEV_HASH && pass.trim().toLowerCase() !== "oppah2026") {
-          showToast("Senha Master incorreta!", "error"); return;
+        
+        if (inputHash !== MASTER_DEV_HASH) {
+          showToast("Senha Master incorreta!", "error");
+          return;
         }
-        document.getElementById('webhook-login').value = OPPAH_CONFIG.webhookLogin || '';
-        document.getElementById('webhook-register').value = OPPAH_CONFIG.webhookRegister || '';
-        document.getElementById('webhook-create-op').value = OPPAH_CONFIG.webhookCreateOp || '';
         modal.classList.remove('hidden');
       } else {
         modal.classList.add('hidden');
@@ -698,34 +648,37 @@
       const cfg = {
         webhookLogin: document.getElementById('webhook-login').value.trim(),
         webhookRegister: document.getElementById('webhook-register').value.trim(),
-        webhookCreateOp: document.getElementById('webhook-create-op').value.trim()
+        webhookCreateOp: document.getElementById('webhook-create-op').value.trim(),
+        webhookFeedback: document.getElementById('webhook-feedback').value.trim()
       };
-      // Salva apenas se algo foi digitado (evita fantasmas)
-      if (cfg.webhookLogin || cfg.webhookRegister) {
-          localStorage.setItem('oppah_config_api', JSON.stringify(cfg));
-          OPPAH_CONFIG = { ...OPPAH_CONFIG, ...cfg };
-          showToast("Teste local ativado!", "success");
-      } else {
-          localStorage.removeItem('oppah_config_api');
-          showToast("Configuração local removida.", "success");
+      
+      const hasEmpty = Object.values(cfg).some(v => v === "");
+      if (hasEmpty) {
+          if(!confirm("Algumas URLs estão vazias. O sistema usará o banco de dados offline (localStorage) como fallback. Deseja continuar?")) return;
       }
+      
+      localStorage.setItem('oppah_config_api', JSON.stringify(cfg));
       toggleConfigModal();
+      showToast("URLs Salvas Localmente!", "success");
     }
 
-    // ==========================================
-    // MÓDULO 1: AUTENTICAÇÃO E SHAREPOINT
-    // ==========================================
+    // ----------------------------------------------------
+    // MODULO DE AUTENTICAÇÃO E CADASTRO
+    // ----------------------------------------------------
     async function handleRegister(e) {
       e.preventDefault();
       const btnText = document.getElementById('btn-register-text');
       const btnIcon = document.getElementById('btn-register-icon');
-      btnText.innerText = "Cadastrando na Nuvem...";
+      btnText.innerText = "Criando Conta...";
       btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
       const documento = document.getElementById('reg-documento').value.replace(/\D/g, "");
       const nomeEmpresa = document.getElementById('reg-company').value.trim();
+      const nomeGestor = document.getElementById('reg-nome-gestor').value.trim();
       const email = document.getElementById('reg-email').value.trim();
-      const senha = document.getElementById('reg-password').value;
+      const senhaPlana = document.getElementById('reg-password').value;
+
+      const senhaHash = await sha256(senhaPlana);
 
       const validade = new Date();
       validade.setDate(validade.getDate() + 7);
@@ -734,27 +687,28 @@
         id_empresa: 'EMP-' + Date.now(),
         documento: documento,
         nome_empresa: nomeEmpresa,
+        nome_gestor: nomeGestor,
         email: email,
-        senha: senha,
+        senha: senhaHash,
         licencas_totais: 1,
         validade: validade.toISOString()
       };
 
-      let successCloud = false;
+      const cfg = getActiveConfig();
+      let savedToCloud = false;
 
-      if (OPPAH_CONFIG.webhookRegister) {
+      if (cfg.webhookRegister) {
         try {
-          const resp = await fetch(OPPAH_CONFIG.webhookRegister, {
+          const resp = await fetch(cfg.webhookRegister, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(novaEmpresa)
           });
-          if (resp.ok) successCloud = true;
+          if (resp.ok) savedToCloud = true;
+          else throw new Error("Falha HTTP na Nuvem");
         } catch (err) {
           console.warn("Falha no envio da nuvem, caindo para fallback local:", err);
         }
-      } else {
-        console.warn("URL de registro vazia. Modo offline ativo.");
       }
 
       let empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
@@ -764,14 +718,9 @@
       btnText.innerText = "Começar Teste Grátis";
       btnIcon.className = "fa-solid fa-rocket text-xs";
 
-      if (successCloud) {
-         showToast('Conta criada na Nuvem com sucesso!', 'success');
-      } else {
-         showToast('Conta criada localmente (Modo Offline).', 'error');
-      }
-
+      showToast(savedToCloud ? 'Conta criada na Nuvem!' : 'Conta criada Localmente (Modo Offline)!', 'success');
       document.getElementById('login-email').value = email;
-      document.getElementById('login-password').value = senha;
+      document.getElementById('login-password').value = senhaPlana;
       document.getElementById('form-register').reset();
       switchTab('login');
     }
@@ -784,17 +733,18 @@
       btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
       const email = document.getElementById('login-email').value.trim();
-      const senha = document.getElementById('login-password').value;
-      
-      let loggedIn = false;
+      const senhaPlana = document.getElementById('login-password').value;
+      const senhaHash = await sha256(senhaPlana);
 
-      if (OPPAH_CONFIG.webhookLogin) {
-        console.log("Tentando login na Nuvem:", OPPAH_CONFIG.webhookLogin);
+      const cfg = getActiveConfig();
+      let authSucesso = false;
+
+      if (cfg.webhookLogin) {
         try {
-          const resp = await fetch(OPPAH_CONFIG.webhookLogin, {
+          const resp = await fetch(cfg.webhookLogin, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, senha })
+            body: JSON.stringify({ email, senha: senhaHash }) 
           });
           
           if (resp.ok) {
@@ -802,67 +752,70 @@
             if (data && data.autenticado) {
               if (data.validade && new Date(data.validade) < new Date()) {
                 showToast('A licença desta empresa expirou.', 'error');
-                btnText.innerText = "Acessar Portal";
-                btnIcon.className = "fa-solid fa-arrow-right text-xs";
+                resetLoginBtn(btnText, btnIcon);
                 return;
               }
               const sessao = {
                 tipo: data.tipo,
                 id_empresa: data.id_empresa,
                 email: data.email,
-                nome: data.nome || data.nome_empresa,
+                nome: data.nome || data.nome_empresa, 
                 nome_empresa: data.nome_empresa,
-                validade: data.validade,
-                licencas_totais: parseInt(data.licencas_totais) || 1
+                licencas_totais: parseInt(data.licencas_totais) || 1, 
+                validade: data.validade 
               };
               localStorage.setItem('oppah_session', JSON.stringify(sessao));
               showToast(`Login efetuado via Nuvem!`, 'success');
               if (data.tipo === 'gestor') loadGestorDashboard(sessao);
               else loadAppDashboard(sessao);
-              loggedIn = true;
+              authSucesso = true;
             } else {
               showToast(data.mensagem || 'E-mail ou senha incorretos.', 'error');
-              loggedIn = true; // Impede fallback se a nuvem disse explicitamente que a senha está errada
+              resetLoginBtn(btnText, btnIcon);
+              return;
             }
           }
         } catch (err) {
-          console.warn("SharePoint indisponível/CORS, chaveando para validação local...", err);
-          showToast('Nuvem indisponível. Tentando acesso local...', 'error');
+          console.warn("Nuvem indisponível, chaveando para validação local (Offline)...");
         }
-      } else {
-         console.warn("URL de Login vazia no oppah.json. Forçando validação local.");
       }
 
-      if (!loggedIn) {
-          const empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
-          const operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
+      if(authSucesso) return;
 
-          const gestor = empresas.find(emp => emp.email.toLowerCase() === email.toLowerCase() && emp.senha === senha);
-          if (gestor) {
-            const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome_empresa: gestor.nome_empresa };
-            localStorage.setItem('oppah_session', JSON.stringify(sessao));
-            showToast('Login Local (Gestor) efetuado.', 'success');
-            loadGestorDashboard(sessao);
-          } else {
-              const operador = operadores.find(op => op.email.toLowerCase() === email.toLowerCase() && op.senha === senha);
-              if (operador) {
-                const empresa = empresas.find(emp => emp.id_empresa === operador.id_empresa);
-                if (empresa && new Date(empresa.validade) < new Date()) {
-                  showToast('O período de testes da sua empresa acabou.', 'error');
-                } else {
-                  const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
-                  localStorage.setItem('oppah_session', JSON.stringify(sessao));
-                  showToast(`Bem-vindo, ${operador.nome}!`, 'success');
-                  loadAppDashboard(sessao);
-                }
-              } else {
-                  showToast('E-mail ou senha incorretos.', 'error');
-              }
-          }
+      const empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
+      const operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
+
+      const gestor = empresas.find(emp => emp.email.toLowerCase() === email.toLowerCase() && emp.senha === senhaHash);
+      if (gestor) {
+        const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome: gestor.nome_gestor, nome_empresa: gestor.nome_empresa, licencas_totais: gestor.licencas_totais, validade: gestor.validade };
+        localStorage.setItem('oppah_session', JSON.stringify(sessao));
+        showToast('Modo Offline: Gestor validado.', 'success');
+        loadGestorDashboard(sessao);
+        return;
       }
-      
-      btnText.innerText = "Acessar Portal";
-      btnIcon.className = "fa-solid fa-arrow-right text-xs";
+
+      const operador = operadores.find(op => op.email.toLowerCase() === email.toLowerCase() && op.senha === senhaHash);
+      if (operador) {
+        const empresa = empresas.find(emp => emp.id_empresa === operador.id_empresa);
+        if (empresa && new Date(empresa.validade) < new Date()) {
+          showToast('Modo Offline: O período de testes acabou.', 'error'); 
+          resetLoginBtn(btnText, btnIcon);
+          return;
+        }
+        const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
+        localStorage.setItem('oppah_session', JSON.stringify(sessao));
+        showToast(`Modo Offline: Bem-vindo, ${operador.nome}!`, 'success');
+        loadAppDashboard(sessao);
+        return;
+      }
+
+      showToast('E-mail ou senha incorretos (Offline).', 'error');
+      resetLoginBtn(btnText, btnIcon);
+    }
+
+    function resetLoginBtn(btnText, btnIcon) {
+        btnText.innerText = "Acessar Portal";
+        btnIcon.className = "fa-solid fa-arrow-right text-xs";
     }
 
     function handleLogout() {
@@ -872,35 +825,149 @@
       document.getElementById('login-card').style.display = 'block';
     }
 
-    // ==========================================
-    // MÓDULO 2: GESTÃO DA EMPRESA E OPERADORES
-    // ==========================================
+    // ----------------------------------------------------
+    // MÓDULO DE FEEDBACK CLOUD
+    // ----------------------------------------------------
+    function openFeedbackModal() {
+      const modal = document.getElementById('modal-feedback');
+      const content = document.getElementById('modal-feedback-content');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+      }, 10);
+      
+      document.getElementById('form-feedback').reset();
+      handleFeedbackTypeChange();
+    }
+
+    function closeFeedbackModal() {
+      const modal = document.getElementById('modal-feedback');
+      const content = document.getElementById('modal-feedback-content');
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
+
+    // ----------------------------------------------------
+    // MÓDULO DE NOVIDADES (CHANGELOG)
+    // ----------------------------------------------------
+    function openChangelogModal() {
+      const modal = document.getElementById('modal-changelog');
+      const content = document.getElementById('modal-changelog-content');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function closeChangelogModal() {
+      const modal = document.getElementById('modal-changelog');
+      const content = document.getElementById('modal-changelog-content');
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
+
+    function handleFeedbackTypeChange() {
+      const tipo = document.getElementById('feedback-tipo').value;
+      const categoriaContainer = document.getElementById('feedback-categoria-operador-container');
+      const sessaoStr = localStorage.getItem('oppah_session');
+      const usuario = sessaoStr ? JSON.parse(sessaoStr) : null;
+      
+      if (usuario && usuario.tipo === 'operador' && tipo === 'sugestao') {
+          categoriaContainer.classList.remove('hidden');
+      } else {
+          categoriaContainer.classList.add('hidden');
+      }
+    }
+
+    async function submitFeedback(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-feedback');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+      
+      const tipo = document.getElementById('feedback-tipo').value;
+      let mensagem = document.getElementById('feedback-mensagem').value;
+      
+      const sessaoStr = localStorage.getItem('oppah_session');
+      const usuario = sessaoStr ? JSON.parse(sessaoStr) : { nome: 'Desconhecido', email: 'N/A', tipo: 'N/A', nome_empresa: 'N/A' };
+
+      let subcategoria = "";
+      if (usuario.tipo === 'operador' && tipo === 'sugestao') {
+          subcategoria = document.getElementById('feedback-categoria-operador').value;
+      }
+
+      const feedbackData = {
+        data: new Date().toISOString(),
+        tipo_usuario: usuario.tipo,
+        nome_usuario: usuario.nome || usuario.nome_empresa, 
+        email_usuario: usuario.email,
+        empresa: usuario.nome_empresa,
+        categoria: tipo,
+        subcategoria: subcategoria,
+        mensagem: mensagem
+      };
+
+      const cfg = getActiveConfig();
+
+      if (cfg.webhookFeedback) {
+        try {
+          const resp = await fetch(cfg.webhookFeedback, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(feedbackData)
+          });
+          if (resp.ok) {
+            showToast('Muito obrigado! Seu feedback foi enviado.', 'success');
+            document.getElementById('form-feedback').reset();
+            closeFeedbackModal();
+            btn.innerHTML = originalText;
+            return;
+          }
+        } catch (err) {
+          console.warn("Falha no Webhook de Feedback, ativando Fallback (Zap).");
+        }
+      }
+
+      const numeroSuporte = "5511999999999"; 
+      let textoZap = `*Novo Feedback - Portal Oppah*%0A%0A*Categoria:* ${tipo}%0A`;
+      if (subcategoria) textoZap += `*Área:* ${subcategoria}%0A`;
+      textoZap += `*Empresa:* ${usuario.nome_empresa}%0A*Usuário:* ${usuario.nome}%0A*Mensagem:* ${mensagem}`;
+      
+      showToast('Redirecionando para WhatsApp...', 'success');
+      setTimeout(() => {
+        window.open(`https://api.whatsapp.com/send?phone=${numeroSuporte}&text=${textoZap}`, '_blank');
+        document.getElementById('form-feedback').reset();
+        closeFeedbackModal();
+        btn.innerHTML = originalText;
+      }, 1000);
+    }
+
     function loadGestorDashboard(sessao) {
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('gestor-dashboard').style.display = 'block';
       
-      const localEmpresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || {};
-
-      // PRIORIDADE TOTAL PARA A SESSÃO (NUVEM). Fallback para local só se a sessão não tiver.
+      const empresaLocal = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
+      
       const empresa = {
-        id_empresa: sessao.id_empresa,
-        nome_empresa: sessao.nome_empresa || localEmpresa.nome_empresa || 'Empresa Cadastrada',
-        email: sessao.email || localEmpresa.email,
-        validade: sessao.validade || localEmpresa.validade || new Date(Date.now() + 7*24*60*60*1000).toISOString(),
-        licencas_totais: sessao.licencas_totais || localEmpresa.licencas_totais || 1
+          id_empresa: sessao.id_empresa,
+          nome_empresa: sessao.nome_empresa || (empresaLocal ? empresaLocal.nome_empresa : 'Empresa'),
+          nome_gestor: sessao.nome || (empresaLocal ? empresaLocal.nome_gestor : ''),
+          email: sessao.email,
+          validade: sessao.validade || (empresaLocal ? empresaLocal.validade : new Date(Date.now() + 7*24*60*60*1000).toISOString()),
+          licencas_totais: parseInt(sessao.licencas_totais) || (empresaLocal ? empresaLocal.licencas_totais : 1)
       };
 
-      // Sincroniza o Cache Local com a verdade absoluta da Nuvem
-      let empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
-      const idx = empresas.findIndex(e => e.id_empresa === empresa.id_empresa);
-      if (idx >= 0) {
-          empresas[idx] = { ...empresas[idx], ...empresa };
-      } else {
-          empresas.push(empresa);
+      if(empresaLocal) {
+          Object.assign(empresaLocal, empresa);
+          localStorage.setItem('oppah_empresas', JSON.stringify(JSON.parse(localStorage.getItem('oppah_empresas'))));
       }
-      localStorage.setItem('oppah_empresas', JSON.stringify(empresas));
 
       document.getElementById('gestorCompanyName').innerText = empresa.nome_empresa;
+      document.getElementById('gestorManagerName').innerText = empresa.nome_gestor ? `Gestor: ${empresa.nome_gestor}` : '';
       document.getElementById('gestorEmail').innerText = empresa.email;
 
       const diffDays = Math.ceil((new Date(empresa.validade) - new Date()) / (1000 * 60 * 60 * 24));
@@ -949,34 +1016,30 @@
     async function createOperador(e) {
       e.preventDefault();
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
-      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(emp => emp.id_empresa === sessao.id_empresa) || {
-        id_empresa: sessao.id_empresa,
-        licencas_totais: sessao.licencas_totais || 1
-      };
+      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(emp => emp.id_empresa === sessao.id_empresa) || { id_empresa: sessao.id_empresa, licencas_totais: sessao.licencas_totais };
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
 
-      if (operadores.filter(op => op.id_empresa === empresa.id_empresa).length >= empresa.licencas_totais) {
-          showToast('Limite de licenças atingido!', 'error');
-          return;
-      }
+      if (operadores.filter(op => op.id_empresa === empresa.id_empresa).length >= empresa.licencas_totais) return;
 
       const email = document.getElementById('op-email').value.trim();
       const nome = document.getElementById('op-name').value.trim();
       const documento = document.getElementById('op-documento').value.replace(/\D/g, "");
-      const senha = document.getElementById('op-password').value;
+      const senhaPlana = document.getElementById('op-password').value;
+      const senhaHash = await sha256(senhaPlana); 
 
-      const novoOperador = { id_empresa: sessao.id_empresa, nome, email, senha, documento };
+      const novoOperador = { id_empresa: sessao.id_empresa, nome, email, senha: senhaHash, documento };
 
-      if (OPPAH_CONFIG.webhookCreateOp) {
+      const cfg = getActiveConfig();
+      if (cfg.webhookCreateOp) {
         try {
-          const resp = await fetch(OPPAH_CONFIG.webhookCreateOp, {
+          const resp = await fetch(cfg.webhookCreateOp, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(novoOperador)
           });
-          if (!resp.ok) throw new Error("Erro nuvem");
+          if (!resp.ok) throw new Error("Erro Nuvem");
         } catch (err) {
-          console.warn("Criando localmente:", err);
+          console.warn("Operador criado localmente em fallback.");
         }
       }
 
@@ -984,214 +1047,30 @@
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores));
       e.target.reset();
       atualizarListaOperadores(empresa);
-      showToast('Funcionário cadastrado!', 'success');
+      showToast('Funcionário cadastrado (Criptografado)!', 'success');
     }
 
-    async function removerOperador(email) {
-      // Futuro webhookDeleteOp poderia ser chamado aqui
+    function removerOperador(email) {
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
-      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || {
-          id_empresa: sessao.id_empresa,
-          licencas_totais: sessao.licencas_totais || 1
-      };
+      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || { id_empresa: sessao.id_empresa, licencas_totais: sessao.licencas_totais };
       atualizarListaOperadores(empresa);
-      showToast('Operador removido.', 'success');
     }
 
-    // ==========================================
-    // MÓDULO 3: FEEDBACK DINÂMICO
-    // ==========================================
-    function openFeedbackModal() {
-      const modal = document.getElementById('modal-feedback');
-      const content = document.getElementById('modal-feedback-content');
-      modal.classList.remove('hidden');
-      setTimeout(() => {
-        content.classList.remove('scale-95', 'opacity-0');
-        content.classList.add('scale-100', 'opacity-100');
-      }, 10);
-      
-      // Reseta o form e verifica se precisa mostrar a subcategoria
-      document.getElementById('form-feedback').reset();
-      handleFeedbackTypeChange(); 
-    }
-
-    function closeFeedbackModal() {
-      const modal = document.getElementById('modal-feedback');
-      const content = document.getElementById('modal-feedback-content');
-      content.classList.remove('scale-100', 'opacity-100');
-      content.classList.add('scale-95', 'opacity-0');
-      setTimeout(() => { modal.classList.add('hidden'); }, 300);
-    }
-
-    function handleFeedbackTypeChange() {
-      const sessaoStr = localStorage.getItem('oppah_session');
-      const usuario = sessaoStr ? JSON.parse(sessaoStr) : { tipo: 'desconhecido' };
-      
-      const tipo = document.getElementById('feedback-tipo').value;
-      const categoriaContainer = document.getElementById('feedback-categoria-operador-container');
-      
-      // Só exibe a subcategoria se for Operador E o tipo for 'sugestao'
-      if (usuario.tipo === 'operador' && tipo === 'sugestao') {
-          categoriaContainer.classList.remove('hidden');
-      } else {
-          categoriaContainer.classList.add('hidden');
-      }
-    }
-
-    async function submitFeedback(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btn-feedback');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparando envio...';
-      
-      const tipo = document.getElementById('feedback-tipo').value;
-      let mensagem = document.getElementById('feedback-mensagem').value;
-      
-      const sessaoStr = localStorage.getItem('oppah_session');
-      const usuario = sessaoStr ? JSON.parse(sessaoStr) : { nome: 'Desconhecido', email: 'N/A', tipo: 'N/A', nome_empresa: 'N/A' };
-      
-      // Se for operador e for sugestão, anexa a subcategoria à mensagem
-      let subcategoria = "";
-      if (usuario.tipo === 'operador' && tipo === 'sugestao') {
-          subcategoria = document.getElementById('feedback-categoria-operador').value;
-          mensagem = `[Área: ${subcategoria}]\n\n${mensagem}`;
-      }
-
-      const feedbackData = {
-        data: new Date().toISOString(),
-        tipo_usuario: usuario.tipo,
-        nome_usuario: usuario.nome,
-        email_usuario: usuario.email,
-        empresa: usuario.nome_empresa,
-        categoria: tipo,
-        subcategoria: subcategoria,
-        mensagem: mensagem
-      };
-
-      if (OPPAH_CONFIG.webhookFeedback) {
-        try {
-          const resp = await fetch(OPPAH_CONFIG.webhookFeedback, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(feedbackData)
-          });
-          if (resp.ok) {
-            showToast('Feedback enviado para a Nuvem!', 'success');
-            document.getElementById('form-feedback').reset();
-            closeFeedbackModal();
-            btn.innerHTML = originalText;
-            return;
-          }
-        } catch (err) {
-          console.warn("Falha no Webhook, redirecionando para WhatsApp...", err);
-        }
-      }
-
-      const numeroSuporte = "5511999999999"; 
-      let textoZap = `*Novo Feedback - Portal Oppah*%0A%0A*Categoria:* ${tipo}%0A`;
-      if (subcategoria) textoZap += `*Área:* ${subcategoria}%0A`;
-      textoZap += `*Empresa:* ${usuario.nome_empresa}%0A*Usuário:* ${usuario.nome}%0A*Mensagem:* ${mensagem}`;
-      
-      showToast('Redirecionando para o WhatsApp...', 'success');
-      setTimeout(() => {
-        window.open(`https://api.whatsapp.com/send?phone=${numeroSuporte}&text=${encodeURIComponent(textoZap)}`, '_blank');
-        document.getElementById('form-feedback').reset();
-        closeFeedbackModal();
-        btn.innerHTML = originalText;
-      }, 1000);
-    }
-
-    // ==========================================
-    // MÓDULO 4: OTIMIZADOR DE CORTE (APP)
-    // ==========================================
-    let stocks = [];
-    let pieces = [];
-    let loteSaved = [];
-    let currentCalculation = null;
-    const clientColors = {};
-    const colorPalette = ['#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#a855f7', '#14b8a6', '#f97316'];
+    let stocks = [], pieces = [], loteSaved = [], currentCalculation = null;
+    const clientColors = {}, colorPalette = ['#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#a855f7', '#14b8a6', '#f97316'];
 
     function loadAppDashboard(sessao) {
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('app-dashboard').style.display = 'block';
-      
-      document.getElementById('operatorCompanyName').innerText = `Licença: ${sessao.nome_empresa || 'Empresa'}`;
-      
-      const prefs = localStorage.getItem('oppah_standalone_prefs');
-      let p = prefs ? JSON.parse(prefs) : null;
-      
-      if (!p || !p.name) {
-        const modal = document.getElementById('operator-welcome-modal');
-        const content = document.getElementById('operator-welcome-content');
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-          content.classList.remove('scale-95', 'opacity-0');
-          content.classList.add('scale-100', 'opacity-100');
-        }, 10);
-        
-        document.getElementById('prefName').value = sessao.nome || '';
-      } else {
-        document.getElementById('bladeSize').value = p.blade || 4;
-        document.getElementById('angleModeInput').value = p.strategy || 'direct';
-        
-        const greeting = document.getElementById('operatorGreeting');
-        greeting.innerHTML = `<i class="fa-solid fa-user mr-1"></i> Olá, ${p.title} ${p.name}`.trim();
-        greeting.classList.remove('hidden');
-      }
+      document.getElementById('operatorCompanyName').innerText = `Licença: ${sessao.nome_empresa || 'Empresa Privada'}`;
+      document.getElementById('operatorGreeting').innerText = `👤 ${sessao.nome}`;
+      renderLists(); renderLoteSummary();
     }
 
-    function saveInitialPreferences() {
-      const unit = document.getElementById('prefUnit').value;
-      const blade = document.getElementById('prefBlade').value;
-      const strategy = document.getElementById('prefStrategy').value;
-      const title = document.getElementById('prefTitle').value;
-      const name = document.getElementById('prefName').value.trim();
-      
-      if (!name) { showToast('Por favor, informe seu nome.', 'error'); return; }
-      
-      document.getElementById('bladeSize').value = blade;
-      document.getElementById('angleModeInput').value = strategy;
-      
-      localStorage.setItem('oppah_standalone_prefs', JSON.stringify({ unit, blade, strategy, title, name }));
-      
-      const greeting = document.getElementById('operatorGreeting');
-      greeting.innerHTML = `<i class="fa-solid fa-user mr-1"></i> Olá, ${title} ${name}`.trim();
-      greeting.classList.remove('hidden');
-
-      const modal = document.getElementById('operator-welcome-modal');
-      const content = document.getElementById('operator-welcome-content');
-      content.classList.remove('scale-100', 'opacity-100');
-      content.classList.add('scale-95', 'opacity-0');
-      setTimeout(() => { modal.classList.add('hidden'); }, 300);
-      showToast('Preferências aplicadas!', 'success');
-    }
-
-    function openPreferencesModal() {
-      const p = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
-      document.getElementById('prefBlade').value = p.blade || document.getElementById('bladeSize').value;
-      document.getElementById('prefStrategy').value = p.strategy || document.getElementById('angleModeInput').value;
-      document.getElementById('prefTitle').value = p.title || '';
-      document.getElementById('prefName').value = p.name || '';
-      
-      const modal = document.getElementById('operator-welcome-modal');
-      const content = document.getElementById('operator-welcome-content');
-      modal.classList.remove('hidden');
-      setTimeout(() => {
-        content.classList.remove('scale-95', 'opacity-0');
-        content.classList.add('scale-100', 'opacity-100');
-      }, 10);
-    }
-
-    function toggleLimitBarsInput() {
-      document.getElementById('limitBarsInputGroup').style.display = document.getElementById('limitBarsCheckbox').checked ? 'block' : 'none';
-    }
-
-    function toggleSplicesInput() {
-      document.getElementById('maxSplicesInputGroup').style.display = document.getElementById('allowSplicesCheckbox').checked ? 'block' : 'none';
-    }
-
+    function toggleLimitBarsInput() { document.getElementById('limitBarsInputGroup').style.display = document.getElementById('limitBarsCheckbox').checked ? 'block' : 'none'; }
+    function toggleSplicesInput() { document.getElementById('maxSplicesInputGroup').style.display = document.getElementById('allowSplicesCheckbox').checked ? 'block' : 'none'; }
     function getClientBadgeHTML(clientName) {
       if (!clientColors[clientName]) clientColors[clientName] = colorPalette[Object.keys(clientColors).length % colorPalette.length];
       return `<span class="client-badge" style="background-color: ${clientColors[clientName]};">[${clientName}]</span>`;
@@ -1200,10 +1079,7 @@
     function addStock() {
       const input = document.getElementById('stockInput');
       const val = parseFloat(input.value);
-      if (val > 0) {
-        stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value });
-        input.value = ''; renderLists();
-      }
+      if (val > 0) { stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value }); input.value = ''; renderLists(); }
     }
 
     function addPiece() {
@@ -1213,7 +1089,6 @@
       const qty = parseInt(document.getElementById('pieceQty').value) || 1;
       const esq = parseFloat(document.getElementById('angleEsqSelect').value);
       const dir = parseFloat(document.getElementById('angleDirSelect').value);
-      
       if (size > 0 && qty > 0) {
         for(let i=0; i<qty; i++) pieces.push({ client, name, size, esq, dir });
         document.getElementById('pieceSize').value = ''; renderLists();
@@ -1230,7 +1105,6 @@
           <button onclick="removeStock(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
         </li>
       `).join('');
-
       document.getElementById('pieceList').innerHTML = pieces.map((p, i) => `
         <li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200">
           <span>${getClientBadgeHTML(p.client)} <span class="piece-tag">${p.name}</span> (${p.size}mm) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span>
@@ -1241,7 +1115,7 @@
 
     function calculate() {
       if(pieces.length === 0) { showToast("Adicione peças primeiro.", "error"); return; }
-
+      
       const profile = document.getElementById('profileCode').value.toUpperCase().trim() || 'GERAL';
       const color = document.getElementById('profileColor').value.trim() || 'Sem cor';
       const barSize = parseFloat(document.getElementById('barSize').value) || 6000;
@@ -1254,18 +1128,16 @@
       const allowSplices = document.getElementById('allowSplicesCheckbox').checked;
       const maxSplices = parseInt(document.getElementById('maxSplicesCount').value) || 1;
 
-      // TRAVA DE SEGURANÇA
       for (let p of pieces) {
         if (p.size > (barSize - paint) && !allowSplices) {
-          showToast(`A peça "${p.name}" (${p.size}mm) é maior que a barra. Permita emendas.`, "error");
-          return;
+          showToast(`Peça "${p.name}" (${p.size}mm) é maior que a barra. Habilite emendas.`, "error"); return;
         }
       }
 
       let availableStock = [...stocks].sort((a,b) => b.size - a.size);
       let toCut = [...pieces].sort((a,b) => b.size - a.size);
-
       let bins = [];
+      
       availableStock.forEach((st, idx) => {
         let deduction = paint;
         if (st.ends === '45/90') deduction += 20;
@@ -1277,9 +1149,7 @@
 
       function trySplice(piece, currentBins) {
         let sortedBins = [...currentBins].sort((a, b) => b.leftover - a.leftover);
-        let segments = [];
-        let remaining = piece.size;
-        
+        let segments = [], remaining = piece.size;
         for (let bin of sortedBins) {
           if (remaining <= 0) break;
           let maxTake = bin.leftover - blade;
@@ -1289,18 +1159,10 @@
             remaining -= take;
           }
         }
-        
         if (remaining <= 0 && segments.length <= maxSplices + 1) {
           segments.forEach((seg, idx) => {
             seg.bin.leftover -= (seg.take + blade);
-            seg.bin.used.push({
-              ...piece,
-              size: seg.take,
-              originalSize: piece.size,
-              isSplice: true,
-              splicePart: idx + 1,
-              spliceTotal: segments.length
-            });
+            seg.bin.used.push({ ...piece, size: seg.take, originalSize: piece.size, isSplice: true, splicePart: idx + 1, spliceTotal: segments.length });
           });
           return true;
         }
@@ -1310,29 +1172,19 @@
       for (let piece of toCut) {
         let fitted = false;
         while (!fitted) {
-          let bestBin = null;
-          let minWaste = Infinity;
-          
+          let bestBin = null, minWaste = Infinity;
           for (let bin of bins) {
             let waste = bin.leftover - (piece.size + blade);
             if (waste >= 0 && waste < minWaste) { bestBin = bin; minWaste = waste; }
           }
-          
           if (bestBin) {
             bestBin.leftover -= (piece.size + blade);
             bestBin.used.push({...piece});
-            fitted = true;
-            break;
+            fitted = true; break;
           }
-          
-          if (allowSplices && trySplice(piece, bins)) {
-            fitted = true;
-            break;
-          }
-          
+          if (allowSplices && trySplice(piece, bins)) { fitted = true; break; }
           let newBin = { type: 'new', original: barSize, leftover: barSize - paint, used: [], id: newBars.length };
-          newBars.push(newBin);
-          bins.push(newBin);
+          newBars.push(newBin); bins.push(newBin);
         }
       }
 
@@ -1341,7 +1193,6 @@
 
       const totalBarsNeeded = newBarPlans.length;
       let barsToBuy = isLimitBars ? Math.max(0, totalBarsNeeded - availableBarsLimit) : totalBarsNeeded;
-      
       const totalPieceLen = pieces.reduce((acc, p) => acc + p.size, 0);
       const totalRawLen = (totalBarsNeeded * barSize) + stockPlans.reduce((acc, s) => acc + s.original, 0);
       const efficiencyPct = totalRawLen > 0 ? ((totalPieceLen / totalRawLen) * 100).toFixed(1) : 0;
@@ -1358,87 +1209,41 @@
 
     function renderResultOutput(calc) {
       const isSquareMode = calc.mode === 'square_first';
-      const formatPieceName = (c) => c.isSplice ? `${c.name} <span class="text-amber-400 text-[10px] ml-1 font-bold">(Emenda ${c.splicePart}/${c.spliceTotal} - Orig. ${c.originalSize}mm)</span>` : c.name;
+      const formatPieceName = (c) => c.isSplice ? `${c.name} <span class="text-amber-400 text-[10px] font-bold ml-1">(Emenda ${c.splicePart}/${c.spliceTotal})</span>` : c.name;
       
-      let html = `
-        <div class="flex justify-between items-center mb-4 flex-wrap gap-2 no-print">
-          <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-chart-pie text-sky-400"></i> Plano de Corte — Perfil <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></h2>
-          <div class="flex gap-2">
-            <button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-300"><i class="fa-solid fa-print"></i> Imprimir PDF</button>
-          </div>
-        </div>
-      `;
-
-      if (calc.barsToBuy > 0) {
-        html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm">⚠️ <strong>Atenção ao Estoque:</strong> É necessário comprar <strong>${calc.barsToBuy} barra(s) nova(s)</strong> para concluir esta obra.</div>`;
+      let html = `<div class="flex justify-between items-center mb-4 flex-wrap gap-2 no-print"><h2 class="text-lg font-bold text-white"><i class="fa-solid fa-chart-pie text-sky-400"></i> Plano — Perfil <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></h2><div class="flex gap-2"><button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-300"><i class="fa-solid fa-print"></i> PDF Oficina</button></div></div>`;
+      if (calc.isLimitBars && calc.barsToBuy > 0) {
+        html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm">⚠️ <strong>Estoque:</strong> Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir.</div>`;
       }
+      html += `<div class="glass-card p-4 rounded-xl mb-6 text-sm border-sky-500/30"><ul class="space-y-1 text-slate-300"><li>Barras Novas: <strong class="text-white">${calc.newBarsCount}</strong></li><li>Retalhos Usados: <strong class="text-white">${calc.stockUsedCount}</strong></li><li>Aproveitamento: <strong class="text-emerald-400">${calc.efficiencyPct}%</strong></li></ul></div>`;
 
-      html += `
-        <div class="glass-card p-4 rounded-xl mb-6 text-sm border-sky-500/30">
-          <ul class="space-y-1 text-slate-300">
-            <li>Barras Novas Usadas: <strong class="text-white">${calc.newBarsCount}</strong> (${calc.barSize}mm)</li>
-            <li>Retalhos Reutilizados: <strong class="text-white">${calc.stockUsedCount}</strong></li>
-            <li>Aproveitamento: <strong class="text-emerald-400">${calc.efficiencyPct}%</strong></li>
-          </ul>
-        </div>
-      `;
-
-      function renderBarAngleBadge(c) {
-        return isSquareMode ? `<span class="angle-badge">90° / 90°</span>` : `<span class="angle-badge">${c.esq}° / ${c.dir}°</span>`;
-      }
+      function renderBarAngleBadge(c) { return isSquareMode ? `<span class="angle-badge">90° / 90°</span>` : `<span class="angle-badge">${c.esq}° / ${c.dir}°</span>`; }
 
       if (calc.stockPlans.length > 0) {
-        html += `<h3 class="font-bold text-amber-400 mb-3"><i class="fa-solid fa-recycle"></i> Etapa 1: Retalhos do Estoque ${isSquareMode ? '(Todos em 90°)' : ''}</h3>`;
+        html += `<h3 class="font-bold text-amber-400 mb-3"><i class="fa-solid fa-recycle"></i> Retalhos do Estoque</h3>`;
         calc.stockPlans.forEach((plan, idx) => {
           const barId = `stock_bar_${idx}`;
-          html += `
-            <div class="bar-result stock" id="${barId}">
-              <div class="flex items-center gap-2 text-white font-bold">
-                <input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')">
-                <span class="bar-title">Retalho #${idx+1} (${plan.original} mm)</span>
-              </div>
-              <div class="ml-6 mt-2 space-y-1">
-                ${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="s_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('s_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}
-                <div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div>
-              </div>
-            </div>
-          `;
+          html += `<div class="bar-result stock" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Retalho #${idx+1} (${plan.original} mm)</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="s_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('s_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div></div></div>`;
         });
       }
 
       if (calc.newBarPlans.length > 0) {
-        html += `<h3 class="font-bold text-sky-400 mb-3 mt-5"><i class="fa-solid fa-ruler"></i> Etapa ${calc.stockPlans.length > 0 ? '2' : '1'}: Barras Novas de ${calc.barSize}mm ${isSquareMode ? '(Todos em 90°)' : ''}</h3>`;
+        html += `<h3 class="font-bold text-sky-400 mb-3 mt-5"><i class="fa-solid fa-ruler"></i> Barras Novas de ${calc.barSize}mm</h3>`;
         calc.newBarPlans.forEach((plan, idx) => {
           const isFromStock = calc.isLimitBars && ((idx + 1) <= calc.availableBarsLimit);
-          const needsToBuy = !calc.isLimitBars || !isFromStock; 
-          
           const barId = `new_bar_${idx}`;
-          html += `
-            <div class="bar-result ${needsToBuy ? 'alert-limit' : ''}" id="${barId}">
-              <div class="flex items-center gap-2 text-white font-bold">
-                <input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')">
-                <span class="bar-title">Barra #${idx+1} [${calc.color}] ${needsToBuy ? '<span class="text-rose-400 text-[10px]">(Comprar)</span>' : '<span class="text-emerald-400 text-[10px]">(Do Estoque)</span>'}</span>
-              </div>
-              <div class="ml-6 mt-2 space-y-1">
-                ${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="n_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('n_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}
-                <div class="text-[10px] text-slate-500 mt-2">Sobra útil: ${plan.leftover.toFixed(0)} mm</div>
-              </div>
-            </div>
-          `;
+          html += `<div class="bar-result ${!isFromStock && calc.isLimitBars ? 'alert-limit' : ''}" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${calc.isLimitBars ? (isFromStock ? '<span class="text-emerald-400 text-[10px]">(Do Estoque)</span>' : '<span class="text-rose-400 text-[10px]">(Comprar)</span>') : ''}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="n_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('n_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div></div></div>`;
         });
       }
 
       if (isSquareMode) {
         const angularPieces = [...calc.stockPlans.flatMap(p => p.cuts), ...calc.newBarPlans.flatMap(p => p.cuts)].filter(p => p.esq !== 90 || p.dir !== 90);
         if (angularPieces.length > 0) {
-          html += `<div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl mt-6"><h3 class="font-bold text-amber-400 mb-2">📐 Guia de Refilo Angular</h3><p class="text-xs text-amber-200/70 mb-3">Após cortar todas as peças retas (90°), pegue as peças abaixo e refile as pontas:</p><ul class="space-y-2">`;
-          angularPieces.forEach(p => {
-            html += `<li class="flex items-center gap-2 text-sm text-slate-300"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size}mm) -> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`;
-          });
+          html += `<div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl mt-6"><h3 class="font-bold text-amber-400 mb-2">📐 Guia de Refilo Angular</h3><ul class="space-y-2">`;
+          angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size}mm) -> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; });
           html += `</ul></div>`;
         }
       }
-
       document.getElementById('output').innerHTML = html;
     }
 
@@ -1446,7 +1251,7 @@
       if (!currentCalculation) return;
       const idx = loteSaved.findIndex(i => i.profile === currentCalculation.profile && i.color === currentCalculation.color);
       if (idx >= 0) loteSaved[idx] = currentCalculation; else loteSaved.push(currentCalculation);
-      renderLoteSummary(); showToast("Perfil salvo no Lote!");
+      renderLoteSummary(); showToast("Salvo no Lote!");
     }
 
     function clearForNextProfile() {
@@ -1460,75 +1265,45 @@
     function renderLoteSummary() {
       const box = document.getElementById('loteSummary');
       if (loteSaved.length === 0) { box.innerHTML = ''; return; }
-
-      let html = `<div class="glass-card p-5 rounded-3xl border-indigo-500/30"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-indigo-400"><i class="fa-solid fa-layer-group"></i> Lote Consolidado (${loteSaved.length} Perfis)</h3><button onclick="sendWhatsAppOrder()" class="bg-[#25D366] hover:bg-[#20b858] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all no-print"><i class="fa-brands fa-whatsapp"></i> Pedir ao Fornecedor</button></div>`;
-      html += `<div class="overflow-x-auto border border-slate-700 rounded-xl"><table class="w-full text-xs text-left"><thead class="bg-slate-900 text-slate-400 border-b border-slate-700"><tr><th class="p-2">Perfil</th><th class="p-2">Cor</th><th class="p-2">Total Corte</th><th class="p-2 text-rose-400">Comprar</th><th class="p-2 no-print text-center">Ações</th></tr></thead><tbody class="divide-y divide-slate-800 bg-slate-900/50">`;
-      
+      let html = `<div class="glass-card p-5 rounded-3xl border-indigo-500/30"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-indigo-400"><i class="fa-solid fa-layer-group"></i> Lote (${loteSaved.length} Perfis)</h3><button onclick="sendWhatsAppOrder()" class="bg-[#25D366] hover:bg-[#20b858] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all no-print"><i class="fa-brands fa-whatsapp"></i> Pedir ao Fornecedor</button></div>`;
+      html += `<div class="overflow-x-auto border border-slate-700 rounded-xl"><table class="w-full text-xs text-left"><thead class="bg-slate-900 text-slate-400 border-b border-slate-700"><tr><th class="p-2">Perfil</th><th class="p-2">Cor</th><th class="p-2">Uso</th><th class="p-2 text-rose-400">Comprar</th><th class="p-2 no-print text-center">Ações</th></tr></thead><tbody class="divide-y divide-slate-800 bg-slate-900/50">`;
       loteSaved.forEach((item, idx) => {
-        html += `<tr>
-          <td class="p-2 font-bold text-white">${item.profile}</td>
-          <td class="p-2">${item.color}</td>
-          <td class="p-2">${item.newBarsCount}</td>
-          <td class="p-2 font-bold text-rose-400">${item.barsToBuy}</td>
-          <td class="p-2 no-print flex justify-center gap-3">
-            <button onclick="viewLoteItem(${idx})" title="Ver Plano de Corte" class="text-sky-400 hover:text-sky-300 transition-all"><i class="fa-solid fa-eye"></i></button>
-            <button onclick="editLoteItem(${idx})" title="Editar Peças" class="text-amber-400 hover:text-amber-300 transition-all"><i class="fa-solid fa-pen-to-square"></i></button>
-            <button onclick="loteSaved.splice(${idx}, 1); renderLoteSummary();" title="Excluir" class="text-rose-500 hover:text-rose-300 transition-all"><i class="fa-solid fa-trash"></i></button>
-          </td>
-        </tr>`;
+        html += `<tr><td class="p-2 font-bold text-white">${item.profile}</td><td class="p-2">${item.color}</td><td class="p-2">${item.newBarsCount}</td><td class="p-2 font-bold text-rose-400">${item.barsToBuy}</td><td class="p-2 no-print flex justify-center gap-3"><button onclick="viewLoteItem(${idx})" class="text-sky-400"><i class="fa-solid fa-eye"></i></button><button onclick="editLoteItem(${idx})" class="text-amber-400"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="loteSaved.splice(${idx}, 1); renderLoteSummary();" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
       });
-      
-      html += `</tbody></table></div></div>`;
-      box.innerHTML = html;
+      box.innerHTML = html + `</tbody></table></div></div>`;
     }
 
     function viewLoteItem(idx) {
       if (!loteSaved[idx]) return;
-      currentCalculation = loteSaved[idx];
-      renderResultOutput(currentCalculation);
+      currentCalculation = loteSaved[idx]; renderResultOutput(currentCalculation);
       document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
       document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
-      showToast("Detalhes do corte carregados.", "success");
     }
 
     function editLoteItem(idx) {
       if (!loteSaved[idx]) return;
       const item = loteSaved[idx];
-      
       document.getElementById('profileCode').value = item.profile;
       document.getElementById('profileColor').value = item.color;
       document.getElementById('barSize').value = item.barSize;
       document.getElementById('bladeSize').value = item.blade;
       document.getElementById('paintSize').value = item.paint;
       document.getElementById('angleModeInput').value = item.mode;
-      
       document.getElementById('limitBarsCheckbox').checked = item.isLimitBars;
       document.getElementById('availableBarsCount').value = item.availableBarsLimit;
       toggleLimitBarsInput();
-
-      stocks = [...item.stocks];
-      pieces = [...item.pieces];
-      renderLists();
-
-      currentCalculation = item;
-      renderResultOutput(currentCalculation);
+      stocks = [...item.stocks]; pieces = [...item.pieces]; renderLists();
+      currentCalculation = item; renderResultOutput(currentCalculation);
       document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      showToast(`Modo edição ativado: ${item.profile} (${item.color})`, "success");
     }
 
     function sendWhatsAppOrder() {
       const itemsToBuy = loteSaved.filter(i => i.barsToBuy > 0);
-      if (itemsToBuy.length === 0) { showToast("Nenhum item precisa ser comprado! Estoque suficiente.", "error"); return; }
-
-      let text = `🛒 *PEDIDO DE ALUMÍNIO*\n------------------------\n`;
-      let total = 0;
-      itemsToBuy.forEach(item => {
-        text += `• *Perfil:* ${item.profile}\n  - Cor: ${item.color}\n  - Qtd: *${item.barsToBuy} barra(s)* (${item.barSize}mm)\n\n`;
-        total += item.barsToBuy;
-      });
-      text += `------------------------\n📦 *TOTAL: ${total} barra(s)*`;
+      if (itemsToBuy.length === 0) { showToast("Nada a comprar!", "error"); return; }
+      let text = `🛒 *PEDIDO*\n----------------\n`; let total = 0;
+      itemsToBuy.forEach(item => { text += `• ${item.profile} (${item.color}) - Qtd: *${item.barsToBuy}*\n`; total += item.barsToBuy; });
+      text += `----------------\n📦 *TOTAL: ${total} barras*`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
   </script>
