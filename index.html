@@ -535,7 +535,7 @@
         try {
             // Substitua 'SEU_USUARIO' pelo seu usuário real caso queira usar seu repositório.
             // Para efeitos deste código autossuficiente, vamos tentar buscar do localStorage primeiro.
-            const urlConfigRaw = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/homologacao/oppah.json';
+            const urlConfigRaw = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json';
             const response = await fetch(urlConfigRaw);
             if (!response.ok) throw new Error("Não foi possível carregar as configurações RAW.");
             OPPAH_CONFIG = await response.json();
@@ -698,7 +698,16 @@
 
       const documentoRaw = document.getElementById('reg-documento').value;
       const documentoClean = documentoRaw.replace(/\D/g, "");
+      const email = document.getElementById('reg-email').value.trim();
       
+      // 0. Validação Rigorosa de E-mail (RegEx)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showToast("Por favor, digite um e-mail válido (ex: nome@dominio.com).", "error");
+        resetRegisterBtn();
+        return;
+      }
+
       // 1. Validação Matemática
       if (!validarCpfCnpjAlgoritmo(documentoClean)) {
         showToast("CPF ou CNPJ inválido. Verifique os números digitados.", "error");
@@ -713,9 +722,15 @@
         resetRegisterBtn();
         return;
       }
+      
+      // 2.1 Trava de E-mail Único
+      if (empresas.some(emp => emp.email.toLowerCase() === email.toLowerCase())) {
+        showToast("Este E-mail já está em uso por outra conta.", "error");
+        resetRegisterBtn();
+        return;
+      }
 
       const nomeEmpresa = document.getElementById('reg-company').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
       const senha = document.getElementById('reg-password').value;
       const validade = new Date();
       validade.setDate(validade.getDate() + 7);
@@ -847,6 +862,18 @@
       pendingRegistrationData = null;
       generatedOTP = null;
       document.getElementById('otp-input-code').value = '';
+    }
+
+    function focusEditEmail() {
+      // Cancela o processo atual limpando a variável do OTP gerado
+      cancelOTP();
+      
+      // Espera o modal fechar (300ms) e então foca no campo de e-mail
+      setTimeout(() => {
+        const emailInput = document.getElementById('reg-email');
+        emailInput.focus();
+        emailInput.select(); // Seleciona o texto atual para facilitar a reescrita rápida
+      }, 350);
     }
 
     async function handleLogin(e) {
