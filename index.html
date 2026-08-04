@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah v2.4.4 | Testes (Staging)</title>
+  <title>Portal Oppah v2.4.5 | Testes (Staging)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -161,26 +161,24 @@
         <!-- Versão Atual -->
         <div>
           <div class="flex items-center gap-2 mb-2">
-            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.4</span>
+            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.5</span>
             <span class="text-xs text-slate-400 font-semibold">Última Atualização</span>
           </div>
           <ul class="space-y-2 text-xs text-slate-300">
-            <li class="flex items-start gap-2"><i class="fa-solid fa-wrench text-amber-400 mt-0.5"></i> <span><strong>Hotfix:</strong> Correção no caminho de Fetch do arquivo oppah.json (Busca Relativa Vercel).</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-unlock-keyhole text-emerald-400 mt-0.5"></i> <span><strong>Hotfix:</strong> Correção no sistema de bloqueio e liberação do Painel do Desenvolvedor.</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-lock text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Criptografia avançada (SHA-256) ativada para todas as senhas.</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-user-tie text-sky-400 mt-0.5"></i> <span><strong>Novo Campo:</strong> Inclusão do Nome do Gestor no cadastro inicial.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-shield-halved text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Remoção da senha de testes em texto puro do código (Painel Dev totalmente criptografado em SHA-256).</span></li>
           </ul>
         </div>
-
+        
         <!-- Versão Anterior -->
         <div class="opacity-75">
           <div class="flex items-center gap-2 mb-2">
-            <span class="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.0</span>
+            <span class="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.4</span>
             <span class="text-xs text-slate-500 font-semibold">Atualização Anterior</span>
           </div>
           <ul class="space-y-2 text-xs text-slate-400">
-            <li class="flex items-start gap-2"><i class="fa-solid fa-microchip mt-0.5 text-slate-500"></i> <span>Integração do motor do otimizador na nuvem.</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-bug mt-0.5 text-slate-500"></i> <span>Correção no controle e limite do estoque de barras.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-wrench text-amber-400 mt-0.5"></i> <span><strong>Hotfix:</strong> Fetch Vercel corrigido.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-lock text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Senhas de login e cadastro agora usam SHA-256.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-user-tie text-sky-400 mt-0.5"></i> <span><strong>Novo Campo:</strong> Inclusão do Nome do Gestor.</span></li>
           </ul>
         </div>
       </div>
@@ -196,7 +194,7 @@
       <div onclick="handleLogoDevClick(event)" title="Acesso Dev" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">TESTE v2.4.4</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">TESTE v2.4.5</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -281,7 +279,7 @@
   <div id="gestor-dashboard" style="display:none;" class="max-w-4xl mx-auto space-y-6">
     <header class="glass-card rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.4.4</span></h1>
+        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
         <p id="gestorCompanyName" class="text-sm text-sky-400 font-bold mt-1"></p>
         <p id="gestorManagerName" class="text-xs text-slate-300 font-semibold mt-1"></p>
         <p id="gestorEmail" class="text-xs text-slate-400"></p>
@@ -362,7 +360,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.4.4</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
           <p id="operatorCompanyName" class="text-xs text-slate-400"></p>
         </div>
       </div>
@@ -511,7 +509,7 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // Hash Mestre para Devs (Senha original: oppah2026)
+    // Hash Mestre para Devs (A única forma de validar o painel dev, sem fallback em texto puro)
     const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
 
     // ----------------------------------------------------
@@ -522,8 +520,6 @@
     async function carregarConfiguracoes() {
         try {
             console.log("Buscando oppah.json localmente na Vercel...");
-            // SOLUÇÃO DO BUG: O Fetch agora puxa o oppah.json da PRÓPRIA pasta, 
-            // não importa se está na branch main ou teste!
             const response = await fetch('./oppah.json');
             if (!response.ok) throw new Error(`Erro HTTP: ${response.status} (Arquivo não encontrado)`);
             
@@ -627,6 +623,7 @@
       }
     }
 
+    // CORREÇÃO v2.4.5: Totalmente blindado. Nenhuma senha hardcoded aqui.
     async function toggleConfigModal() {
       const modal = document.getElementById('modal-config-sharepoint');
       const isHidden = modal.classList.contains('hidden');
@@ -637,8 +634,7 @@
 
         const inputHash = await sha256(pass.trim());
         
-        // CORREÇÃO: Rede de segurança ativada para garantir o seu acesso!
-        if (inputHash !== MASTER_DEV_HASH && pass.trim() !== "oppah2026") {
+        if (inputHash !== MASTER_DEV_HASH) {
           showToast("Senha Master incorreta!", "error");
           return;
         }
@@ -678,11 +674,10 @@
 
       const documento = document.getElementById('reg-documento').value.replace(/\D/g, "");
       const nomeEmpresa = document.getElementById('reg-company').value.trim();
-      const nomeGestor = document.getElementById('reg-nome-gestor').value.trim(); // <-- CAMPO NOVO
+      const nomeGestor = document.getElementById('reg-nome-gestor').value.trim();
       const email = document.getElementById('reg-email').value.trim();
       const senhaPlana = document.getElementById('reg-password').value;
 
-      // Criptografa a senha antes de enviar
       const senhaHash = await sha256(senhaPlana);
 
       const validade = new Date();
@@ -694,7 +689,7 @@
         nome_empresa: nomeEmpresa,
         nome_gestor: nomeGestor,
         email: email,
-        senha: senhaHash, // <-- Enviando Hash
+        senha: senhaHash,
         licencas_totais: 1,
         validade: validade.toISOString()
       };
@@ -725,7 +720,7 @@
 
       showToast(savedToCloud ? 'Conta criada na Nuvem!' : 'Conta criada Localmente (Modo Offline)!', 'success');
       document.getElementById('login-email').value = email;
-      document.getElementById('login-password').value = senhaPlana; // preenche pra facilitar
+      document.getElementById('login-password').value = senhaPlana;
       document.getElementById('form-register').reset();
       switchTab('login');
     }
@@ -739,18 +734,17 @@
 
       const email = document.getElementById('login-email').value.trim();
       const senhaPlana = document.getElementById('login-password').value;
-      const senhaHash = await sha256(senhaPlana); // Transforma em hash para comparar
+      const senhaHash = await sha256(senhaPlana);
 
       const cfg = getActiveConfig();
       let authSucesso = false;
 
-      // 1. Tenta Login pela API Nuvem (SharePoint via Power Automate)
       if (cfg.webhookLogin) {
         try {
           const resp = await fetch(cfg.webhookLogin, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, senha: senhaHash }) // Envia hash!
+            body: JSON.stringify({ email, senha: senhaHash }) 
           });
           
           if (resp.ok) {
@@ -786,9 +780,8 @@
         }
       }
 
-      if(authSucesso) return; // Se já logou na nuvem, encerra aqui.
+      if(authSucesso) return;
 
-      // 2. Fallback de Login Offline (LocalStorage)
       const empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
       const operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
 
@@ -910,7 +903,7 @@
       const feedbackData = {
         data: new Date().toISOString(),
         tipo_usuario: usuario.tipo,
-        nome_usuario: usuario.nome || usuario.nome_empresa, // Fallback p/ antigos
+        nome_usuario: usuario.nome || usuario.nome_empresa, 
         email_usuario: usuario.email,
         empresa: usuario.nome_empresa,
         categoria: tipo,
@@ -939,7 +932,6 @@
         }
       }
 
-      // WhatsApp Fallback
       const numeroSuporte = "5511999999999"; 
       let textoZap = `*Novo Feedback - Portal Oppah*%0A%0A*Categoria:* ${tipo}%0A`;
       if (subcategoria) textoZap += `*Área:* ${subcategoria}%0A`;
@@ -1033,7 +1025,7 @@
       const nome = document.getElementById('op-name').value.trim();
       const documento = document.getElementById('op-documento').value.replace(/\D/g, "");
       const senhaPlana = document.getElementById('op-password').value;
-      const senhaHash = await sha256(senhaPlana); // Senha em Hash
+      const senhaHash = await sha256(senhaPlana); 
 
       const novoOperador = { id_empresa: sessao.id_empresa, nome, email, senha: senhaHash, documento };
 
