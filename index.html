@@ -596,7 +596,7 @@
     let OPPAH_CONFIG = {};
     async function carregarConfiguracoes() {
         try {
-            const response = await fetch('./oppah.json');
+            const response = await fetch('https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/homologacao/oppah.json');
             if (!response.ok) throw new Error("Erro de HTTP");
             OPPAH_CONFIG = await response.json();
         } catch (error) {
