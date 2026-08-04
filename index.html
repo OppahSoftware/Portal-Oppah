@@ -535,7 +535,7 @@
         try {
             // Substitua 'SEU_USUARIO' pelo seu usuário real caso queira usar seu repositório.
             // Para efeitos deste código autossuficiente, vamos tentar buscar do localStorage primeiro.
-            const urlConfigRaw = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/homologacao/oppah.json';
+            const urlConfigRaw = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json';
             const response = await fetch(urlConfigRaw);
             if (!response.ok) throw new Error("Não foi possível carregar as configurações RAW.");
             OPPAH_CONFIG = await response.json();
@@ -737,15 +737,20 @@
       const cfg = OPPAH_CONFIG;
       if (cfg.webhookOTP) {
         try {
-          await fetch(cfg.webhookOTP, {
+          const response = await fetch(cfg.webhookOTP, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, nome: nomeEmpresa, otp: generatedOTP })
           });
+          
+          if (!response.ok) {
+            throw new Error("Falha no envio do e-mail pelo servidor.");
+          }
+          
           showToast("Código enviado! Verifique seu e-mail.", "success");
         } catch (err) {
           console.warn("Falha no Webhook OTP.", err);
-          showToast("Erro ao conectar com o servidor de e-mail. Tente novamente.", "error");
+          showToast("E-mail incorreto ou inexistente. Verifique o endereço digitado.", "error");
           resetRegisterBtn();
           return; // Aborta o cadastro se o e-mail falhar
         }
