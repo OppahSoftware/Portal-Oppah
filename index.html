@@ -1,9 +1,40 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark" class="dark">
 <head>
+  <!-- ========================================== -->
+  <!-- 🛡️ MÓDULO DE SEGURANÇA (ANTI-PIRATARIA) 🛡️ -->
+  <!-- ========================================== -->
+  <script>
+    (function() {
+      const currentDomain = window.location.hostname;
+      const isLocal = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
+      const isVercel = currentDomain.includes('vercel.app');
+      const isOficial = currentDomain.includes('portaloppah.com.br'); 
+      
+      if (!isLocal && !isVercel && !isOficial) {
+        document.documentElement.innerHTML = '<body style="background:#0f172a;color:#ef4444;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;text-align:center;"><div><h1 style="font-size:2rem;margin-bottom:10px;">🛡️ Acesso Negado</h1><p>Licença de uso inválida ou domínio não autorizado.</p></div></body>';
+        window.stop();
+        throw new Error("Execução interrompida por violação de segurança.");
+      }
+    })();
+
+    document.addEventListener('contextmenu', event => event.preventDefault()); 
+    document.addEventListener('keydown', event => {
+      if (event.key === 'F12') event.preventDefault();
+      if (event.ctrlKey && (
+          (event.shiftKey && (event.key === 'I' || event.key === 'i')) || 
+          (event.shiftKey && (event.key === 'J' || event.key === 'j')) || 
+          event.key === 'U' || event.key === 'u' || 
+          event.key === 'S' || event.key === 's'
+      )) {
+        event.preventDefault();
+      }
+    });
+  </script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah v2.4.5 | Testes (Staging)</title>
+  <title>Portal Oppah v2.5.0 | Beta</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -50,9 +81,13 @@
     
     .chk-cut { width: 16px; height: 16px; cursor: pointer; accent-color: #10b981; }
 
+    /* Estilização específica para o Input do PIN (OTP) */
+    .otp-input { letter-spacing: 0.5em; text-align: center; font-size: 1.5rem; font-weight: bold; }
+    .otp-input::placeholder { letter-spacing: normal; font-size: 1rem; font-weight: normal; }
+
     @media print {
       body { background: white !important; color: black !important; padding: 0; display: block; }
-      .no-print, header, button, .modal-overlay, #toast, #operator-welcome-modal, #modal-feedback, #modal-config-sharepoint { display: none !important; }
+      .no-print, header, button, .modal-overlay, #toast, #operator-welcome-modal, #modal-feedback, #modal-config-sharepoint, #modal-otp { display: none !important; }
       .glass-card { border: none !important; background: transparent !important; color: black !important; box-shadow: none !important; }
       .bar-result { border: 1px solid #ccc !important; border-left: 5px solid #000 !important; color: black !important; background: #fff !important; margin-bottom: 8px; break-inside: avoid; }
       .text-slate-400, .text-slate-300, .text-slate-200 { color: #333 !important; }
@@ -73,15 +108,38 @@
     </div>
   </div>
 
+  <!-- MODAL: VALIDAÇÃO OTP (CÓDIGO DE E-MAIL) -->
+  <div id="modal-otp" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm hidden transition-opacity">
+    <div class="glass-card max-w-sm w-full p-8 rounded-3xl shadow-2xl border border-slate-700 m-4 transform transition-all scale-95 opacity-0 text-center" id="modal-otp-content">
+      <div class="w-16 h-16 bg-sky-500/20 text-sky-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-sky-500/30">
+        <i class="fa-solid fa-envelope-open-text"></i>
+      </div>
+      <h3 class="font-bold text-white text-lg mb-2">Verifique seu E-mail</h3>
+      <p class="text-xs text-slate-400 mb-6">Enviamos um código de 6 dígitos para <br><strong id="otp-email-display" class="text-slate-200"></strong></p>
+      
+      <form id="form-otp" onsubmit="verifyOTP(event)" class="space-y-5">
+        <div>
+          <input type="text" id="otp-input-code" required maxlength="6" pattern="\d{6}" placeholder="000000" autocomplete="off" class="otp-input w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-sky-400 focus:outline-none focus:border-sky-500 transition-all">
+        </div>
+        <button type="submit" id="btn-verify-otp" class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg">
+          Confirmar Conta
+        </button>
+        <button type="button" onclick="cancelOTP()" class="w-full py-2 bg-transparent text-slate-400 hover:text-slate-300 font-semibold text-xs rounded-xl transition-all">
+          Cancelar Cadastro
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: FEEDBACK -->
   <div id="modal-feedback" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden transition-opacity">
+    <!-- ... (Mesmo código do modal de feedback anterior) ... -->
     <div class="glass-card max-w-md w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 transform transition-all scale-95 opacity-0" id="modal-feedback-content">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
         <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-comment-dots text-indigo-400"></i> Enviar Feedback</h3>
         <button onclick="closeFeedbackModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      
       <p class="text-xs text-slate-400 mb-4">Encontrou algum problema ou tem uma ideia para melhorar o sistema? Conta pra gente!</p>
-      
       <form id="form-feedback" onsubmit="submitFeedback(event)" class="space-y-4">
         <div>
           <label class="block text-[11px] font-semibold text-slate-300 mb-1">Tipo de Mensagem</label>
@@ -92,7 +150,6 @@
             <option value="elogio">❤️ Elogio</option>
           </select>
         </div>
-        
         <div id="feedback-categoria-operador-container" class="hidden">
           <label class="block text-[11px] font-semibold text-slate-300 mb-1">Sobre qual área?</label>
           <select id="feedback-categoria-operador" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-indigo-500 outline-none">
@@ -102,7 +159,6 @@
             <option value="Outro">Outro</option>
           </select>
         </div>
-
         <div>
           <label class="block text-[11px] font-semibold text-slate-300 mb-1">Sua Mensagem</label>
           <textarea id="feedback-mensagem" required rows="4" placeholder="Descreva sua experiência..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-indigo-500 outline-none resize-none"></textarea>
@@ -115,31 +171,34 @@
     </div>
   </div>
 
+  <!-- MODAL: CONFIGURAÇÃO NUVEM -->
   <div id="modal-config-sharepoint" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
     <div class="glass-card max-w-lg w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-server text-sky-400"></i> Servidor API Oppah (Acesso Local)</h3>
+        <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-server text-sky-400"></i> Servidor API Oppah</h3>
         <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-[11px] text-amber-200">
-        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Atenção: Utilize este painel apenas se o arquivo <code>oppah.json</code> do GitHub não estiver carregando ou para testes locais da API.
-      </div>
-      <div class="space-y-3">
+      <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
         <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Autenticação (Login)</label>
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook: Autenticação (Login)</label>
           <input type="url" id="webhook-login" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Cadastro de Empresa</label>
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook: Cadastro de Empresa</label>
           <input type="url" id="webhook-register" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Criar Operador</label>
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook: Criar Operador</label>
           <input type="url" id="webhook-create-op" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook Oppah: Receber Feedback</label>
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Webhook: Receber Feedback</label>
           <input type="url" id="webhook-feedback" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100">
+        </div>
+        <div class="pt-2 border-t border-slate-800">
+          <label class="block text-[11px] font-bold text-amber-400 mb-1"><i class="fa-solid fa-shield-halved"></i> Webhook: Enviar E-mail (OTP - Validação)</label>
+          <input type="url" id="webhook-otp" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-amber-100 focus:border-amber-500">
+          <p class="text-[9px] text-slate-500 mt-1">Se vazio, o sistema mostrará o OTP na tela (Modo Teste).</p>
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
@@ -149,7 +208,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE NOVIDADES DA VERSÃO (CHANGELOG) -->
+  <!-- MODAL: CHANGELOG -->
   <div id="modal-changelog" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden transition-opacity">
     <div class="glass-card max-w-md w-full p-6 rounded-3xl shadow-2xl border border-slate-700 m-4 transform transition-all scale-95 opacity-0" id="modal-changelog-content">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
@@ -158,27 +217,14 @@
       </div>
       
       <div class="max-h-72 overflow-y-auto pr-2 space-y-6">
-        <!-- Versão Atual -->
         <div>
           <div class="flex items-center gap-2 mb-2">
-            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.5</span>
+            <span class="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">v2.5.0</span>
             <span class="text-xs text-slate-400 font-semibold">Última Atualização</span>
           </div>
           <ul class="space-y-2 text-xs text-slate-300">
-            <li class="flex items-start gap-2"><i class="fa-solid fa-shield-halved text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Remoção da senha de testes em texto puro do código (Painel Dev totalmente criptografado em SHA-256).</span></li>
-          </ul>
-        </div>
-        
-        <!-- Versão Anterior -->
-        <div class="opacity-75">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md">v2.4.4</span>
-            <span class="text-xs text-slate-500 font-semibold">Atualização Anterior</span>
-          </div>
-          <ul class="space-y-2 text-xs text-slate-400">
-            <li class="flex items-start gap-2"><i class="fa-solid fa-wrench text-amber-400 mt-0.5"></i> <span><strong>Hotfix:</strong> Fetch Vercel corrigido.</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-lock text-emerald-400 mt-0.5"></i> <span><strong>Segurança:</strong> Senhas de login e cadastro agora usam SHA-256.</span></li>
-            <li class="flex items-start gap-2"><i class="fa-solid fa-user-tie text-sky-400 mt-0.5"></i> <span><strong>Novo Campo:</strong> Inclusão do Nome do Gestor.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-shield-cat text-emerald-400 mt-0.5"></i> <span><strong>Anti-Fraude:</strong> Verificação algorítmica de CPFs e CNPJs inválidos ou sequenciais.</span></li>
+            <li class="flex items-start gap-2"><i class="fa-solid fa-envelope-circle-check text-emerald-400 mt-0.5"></i> <span><strong>Validação OTP:</strong> Novo sistema de confirmação de e-mail por PIN de 6 dígitos no cadastro.</span></li>
           </ul>
         </div>
       </div>
@@ -194,7 +240,7 @@
       <div onclick="handleLogoDevClick(event)" title="Acesso Dev" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none hover:border-sky-500/50 transition-all">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">TESTE v2.4.5</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span onclick="openChangelogModal()" title="Ver novidades" class="text-xs bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 cursor-pointer transition-all">BETA v2.5.0</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -207,7 +253,6 @@
       </button>
     </div>
 
-    <!-- Login Form -->
     <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5">E-mail</label>
@@ -229,10 +274,9 @@
       </button>
     </form>
 
-    <!-- Register Form -->
-    <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+    <form id="form-register" onsubmit="initiateRegistration(event)" class="space-y-4 hidden">
       <div class="bg-indigo-500/10 border border-indigo-500/30 p-3 rounded-xl mb-4 text-xs text-indigo-200">
-        <i class="fa-solid fa-gift text-indigo-400 mr-1"></i> Ganhe <strong>7 dias grátis</strong> e <strong>1 licença</strong> para testar a ferramenta.
+        <i class="fa-solid fa-shield-check text-indigo-400 mr-1"></i> Cadastro validado. Necessário confirmar e-mail.
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5">CPF ou CNPJ</label>
@@ -270,16 +314,17 @@
         </div>
       </div>
       <button type="submit" id="btn-register" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2">
-        <span id="btn-register-text">Começar Teste Grátis</span>
-        <i id="btn-register-icon" class="fa-solid fa-rocket text-xs"></i>
+        <span id="btn-register-text">Continuar (Validar E-mail)</span>
+        <i id="btn-register-icon" class="fa-solid fa-arrow-right text-xs"></i>
       </button>
     </form>
   </main>
 
   <div id="gestor-dashboard" style="display:none;" class="max-w-4xl mx-auto space-y-6">
+    <!-- ... (Mesmo HTML do dashboard do Gestor) ... -->
     <header class="glass-card rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
+        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-sky-500/20 hover:bg-sky-500/40 text-sky-400 px-2 py-0.5 rounded-full border border-sky-500/30 cursor-pointer transition-all">v2.5.0</span></h1>
         <p id="gestorCompanyName" class="text-sm text-sky-400 font-bold mt-1"></p>
         <p id="gestorManagerName" class="text-xs text-slate-300 font-semibold mt-1"></p>
         <p id="gestorEmail" class="text-xs text-slate-400"></p>
@@ -320,11 +365,8 @@
       </div>
     </div>
 
-    <!-- Gestão de Operadores -->
     <div class="glass-card p-6 rounded-3xl space-y-6">
       <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-user-plus text-sky-400"></i> Cadastrar Acesso para Funcionário</h3>
-      
-      <!-- SENHA FORTE OPERADOR (Mín 6 chars + Letra + Numero) -->
       <form onsubmit="createOperador(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <input type="text" id="op-name" required placeholder="Nome do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
         <input type="text" id="op-documento" required oninput="applyMaskCpfCnpj(event)" placeholder="CPF do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
@@ -354,13 +396,14 @@
   </div>
 
   <div id="app-dashboard" style="display:none;" class="max-w-6xl mx-auto space-y-6 pb-20">
+    <!-- ... (Mesmo HTML do Otimizador) ... -->
     <header class="glass-card rounded-3xl p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4 no-print">
       <div class="flex items-center space-x-4">
         <div class="w-12 h-12 bg-sky-500/20 text-sky-400 rounded-2xl flex items-center justify-center border border-sky-500/30 text-xl font-black shadow-inner">
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.4.5</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador de Corte <span onclick="openChangelogModal()" title="Ver novidades" class="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30 cursor-pointer transition-all">v2.5.0</span></h1>
           <p id="operatorCompanyName" class="text-xs text-slate-400"></p>
         </div>
       </div>
@@ -374,7 +417,6 @@
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 no-print">
-      <!-- Coluna 1: Perfil -->
       <div class="glass-card p-5 rounded-3xl">
         <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-sliders text-sky-400 mr-2"></i> 1. Perfil e Barras</h2>
         <div class="space-y-3">
@@ -432,8 +474,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Coluna 2: Retalhos -->
       <div class="glass-card p-5 rounded-3xl flex flex-col">
         <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-recycle text-amber-500 mr-2"></i> 2. Retalhos Existentes</h2>
         <div class="flex gap-2 mb-3">
@@ -455,8 +495,6 @@
           <ul id="stockList" class="space-y-1"></ul>
         </div>
       </div>
-
-      <!-- Coluna 3: Peças -->
       <div class="glass-card p-5 rounded-3xl flex flex-col">
         <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i> 3. Lista de Corte</h2>
         <div class="flex gap-2 mb-2">
@@ -481,8 +519,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Botões Base de Calculo -->
     <div class="flex flex-wrap gap-4 no-print">
       <button onclick="calculate()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
         <i class="fa-solid fa-microchip"></i> CALCULAR PLANO DE CORTE
@@ -492,15 +528,13 @@
         <button onclick="clearForNextProfile()" class="flex-1 sm:flex-none px-6 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-2xl shadow-lg transition-all"><i class="fa-solid fa-broom mr-2"></i> Próximo Perfil</button>
       </div>
     </div>
-
-    <!-- Area de Resultados do Otimizador -->
     <div id="loteSummary" class="mt-6"></div>
     <div id="output" class="mt-6 text-sm"></div>
   </div>
 
   <script>
     // ----------------------------------------------------
-    // FUNÇÕES DE SEGURANÇA E HASHING (Criptografia Web)
+    // FUNÇÕES DE SEGURANÇA E HASHING
     // ----------------------------------------------------
     async function sha256(message) {
       const msgBuffer = new TextEncoder().encode(message);
@@ -508,26 +542,65 @@
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
-
-    // Hash Mestre para Devs (A única forma de validar o painel dev, sem fallback em texto puro)
     const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
 
     // ----------------------------------------------------
-    // CARREGAMENTO DE CONFIGURAÇÕES EXTERNAS (Vercel/GitHub)
+    // VALIDAÇÃO MATEMÁTICA: CPF E CNPJ (ANTI-FRAUDE)
+    // ----------------------------------------------------
+    function validarCPF(cpf) {
+        cpf = cpf.replace(/\D/g, '');
+        if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+        let soma = 0, resto;
+        for (let i = 1; i <= 9; i++) soma = soma + parseInt(cpf.substring(i - 1, i)) * (11 - i);
+        resto = (soma * 10) % 11;
+        if ((resto == 10) || (resto == 11)) resto = 0;
+        if (resto != parseInt(cpf.substring(9, 10))) return false;
+        soma = 0;
+        for (let i = 1; i <= 10; i++) soma = soma + parseInt(cpf.substring(i - 1, i)) * (12 - i);
+        resto = (soma * 10) % 11;
+        if ((resto == 10) || (resto == 11)) resto = 0;
+        if (resto != parseInt(cpf.substring(10, 11))) return false;
+        return true;
+    }
+
+    function validarCNPJ(cnpj) {
+        cnpj = cnpj.replace(/\D/g, '');
+        if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+        let tamanho = cnpj.length - 2;
+        let numeros = cnpj.substring(0, tamanho);
+        let digitos = cnpj.substring(tamanho);
+        let soma = 0;
+        let pos = tamanho - 7;
+        for (let i = tamanho; i >= 1; i--) {
+          soma += numeros.charAt(tamanho - i) * pos--;
+          if (pos < 2) pos = 9;
+        }
+        let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado != digitos.charAt(0)) return false;
+        tamanho = tamanho + 1;
+        numeros = cnpj.substring(0, tamanho);
+        soma = 0;
+        pos = tamanho - 7;
+        for (let i = tamanho; i >= 1; i--) {
+          soma += numeros.charAt(tamanho - i) * pos--;
+          if (pos < 2) pos = 9;
+        }
+        resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado != digitos.charAt(1)) return false;
+        return true;
+    }
+
+    // ----------------------------------------------------
+    // CARREGAMENTO DE CONFIGURAÇÕES EXTERNAS
     // ----------------------------------------------------
     let OPPAH_CONFIG = {};
-
     async function carregarConfiguracoes() {
         try {
-            console.log("Buscando oppah.json localmente na Vercel...");
             const response = await fetch('./oppah.json');
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status} (Arquivo não encontrado)`);
-            
+            if (!response.ok) throw new Error("Erro de HTTP");
             OPPAH_CONFIG = await response.json();
-            console.log("✅ Configurações Cloud Carregadas!", OPPAH_CONFIG);
         } catch (error) {
-            console.error("❌ Falha ao tentar carregar o oppah.json:", error);
-            console.warn("Aviso: O sistema tentará usar o cache local (Plano B).");
+            console.warn("Falha oppah.json, usando cache.");
         }
     }
 
@@ -537,7 +610,8 @@
         webhookLogin: localCfg.webhookLogin || OPPAH_CONFIG.webhookLogin || "",
         webhookRegister: localCfg.webhookRegister || OPPAH_CONFIG.webhookRegister || "",
         webhookCreateOp: localCfg.webhookCreateOp || OPPAH_CONFIG.webhookCreateOp || "",
-        webhookFeedback: localCfg.webhookFeedback || OPPAH_CONFIG.webhookFeedback || ""
+        webhookFeedback: localCfg.webhookFeedback || OPPAH_CONFIG.webhookFeedback || "",
+        webhookOTP: localCfg.webhookOTP || OPPAH_CONFIG.webhookOTP || "" // NOVO: OTP Webhook
       };
     }
 
@@ -552,6 +626,7 @@
       if (cfg.webhookRegister) document.getElementById('webhook-register').value = cfg.webhookRegister;
       if (cfg.webhookCreateOp) document.getElementById('webhook-create-op').value = cfg.webhookCreateOp;
       if (cfg.webhookFeedback) document.getElementById('webhook-feedback').value = cfg.webhookFeedback;
+      if (cfg.webhookOTP) document.getElementById('webhook-otp').value = cfg.webhookOTP;
 
       const sessaoStr = localStorage.getItem('oppah_session');
       if (sessaoStr) {
@@ -561,9 +636,6 @@
       }
     };
 
-    // ----------------------------------------------------
-    // UTILITÁRIOS DA INTERFACE (UI)
-    // ----------------------------------------------------
     function applyMaskCpfCnpj(event) {
       let v = event.target.value.replace(/\D/g, "");
       if (v.length <= 11) {
@@ -599,6 +671,10 @@
         document.getElementById('toast-title').innerText = 'Erro';
         icon.className = 'w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center';
         icon.innerHTML = '<i class="fa-solid fa-xmark text-sm"></i>';
+      } else if (type === 'warning') {
+        document.getElementById('toast-title').innerText = 'Aviso';
+        icon.className = 'w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center';
+        icon.innerHTML = '<i class="fa-solid fa-shield text-sm"></i>';
       } else {
         document.getElementById('toast-title').innerText = 'Sucesso';
         icon.className = 'w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center';
@@ -606,7 +682,7 @@
       }
       toast.style.transform = 'translateY(0)';
       toast.style.opacity = '1';
-      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 4000);
+      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 5000);
     }
 
     function switchTab(tab) {
@@ -623,7 +699,6 @@
       }
     }
 
-    // CORREÇÃO v2.4.5: Totalmente blindado. Nenhuma senha hardcoded aqui.
     async function toggleConfigModal() {
       const modal = document.getElementById('modal-config-sharepoint');
       const isHidden = modal.classList.contains('hidden');
@@ -631,9 +706,7 @@
       if (isHidden) {
         const pass = prompt("🔒 Acesso Restrito Dev - Digite a Senha:");
         if (!pass) return;
-
         const inputHash = await sha256(pass.trim());
-        
         if (inputHash !== MASTER_DEV_HASH) {
           showToast("Senha Master incorreta!", "error");
           return;
@@ -649,46 +722,132 @@
         webhookLogin: document.getElementById('webhook-login').value.trim(),
         webhookRegister: document.getElementById('webhook-register').value.trim(),
         webhookCreateOp: document.getElementById('webhook-create-op').value.trim(),
-        webhookFeedback: document.getElementById('webhook-feedback').value.trim()
+        webhookFeedback: document.getElementById('webhook-feedback').value.trim(),
+        webhookOTP: document.getElementById('webhook-otp').value.trim()
       };
-      
-      const hasEmpty = Object.values(cfg).some(v => v === "");
-      if (hasEmpty) {
-          if(!confirm("Algumas URLs estão vazias. O sistema usará o banco de dados offline (localStorage) como fallback. Deseja continuar?")) return;
-      }
-      
       localStorage.setItem('oppah_config_api', JSON.stringify(cfg));
       toggleConfigModal();
       showToast("URLs Salvas Localmente!", "success");
     }
 
     // ----------------------------------------------------
-    // MODULO DE AUTENTICAÇÃO E CADASTRO
+    // MÓDULO OTP (E-MAIL PIN) & CADASTRO
     // ----------------------------------------------------
-    async function handleRegister(e) {
-      e.preventDefault();
-      const btnText = document.getElementById('btn-register-text');
-      const btnIcon = document.getElementById('btn-register-icon');
-      btnText.innerText = "Criando Conta...";
-      btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
+    let pendingRegistrationData = null;
+    let generatedOTP = "";
 
-      const documento = document.getElementById('reg-documento').value.replace(/\D/g, "");
+    async function initiateRegistration(e) {
+      e.preventDefault();
+      
+      const documentoRaw = document.getElementById('reg-documento').value.replace(/\D/g, "");
       const nomeEmpresa = document.getElementById('reg-company').value.trim();
       const nomeGestor = document.getElementById('reg-nome-gestor').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
+      const email = document.getElementById('reg-email').value.trim().toLowerCase();
       const senhaPlana = document.getElementById('reg-password').value;
 
-      const senhaHash = await sha256(senhaPlana);
+      // 1. VALIDAÇÃO MATEMÁTICA (Barreira 1)
+      if (documentoRaw.length === 11) {
+          if (!validarCPF(documentoRaw)) { showToast("CPF Inválido. Verifique os números.", "error"); return; }
+      } else if (documentoRaw.length === 14) {
+          if (!validarCNPJ(documentoRaw)) { showToast("CNPJ Inválido. Verifique os números.", "error"); return; }
+      } else {
+          showToast("Documento deve ter 11 (CPF) ou 14 (CNPJ) números.", "error"); return;
+      }
 
+      const btnText = document.getElementById('btn-register-text');
+      const btnIcon = document.getElementById('btn-register-icon');
+      btnText.innerText = "Aguarde...";
+      btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
+
+      // Gera o PIN de 6 dígitos aleatório
+      generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      pendingRegistrationData = {
+          documento: documentoRaw,
+          nome_empresa: nomeEmpresa,
+          nome_gestor: nomeGestor,
+          email: email,
+          senhaPlana: senhaPlana 
+      };
+
+      const cfg = getActiveConfig();
+
+      // 2. DISPARO DO OTP VIA POWER AUTOMATE (Barreira 2)
+      if (cfg.webhookOTP) {
+        try {
+          // Chama o webhook apenas para enviar o email com o OTP gerado. Não cadastra ainda.
+          await fetch(cfg.webhookOTP, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, nome: nomeGestor, otp: generatedOTP })
+          });
+          openOTPModal(email);
+        } catch (err) {
+          console.warn("Falha ao chamar webhook OTP.", err);
+          showToast("Erro ao tentar enviar código de verificação.", "error");
+        }
+      } else {
+        // MODO DESENVOLVEDOR / OFFLINE (Se não tiver webhook OTP configurado)
+        openOTPModal(email);
+        setTimeout(() => {
+            showToast(`[Modo Teste] Seu Código OTP é: ${generatedOTP}`, 'warning');
+        }, 1500);
+      }
+      
+      // Reseta botão
+      btnText.innerText = "Continuar (Validar E-mail)";
+      btnIcon.className = "fa-solid fa-arrow-right text-xs";
+    }
+
+    function openOTPModal(email) {
+      document.getElementById('otp-email-display').innerText = email;
+      document.getElementById('otp-input-code').value = "";
+      const modal = document.getElementById('modal-otp');
+      const content = document.getElementById('modal-otp-content');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+        document.getElementById('otp-input-code').focus();
+      }, 10);
+    }
+
+    function cancelOTP() {
+      pendingRegistrationData = null;
+      generatedOTP = "";
+      const modal = document.getElementById('modal-otp');
+      const content = document.getElementById('modal-otp-content');
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
+
+    // Valida o código digitado e, se correto, efetiva o cadastro.
+    async function verifyOTP(e) {
+      e.preventDefault();
+      const inputCode = document.getElementById('otp-input-code').value;
+      const btn = document.getElementById('btn-verify-otp');
+
+      if (inputCode !== generatedOTP) {
+          showToast("Código de verificação incorreto!", "error");
+          document.getElementById('otp-input-code').value = "";
+          document.getElementById('otp-input-code').focus();
+          return;
+      }
+
+      // SUCESSO NO OTP - FINALIZAR CADASTRO
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando Conta...';
+      
+      const senhaHash = await sha256(pendingRegistrationData.senhaPlana);
       const validade = new Date();
       validade.setDate(validade.getDate() + 7);
 
       const novaEmpresa = {
         id_empresa: 'EMP-' + Date.now(),
-        documento: documento,
-        nome_empresa: nomeEmpresa,
-        nome_gestor: nomeGestor,
-        email: email,
+        documento: pendingRegistrationData.documento,
+        nome_empresa: pendingRegistrationData.nome_empresa,
+        nome_gestor: pendingRegistrationData.nome_gestor,
+        email: pendingRegistrationData.email,
         senha: senhaHash,
         licencas_totais: 1,
         validade: validade.toISOString()
@@ -697,6 +856,7 @@
       const cfg = getActiveConfig();
       let savedToCloud = false;
 
+      // Executa o Webhook Original de Cadastro no SharePoint
       if (cfg.webhookRegister) {
         try {
           const resp = await fetch(cfg.webhookRegister, {
@@ -705,24 +865,23 @@
             body: JSON.stringify(novaEmpresa)
           });
           if (resp.ok) savedToCloud = true;
-          else throw new Error("Falha HTTP na Nuvem");
-        } catch (err) {
-          console.warn("Falha no envio da nuvem, caindo para fallback local:", err);
-        }
+        } catch (err) { console.warn("Falha no cadastro nuvem:", err); }
       }
 
       let empresas = JSON.parse(localStorage.getItem('oppah_empresas'));
       empresas.push(novaEmpresa);
       localStorage.setItem('oppah_empresas', JSON.stringify(empresas));
 
-      btnText.innerText = "Começar Teste Grátis";
-      btnIcon.className = "fa-solid fa-rocket text-xs";
-
-      showToast(savedToCloud ? 'Conta criada na Nuvem!' : 'Conta criada Localmente (Modo Offline)!', 'success');
-      document.getElementById('login-email').value = email;
-      document.getElementById('login-password').value = senhaPlana;
+      // Limpa dados e volta pra tela de login
+      document.getElementById('login-email').value = pendingRegistrationData.email;
+      document.getElementById('login-password').value = pendingRegistrationData.senhaPlana;
+      
+      cancelOTP(); // Fecha o modal OTP
       document.getElementById('form-register').reset();
       switchTab('login');
+      btn.innerText = "Confirmar Conta";
+      
+      showToast(savedToCloud ? 'Conta validada e criada na Nuvem!' : 'Conta criada no Cache Local (Modo Offline)', 'success');
     }
 
     async function handleLogin(e) {
@@ -775,9 +934,7 @@
               return;
             }
           }
-        } catch (err) {
-          console.warn("Nuvem indisponível, chaveando para validação local (Offline)...");
-        }
+        } catch (err) {}
       }
 
       if(authSucesso) return;
@@ -798,13 +955,11 @@
       if (operador) {
         const empresa = empresas.find(emp => emp.id_empresa === operador.id_empresa);
         if (empresa && new Date(empresa.validade) < new Date()) {
-          showToast('Modo Offline: O período de testes acabou.', 'error'); 
-          resetLoginBtn(btnText, btnIcon);
-          return;
+          showToast('O período de testes acabou.', 'error'); resetLoginBtn(btnText, btnIcon); return;
         }
         const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
         localStorage.setItem('oppah_session', JSON.stringify(sessao));
-        showToast(`Modo Offline: Bem-vindo, ${operador.nome}!`, 'success');
+        showToast(`Bem-vindo, ${operador.nome}!`, 'success');
         loadAppDashboard(sessao);
         return;
       }
@@ -826,7 +981,7 @@
     }
 
     // ----------------------------------------------------
-    // MÓDULO DE FEEDBACK CLOUD
+    // FEEDBACK, CHANGELOG E OPERADORES
     // ----------------------------------------------------
     function openFeedbackModal() {
       const modal = document.getElementById('modal-feedback');
@@ -836,7 +991,6 @@
         content.classList.remove('scale-95', 'opacity-0');
         content.classList.add('scale-100', 'opacity-100');
       }, 10);
-      
       document.getElementById('form-feedback').reset();
       handleFeedbackTypeChange();
     }
@@ -849,9 +1003,6 @@
       setTimeout(() => { modal.classList.add('hidden'); }, 300);
     }
 
-    // ----------------------------------------------------
-    // MÓDULO DE NOVIDADES (CHANGELOG)
-    // ----------------------------------------------------
     function openChangelogModal() {
       const modal = document.getElementById('modal-changelog');
       const content = document.getElementById('modal-changelog-content');
@@ -875,12 +1026,8 @@
       const categoriaContainer = document.getElementById('feedback-categoria-operador-container');
       const sessaoStr = localStorage.getItem('oppah_session');
       const usuario = sessaoStr ? JSON.parse(sessaoStr) : null;
-      
-      if (usuario && usuario.tipo === 'operador' && tipo === 'sugestao') {
-          categoriaContainer.classList.remove('hidden');
-      } else {
-          categoriaContainer.classList.add('hidden');
-      }
+      if (usuario && usuario.tipo === 'operador' && tipo === 'sugestao') categoriaContainer.classList.remove('hidden');
+      else categoriaContainer.classList.add('hidden');
     }
 
     async function submitFeedback(e) {
@@ -891,45 +1038,23 @@
       
       const tipo = document.getElementById('feedback-tipo').value;
       let mensagem = document.getElementById('feedback-mensagem').value;
-      
       const sessaoStr = localStorage.getItem('oppah_session');
       const usuario = sessaoStr ? JSON.parse(sessaoStr) : { nome: 'Desconhecido', email: 'N/A', tipo: 'N/A', nome_empresa: 'N/A' };
 
       let subcategoria = "";
-      if (usuario.tipo === 'operador' && tipo === 'sugestao') {
-          subcategoria = document.getElementById('feedback-categoria-operador').value;
-      }
+      if (usuario.tipo === 'operador' && tipo === 'sugestao') subcategoria = document.getElementById('feedback-categoria-operador').value;
 
-      const feedbackData = {
-        data: new Date().toISOString(),
-        tipo_usuario: usuario.tipo,
-        nome_usuario: usuario.nome || usuario.nome_empresa, 
-        email_usuario: usuario.email,
-        empresa: usuario.nome_empresa,
-        categoria: tipo,
-        subcategoria: subcategoria,
-        mensagem: mensagem
-      };
-
+      const feedbackData = { data: new Date().toISOString(), tipo_usuario: usuario.tipo, nome_usuario: usuario.nome || usuario.nome_empresa, email_usuario: usuario.email, empresa: usuario.nome_empresa, categoria: tipo, subcategoria: subcategoria, mensagem: mensagem };
       const cfg = getActiveConfig();
 
       if (cfg.webhookFeedback) {
         try {
-          const resp = await fetch(cfg.webhookFeedback, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(feedbackData)
-          });
+          const resp = await fetch(cfg.webhookFeedback, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(feedbackData) });
           if (resp.ok) {
             showToast('Muito obrigado! Seu feedback foi enviado.', 'success');
-            document.getElementById('form-feedback').reset();
-            closeFeedbackModal();
-            btn.innerHTML = originalText;
-            return;
+            document.getElementById('form-feedback').reset(); closeFeedbackModal(); btn.innerHTML = originalText; return;
           }
-        } catch (err) {
-          console.warn("Falha no Webhook de Feedback, ativando Fallback (Zap).");
-        }
+        } catch (err) {}
       }
 
       const numeroSuporte = "5511999999999"; 
@@ -940,76 +1065,38 @@
       showToast('Redirecionando para WhatsApp...', 'success');
       setTimeout(() => {
         window.open(`https://api.whatsapp.com/send?phone=${numeroSuporte}&text=${textoZap}`, '_blank');
-        document.getElementById('form-feedback').reset();
-        closeFeedbackModal();
-        btn.innerHTML = originalText;
+        document.getElementById('form-feedback').reset(); closeFeedbackModal(); btn.innerHTML = originalText;
       }, 1000);
     }
 
     function loadGestorDashboard(sessao) {
-      document.getElementById('login-card').style.display = 'none';
-      document.getElementById('gestor-dashboard').style.display = 'block';
-      
+      document.getElementById('login-card').style.display = 'none'; document.getElementById('gestor-dashboard').style.display = 'block';
       const empresaLocal = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa);
-      
-      const empresa = {
-          id_empresa: sessao.id_empresa,
-          nome_empresa: sessao.nome_empresa || (empresaLocal ? empresaLocal.nome_empresa : 'Empresa'),
-          nome_gestor: sessao.nome || (empresaLocal ? empresaLocal.nome_gestor : ''),
-          email: sessao.email,
-          validade: sessao.validade || (empresaLocal ? empresaLocal.validade : new Date(Date.now() + 7*24*60*60*1000).toISOString()),
-          licencas_totais: parseInt(sessao.licencas_totais) || (empresaLocal ? empresaLocal.licencas_totais : 1)
-      };
-
-      if(empresaLocal) {
-          Object.assign(empresaLocal, empresa);
-          localStorage.setItem('oppah_empresas', JSON.stringify(JSON.parse(localStorage.getItem('oppah_empresas'))));
-      }
-
+      const empresa = { id_empresa: sessao.id_empresa, nome_empresa: sessao.nome_empresa || (empresaLocal ? empresaLocal.nome_empresa : 'Empresa'), nome_gestor: sessao.nome || (empresaLocal ? empresaLocal.nome_gestor : ''), email: sessao.email, validade: sessao.validade || (empresaLocal ? empresaLocal.validade : new Date(Date.now() + 7*24*60*60*1000).toISOString()), licencas_totais: parseInt(sessao.licencas_totais) || (empresaLocal ? empresaLocal.licencas_totais : 1) };
+      if(empresaLocal) { Object.assign(empresaLocal, empresa); localStorage.setItem('oppah_empresas', JSON.stringify(JSON.parse(localStorage.getItem('oppah_empresas')))); }
       document.getElementById('gestorCompanyName').innerText = empresa.nome_empresa;
       document.getElementById('gestorManagerName').innerText = empresa.nome_gestor ? `Gestor: ${empresa.nome_gestor}` : '';
       document.getElementById('gestorEmail').innerText = empresa.email;
-
       const diffDays = Math.ceil((new Date(empresa.validade) - new Date()) / (1000 * 60 * 60 * 24));
       const diasLabel = document.getElementById('gestorTrialDays');
       diasLabel.innerText = diffDays > 0 ? `${diffDays} Dias Restantes` : 'Plano Expirado';
       diasLabel.className = diffDays > 0 ? "text-2xl font-black text-emerald-400 mt-1" : "text-2xl font-black text-rose-500 mt-1";
       document.getElementById('gestorExpirationDate').innerText = `Expira em: ${new Date(empresa.validade).toLocaleDateString('pt-BR')}`;
-
       atualizarListaOperadores(empresa);
     }
 
     function atualizarListaOperadores(empresa) {
       const operadores = JSON.parse(localStorage.getItem('oppah_operadores')).filter(op => op.id_empresa === empresa.id_empresa);
-      
-      const elTotal = document.getElementById('gestorLicensesTotal');
-      const elUsed = document.getElementById('gestorLicensesUsed');
-      if (elTotal) elTotal.innerText = empresa.licencas_totais;
-      if (elUsed) elUsed.innerText = operadores.length;
-
-      const tbody = document.getElementById('operadoresTableBody');
-      const btnCreate = document.getElementById('btn-create-op');
-
+      const elTotal = document.getElementById('gestorLicensesTotal'); const elUsed = document.getElementById('gestorLicensesUsed');
+      if (elTotal) elTotal.innerText = empresa.licencas_totais; if (elUsed) elUsed.innerText = operadores.length;
+      const tbody = document.getElementById('operadoresTableBody'); const btnCreate = document.getElementById('btn-create-op');
       if (operadores.length >= empresa.licencas_totais) {
-        if (btnCreate) {
-          btnCreate.disabled = true; btnCreate.innerText = "❌ Limite de Licenças Atingido";
-          btnCreate.className = "sm:col-span-2 lg:col-span-4 py-2.5 bg-slate-800 text-slate-500 font-bold text-xs rounded-xl cursor-not-allowed";
-        }
+        if (btnCreate) { btnCreate.disabled = true; btnCreate.innerText = "❌ Limite de Licenças Atingido"; btnCreate.className = "sm:col-span-2 lg:col-span-4 py-2.5 bg-slate-800 text-slate-500 font-bold text-xs rounded-xl cursor-not-allowed"; }
       } else {
-        if (btnCreate) {
-          btnCreate.disabled = false; btnCreate.innerText = "+ Cadastrar Operador";
-          btnCreate.className = "sm:col-span-2 lg:col-span-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex justify-center items-center gap-2";
-        }
+        if (btnCreate) { btnCreate.disabled = false; btnCreate.innerText = "+ Cadastrar Operador"; btnCreate.className = "sm:col-span-2 lg:col-span-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex justify-center items-center gap-2"; }
       }
-
       if (tbody) {
-        tbody.innerHTML = operadores.map((op) => `
-          <tr class="hover:bg-slate-900/40">
-            <td class="p-3 font-bold text-slate-200">${op.nome}</td>
-            <td class="p-3 text-slate-400 font-mono text-[11px]">${op.email}</td>
-            <td class="p-3 text-right"><button onclick="removerOperador('${op.email}')" class="text-rose-400 hover:text-rose-300 text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = operadores.map((op) => `<tr class="hover:bg-slate-900/40"><td class="p-3 font-bold text-slate-200">${op.nome}</td><td class="p-3 text-slate-400 font-mono text-[11px]">${op.email}</td><td class="p-3 text-right"><button onclick="removerOperador('${op.email}')" class="text-rose-400 hover:text-rose-300 text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
       }
     }
 
@@ -1018,43 +1105,24 @@
       const sessao = JSON.parse(localStorage.getItem('oppah_session'));
       const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(emp => emp.id_empresa === sessao.id_empresa) || { id_empresa: sessao.id_empresa, licencas_totais: sessao.licencas_totais };
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
-
       if (operadores.filter(op => op.id_empresa === empresa.id_empresa).length >= empresa.licencas_totais) return;
 
-      const email = document.getElementById('op-email').value.trim();
-      const nome = document.getElementById('op-name').value.trim();
-      const documento = document.getElementById('op-documento').value.replace(/\D/g, "");
-      const senhaPlana = document.getElementById('op-password').value;
-      const senhaHash = await sha256(senhaPlana); 
-
+      const email = document.getElementById('op-email').value.trim(); const nome = document.getElementById('op-name').value.trim(); const documento = document.getElementById('op-documento').value.replace(/\D/g, "");
+      const senhaHash = await sha256(document.getElementById('op-password').value); 
       const novoOperador = { id_empresa: sessao.id_empresa, nome, email, senha: senhaHash, documento };
-
       const cfg = getActiveConfig();
+      
       if (cfg.webhookCreateOp) {
-        try {
-          const resp = await fetch(cfg.webhookCreateOp, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(novoOperador)
-          });
-          if (!resp.ok) throw new Error("Erro Nuvem");
-        } catch (err) {
-          console.warn("Operador criado localmente em fallback.");
-        }
+        try { const resp = await fetch(cfg.webhookCreateOp, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(novoOperador) }); if (!resp.ok) throw new Error("Erro Nuvem"); } catch (err) {}
       }
-
-      operadores.push(novoOperador);
-      localStorage.setItem('oppah_operadores', JSON.stringify(operadores));
-      e.target.reset();
-      atualizarListaOperadores(empresa);
-      showToast('Funcionário cadastrado (Criptografado)!', 'success');
+      operadores.push(novoOperador); localStorage.setItem('oppah_operadores', JSON.stringify(operadores));
+      e.target.reset(); atualizarListaOperadores(empresa); showToast('Funcionário cadastrado!', 'success');
     }
 
     function removerOperador(email) {
       let operadores = JSON.parse(localStorage.getItem('oppah_operadores'));
       localStorage.setItem('oppah_operadores', JSON.stringify(operadores.filter(op => op.email !== email)));
-      const sessao = JSON.parse(localStorage.getItem('oppah_session'));
-      const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || { id_empresa: sessao.id_empresa, licencas_totais: sessao.licencas_totais };
+      const sessao = JSON.parse(localStorage.getItem('oppah_session')); const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || { id_empresa: sessao.id_empresa, licencas_totais: sessao.licencas_totais };
       atualizarListaOperadores(empresa);
     }
 
@@ -1062,110 +1130,38 @@
     const clientColors = {}, colorPalette = ['#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#a855f7', '#14b8a6', '#f97316'];
 
     function loadAppDashboard(sessao) {
-      document.getElementById('login-card').style.display = 'none';
-      document.getElementById('app-dashboard').style.display = 'block';
-      document.getElementById('operatorCompanyName').innerText = `Licença: ${sessao.nome_empresa || 'Empresa Privada'}`;
-      document.getElementById('operatorGreeting').innerText = `👤 ${sessao.nome}`;
+      document.getElementById('login-card').style.display = 'none'; document.getElementById('app-dashboard').style.display = 'block';
+      document.getElementById('operatorCompanyName').innerText = `Licença: ${sessao.nome_empresa || 'Empresa'}`; document.getElementById('operatorGreeting').innerText = `👤 ${sessao.nome}`;
       renderLists(); renderLoteSummary();
     }
 
     function toggleLimitBarsInput() { document.getElementById('limitBarsInputGroup').style.display = document.getElementById('limitBarsCheckbox').checked ? 'block' : 'none'; }
     function toggleSplicesInput() { document.getElementById('maxSplicesInputGroup').style.display = document.getElementById('allowSplicesCheckbox').checked ? 'block' : 'none'; }
-    function getClientBadgeHTML(clientName) {
-      if (!clientColors[clientName]) clientColors[clientName] = colorPalette[Object.keys(clientColors).length % colorPalette.length];
-      return `<span class="client-badge" style="background-color: ${clientColors[clientName]};">[${clientName}]</span>`;
-    }
+    function getClientBadgeHTML(clientName) { if (!clientColors[clientName]) clientColors[clientName] = colorPalette[Object.keys(clientColors).length % colorPalette.length]; return `<span class="client-badge" style="background-color: ${clientColors[clientName]};">[${clientName}]</span>`; }
 
-    function addStock() {
-      const input = document.getElementById('stockInput');
-      const val = parseFloat(input.value);
-      if (val > 0) { stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value }); input.value = ''; renderLists(); }
-    }
-
-    function addPiece() {
-      const client = document.getElementById('pieceClient').value.trim() || 'Geral';
-      const name = document.getElementById('pieceName').value.trim() || 'Peça';
-      const size = parseFloat(document.getElementById('pieceSize').value);
-      const qty = parseInt(document.getElementById('pieceQty').value) || 1;
-      const esq = parseFloat(document.getElementById('angleEsqSelect').value);
-      const dir = parseFloat(document.getElementById('angleDirSelect').value);
-      if (size > 0 && qty > 0) {
-        for(let i=0; i<qty; i++) pieces.push({ client, name, size, esq, dir });
-        document.getElementById('pieceSize').value = ''; renderLists();
-      }
-    }
-
-    function removeStock(index) { stocks.splice(index, 1); renderLists(); }
-    function removePiece(index) { pieces.splice(index, 1); renderLists(); }
+    function addStock() { const input = document.getElementById('stockInput'); const val = parseFloat(input.value); if (val > 0) { stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value }); input.value = ''; renderLists(); } }
+    function addPiece() { const client = document.getElementById('pieceClient').value.trim() || 'Geral'; const name = document.getElementById('pieceName').value.trim() || 'Peça'; const size = parseFloat(document.getElementById('pieceSize').value); const qty = parseInt(document.getElementById('pieceQty').value) || 1; const esq = parseFloat(document.getElementById('angleEsqSelect').value); const dir = parseFloat(document.getElementById('angleDirSelect').value); if (size > 0 && qty > 0) { for(let i=0; i<qty; i++) pieces.push({ client, name, size, esq, dir }); document.getElementById('pieceSize').value = ''; renderLists(); } }
+    function removeStock(index) { stocks.splice(index, 1); renderLists(); } function removePiece(index) { pieces.splice(index, 1); renderLists(); }
 
     function renderLists() {
-      document.getElementById('stockList').innerHTML = stocks.map((s, i) => `
-        <li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200">
-          <span>${s.size} mm <span class="angle-badge">${s.ends}</span></span>
-          <button onclick="removeStock(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
-        </li>
-      `).join('');
-      document.getElementById('pieceList').innerHTML = pieces.map((p, i) => `
-        <li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200">
-          <span>${getClientBadgeHTML(p.client)} <span class="piece-tag">${p.name}</span> (${p.size}mm) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span>
-          <button onclick="removePiece(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
-        </li>
-      `).join('');
+      document.getElementById('stockList').innerHTML = stocks.map((s, i) => `<li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><span>${s.size} mm <span class="angle-badge">${s.ends}</span></span><button onclick="removeStock(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button></li>`).join('');
+      document.getElementById('pieceList').innerHTML = pieces.map((p, i) => `<li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><span>${getClientBadgeHTML(p.client)} <span class="piece-tag">${p.name}</span> (${p.size}mm) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span><button onclick="removePiece(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button></li>`).join('');
     }
 
     function calculate() {
       if(pieces.length === 0) { showToast("Adicione peças primeiro.", "error"); return; }
-      
-      const profile = document.getElementById('profileCode').value.toUpperCase().trim() || 'GERAL';
-      const color = document.getElementById('profileColor').value.trim() || 'Sem cor';
-      const barSize = parseFloat(document.getElementById('barSize').value) || 6000;
-      const blade = parseFloat(document.getElementById('bladeSize').value) || 0;
-      const paint = parseFloat(document.getElementById('paintSize').value) || 0;
-      const mode = document.getElementById('angleModeInput').value;
+      const profile = document.getElementById('profileCode').value.toUpperCase().trim() || 'GERAL'; const color = document.getElementById('profileColor').value.trim() || 'Sem cor'; const barSize = parseFloat(document.getElementById('barSize').value) || 6000; const blade = parseFloat(document.getElementById('bladeSize').value) || 0; const paint = parseFloat(document.getElementById('paintSize').value) || 0; const mode = document.getElementById('angleModeInput').value;
+      const isLimitBars = document.getElementById('limitBarsCheckbox').checked; const availableBarsLimit = isLimitBars ? (parseInt(document.getElementById('availableBarsCount').value) || 0) : 0; const allowSplices = document.getElementById('allowSplicesCheckbox').checked; const maxSplices = parseInt(document.getElementById('maxSplicesCount').value) || 1;
 
-      const isLimitBars = document.getElementById('limitBarsCheckbox').checked;
-      const availableBarsLimit = isLimitBars ? (parseInt(document.getElementById('availableBarsCount').value) || 0) : 0;
-      const allowSplices = document.getElementById('allowSplicesCheckbox').checked;
-      const maxSplices = parseInt(document.getElementById('maxSplicesCount').value) || 1;
-
-      for (let p of pieces) {
-        if (p.size > (barSize - paint) && !allowSplices) {
-          showToast(`Peça "${p.name}" (${p.size}mm) é maior que a barra. Habilite emendas.`, "error"); return;
-        }
-      }
-
-      let availableStock = [...stocks].sort((a,b) => b.size - a.size);
-      let toCut = [...pieces].sort((a,b) => b.size - a.size);
-      let bins = [];
-      
-      availableStock.forEach((st, idx) => {
-        let deduction = paint;
-        if (st.ends === '45/90') deduction += 20;
-        if (st.ends === '45/45') deduction += 40;
-        bins.push({ type: 'stock', original: st.size, ends: st.ends, leftover: st.size - deduction, used: [], id: idx });
-      });
-
+      for (let p of pieces) { if (p.size > (barSize - paint) && !allowSplices) { showToast(`Peça "${p.name}" é maior que a barra.`, "error"); return; } }
+      let availableStock = [...stocks].sort((a,b) => b.size - a.size); let toCut = [...pieces].sort((a,b) => b.size - a.size); let bins = [];
+      availableStock.forEach((st, idx) => { let deduction = paint; if (st.ends === '45/90') deduction += 20; if (st.ends === '45/45') deduction += 40; bins.push({ type: 'stock', original: st.size, ends: st.ends, leftover: st.size - deduction, used: [], id: idx }); });
       let newBars = [];
 
       function trySplice(piece, currentBins) {
-        let sortedBins = [...currentBins].sort((a, b) => b.leftover - a.leftover);
-        let segments = [], remaining = piece.size;
-        for (let bin of sortedBins) {
-          if (remaining <= 0) break;
-          let maxTake = bin.leftover - blade;
-          if (maxTake > 0) {
-            let take = Math.min(remaining, maxTake);
-            segments.push({ bin: bin, take: take });
-            remaining -= take;
-          }
-        }
-        if (remaining <= 0 && segments.length <= maxSplices + 1) {
-          segments.forEach((seg, idx) => {
-            seg.bin.leftover -= (seg.take + blade);
-            seg.bin.used.push({ ...piece, size: seg.take, originalSize: piece.size, isSplice: true, splicePart: idx + 1, spliceTotal: segments.length });
-          });
-          return true;
-        }
+        let sortedBins = [...currentBins].sort((a, b) => b.leftover - a.leftover); let segments = [], remaining = piece.size;
+        for (let bin of sortedBins) { if (remaining <= 0) break; let maxTake = bin.leftover - blade; if (maxTake > 0) { let take = Math.min(remaining, maxTake); segments.push({ bin: bin, take: take }); remaining -= take; } }
+        if (remaining <= 0 && segments.length <= maxSplices + 1) { segments.forEach((seg, idx) => { seg.bin.leftover -= (seg.take + blade); seg.bin.used.push({ ...piece, size: seg.take, originalSize: piece.size, isSplice: true, splicePart: idx + 1, spliceTotal: segments.length }); }); return true; }
         return false;
       }
 
@@ -1173,139 +1169,57 @@
         let fitted = false;
         while (!fitted) {
           let bestBin = null, minWaste = Infinity;
-          for (let bin of bins) {
-            let waste = bin.leftover - (piece.size + blade);
-            if (waste >= 0 && waste < minWaste) { bestBin = bin; minWaste = waste; }
-          }
-          if (bestBin) {
-            bestBin.leftover -= (piece.size + blade);
-            bestBin.used.push({...piece});
-            fitted = true; break;
-          }
+          for (let bin of bins) { let waste = bin.leftover - (piece.size + blade); if (waste >= 0 && waste < minWaste) { bestBin = bin; minWaste = waste; } }
+          if (bestBin) { bestBin.leftover -= (piece.size + blade); bestBin.used.push({...piece}); fitted = true; break; }
           if (allowSplices && trySplice(piece, bins)) { fitted = true; break; }
-          let newBin = { type: 'new', original: barSize, leftover: barSize - paint, used: [], id: newBars.length };
-          newBars.push(newBin); bins.push(newBin);
+          let newBin = { type: 'new', original: barSize, leftover: barSize - paint, used: [], id: newBars.length }; newBars.push(newBin); bins.push(newBin);
         }
       }
 
-      let stockPlans = bins.filter(b => b.type === 'stock' && b.used.length > 0).map(b => ({ original: b.original, ends: b.ends, cuts: b.used, leftover: b.leftover }));
-      let newBarPlans = bins.filter(b => b.type === 'new' && b.used.length > 0).map(b => ({ cuts: b.used, leftover: b.leftover }));
-
-      const totalBarsNeeded = newBarPlans.length;
-      let barsToBuy = isLimitBars ? Math.max(0, totalBarsNeeded - availableBarsLimit) : totalBarsNeeded;
-      const totalPieceLen = pieces.reduce((acc, p) => acc + p.size, 0);
-      const totalRawLen = (totalBarsNeeded * barSize) + stockPlans.reduce((acc, s) => acc + s.original, 0);
-      const efficiencyPct = totalRawLen > 0 ? ((totalPieceLen / totalRawLen) * 100).toFixed(1) : 0;
-
+      let stockPlans = bins.filter(b => b.type === 'stock' && b.used.length > 0).map(b => ({ original: b.original, ends: b.ends, cuts: b.used, leftover: b.leftover })); let newBarPlans = bins.filter(b => b.type === 'new' && b.used.length > 0).map(b => ({ cuts: b.used, leftover: b.leftover }));
+      const totalBarsNeeded = newBarPlans.length; let barsToBuy = isLimitBars ? Math.max(0, totalBarsNeeded - availableBarsLimit) : totalBarsNeeded;
+      const totalPieceLen = pieces.reduce((acc, p) => acc + p.size, 0); const totalRawLen = (totalBarsNeeded * barSize) + stockPlans.reduce((acc, s) => acc + s.original, 0); const efficiencyPct = totalRawLen > 0 ? ((totalPieceLen / totalRawLen) * 100).toFixed(1) : 0;
       currentCalculation = { profile, color, barSize, blade, paint, mode, isLimitBars, availableBarsLimit, barsToBuy, efficiencyPct, stocks: [...stocks], pieces: [...pieces], stockPlans, newBarPlans, newBarsCount: totalBarsNeeded, stockUsedCount: stockPlans.length, piecesCount: pieces.length };
-
-      document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
-      renderResultOutput(currentCalculation);
-      document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('postCalcActions').classList.replace('hidden', 'flex'); renderResultOutput(currentCalculation); document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function toggleBarCheck(barId) { document.getElementById(barId).classList.toggle('completed'); }
-    function toggleCutCheck(cutRowId) { document.getElementById(cutRowId).classList.toggle('done'); }
+    function toggleBarCheck(barId) { document.getElementById(barId).classList.toggle('completed'); } function toggleCutCheck(cutRowId) { document.getElementById(cutRowId).classList.toggle('done'); }
 
     function renderResultOutput(calc) {
-      const isSquareMode = calc.mode === 'square_first';
-      const formatPieceName = (c) => c.isSplice ? `${c.name} <span class="text-amber-400 text-[10px] font-bold ml-1">(Emenda ${c.splicePart}/${c.spliceTotal})</span>` : c.name;
-      
+      const isSquareMode = calc.mode === 'square_first'; const formatPieceName = (c) => c.isSplice ? `${c.name} <span class="text-amber-400 text-[10px] font-bold ml-1">(Emenda ${c.splicePart}/${c.spliceTotal})</span>` : c.name;
       let html = `<div class="flex justify-between items-center mb-4 flex-wrap gap-2 no-print"><h2 class="text-lg font-bold text-white"><i class="fa-solid fa-chart-pie text-sky-400"></i> Plano — Perfil <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></h2><div class="flex gap-2"><button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-300"><i class="fa-solid fa-print"></i> PDF Oficina</button></div></div>`;
-      if (calc.isLimitBars && calc.barsToBuy > 0) {
-        html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm">⚠️ <strong>Estoque:</strong> Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir.</div>`;
-      }
+      if (calc.isLimitBars && calc.barsToBuy > 0) html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm">⚠️ Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir.</div>`;
       html += `<div class="glass-card p-4 rounded-xl mb-6 text-sm border-sky-500/30"><ul class="space-y-1 text-slate-300"><li>Barras Novas: <strong class="text-white">${calc.newBarsCount}</strong></li><li>Retalhos Usados: <strong class="text-white">${calc.stockUsedCount}</strong></li><li>Aproveitamento: <strong class="text-emerald-400">${calc.efficiencyPct}%</strong></li></ul></div>`;
 
       function renderBarAngleBadge(c) { return isSquareMode ? `<span class="angle-badge">90° / 90°</span>` : `<span class="angle-badge">${c.esq}° / ${c.dir}°</span>`; }
-
       if (calc.stockPlans.length > 0) {
         html += `<h3 class="font-bold text-amber-400 mb-3"><i class="fa-solid fa-recycle"></i> Retalhos do Estoque</h3>`;
-        calc.stockPlans.forEach((plan, idx) => {
-          const barId = `stock_bar_${idx}`;
-          html += `<div class="bar-result stock" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Retalho #${idx+1} (${plan.original} mm)</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="s_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('s_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div></div></div>`;
-        });
+        calc.stockPlans.forEach((plan, idx) => { const barId = `stock_bar_${idx}`; html += `<div class="bar-result stock" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Retalho #${idx+1} (${plan.original} mm)</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="s_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('s_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div></div></div>`; });
       }
-
       if (calc.newBarPlans.length > 0) {
         html += `<h3 class="font-bold text-sky-400 mb-3 mt-5"><i class="fa-solid fa-ruler"></i> Barras Novas de ${calc.barSize}mm</h3>`;
-        calc.newBarPlans.forEach((plan, idx) => {
-          const isFromStock = calc.isLimitBars && ((idx + 1) <= calc.availableBarsLimit);
-          const barId = `new_bar_${idx}`;
-          html += `<div class="bar-result ${!isFromStock && calc.isLimitBars ? 'alert-limit' : ''}" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${calc.isLimitBars ? (isFromStock ? '<span class="text-emerald-400 text-[10px]">(Do Estoque)</span>' : '<span class="text-rose-400 text-[10px]">(Comprar)</span>') : ''}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="n_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('n_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div></div></div>`;
-        });
+        calc.newBarPlans.forEach((plan, idx) => { const isFromStock = calc.isLimitBars && ((idx + 1) <= calc.availableBarsLimit); const barId = `new_bar_${idx}`; html += `<div class="bar-result ${!isFromStock && calc.isLimitBars ? 'alert-limit' : ''}" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${calc.isLimitBars ? (isFromStock ? '<span class="text-emerald-400 text-[10px]">(Do Estoque)</span>' : '<span class="text-rose-400 text-[10px]">(Comprar)</span>') : ''}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="n_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('n_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div></div></div>`; });
       }
-
       if (isSquareMode) {
         const angularPieces = [...calc.stockPlans.flatMap(p => p.cuts), ...calc.newBarPlans.flatMap(p => p.cuts)].filter(p => p.esq !== 90 || p.dir !== 90);
-        if (angularPieces.length > 0) {
-          html += `<div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl mt-6"><h3 class="font-bold text-amber-400 mb-2">📐 Guia de Refilo Angular</h3><ul class="space-y-2">`;
-          angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size}mm) -> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; });
-          html += `</ul></div>`;
-        }
+        if (angularPieces.length > 0) { html += `<div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl mt-6"><h3 class="font-bold text-amber-400 mb-2">📐 Guia de Refilo Angular</h3><ul class="space-y-2">`; angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size}mm) -> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; }); html += `</ul></div>`; }
       }
       document.getElementById('output').innerHTML = html;
     }
 
-    function saveToLote() {
-      if (!currentCalculation) return;
-      const idx = loteSaved.findIndex(i => i.profile === currentCalculation.profile && i.color === currentCalculation.color);
-      if (idx >= 0) loteSaved[idx] = currentCalculation; else loteSaved.push(currentCalculation);
-      renderLoteSummary(); showToast("Salvo no Lote!");
-    }
-
-    function clearForNextProfile() {
-      pieces = []; stocks = []; currentCalculation = null; renderLists();
-      document.getElementById('postCalcActions').classList.replace('flex', 'hidden');
-      document.getElementById('output').innerHTML = '';
-      document.getElementById('pieceClient').value = '';
-      document.getElementById('pieceName').value = '';
-    }
+    function saveToLote() { if (!currentCalculation) return; const idx = loteSaved.findIndex(i => i.profile === currentCalculation.profile && i.color === currentCalculation.color); if (idx >= 0) loteSaved[idx] = currentCalculation; else loteSaved.push(currentCalculation); renderLoteSummary(); showToast("Salvo no Lote!"); }
+    function clearForNextProfile() { pieces = []; stocks = []; currentCalculation = null; renderLists(); document.getElementById('postCalcActions').classList.replace('flex', 'hidden'); document.getElementById('output').innerHTML = ''; document.getElementById('pieceClient').value = ''; document.getElementById('pieceName').value = ''; }
 
     function renderLoteSummary() {
-      const box = document.getElementById('loteSummary');
-      if (loteSaved.length === 0) { box.innerHTML = ''; return; }
-      let html = `<div class="glass-card p-5 rounded-3xl border-indigo-500/30"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-indigo-400"><i class="fa-solid fa-layer-group"></i> Lote (${loteSaved.length} Perfis)</h3><button onclick="sendWhatsAppOrder()" class="bg-[#25D366] hover:bg-[#20b858] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all no-print"><i class="fa-brands fa-whatsapp"></i> Pedir ao Fornecedor</button></div>`;
-      html += `<div class="overflow-x-auto border border-slate-700 rounded-xl"><table class="w-full text-xs text-left"><thead class="bg-slate-900 text-slate-400 border-b border-slate-700"><tr><th class="p-2">Perfil</th><th class="p-2">Cor</th><th class="p-2">Uso</th><th class="p-2 text-rose-400">Comprar</th><th class="p-2 no-print text-center">Ações</th></tr></thead><tbody class="divide-y divide-slate-800 bg-slate-900/50">`;
-      loteSaved.forEach((item, idx) => {
-        html += `<tr><td class="p-2 font-bold text-white">${item.profile}</td><td class="p-2">${item.color}</td><td class="p-2">${item.newBarsCount}</td><td class="p-2 font-bold text-rose-400">${item.barsToBuy}</td><td class="p-2 no-print flex justify-center gap-3"><button onclick="viewLoteItem(${idx})" class="text-sky-400"><i class="fa-solid fa-eye"></i></button><button onclick="editLoteItem(${idx})" class="text-amber-400"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="loteSaved.splice(${idx}, 1); renderLoteSummary();" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-      });
+      const box = document.getElementById('loteSummary'); if (loteSaved.length === 0) { box.innerHTML = ''; return; }
+      let html = `<div class="glass-card p-5 rounded-3xl border-indigo-500/30"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-indigo-400"><i class="fa-solid fa-layer-group"></i> Lote (${loteSaved.length} Perfis)</h3><button onclick="sendWhatsAppOrder()" class="bg-[#25D366] hover:bg-[#20b858] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all no-print"><i class="fa-brands fa-whatsapp"></i> Pedir ao Fornecedor</button></div><div class="overflow-x-auto border border-slate-700 rounded-xl"><table class="w-full text-xs text-left"><thead class="bg-slate-900 text-slate-400 border-b border-slate-700"><tr><th class="p-2">Perfil</th><th class="p-2">Cor</th><th class="p-2">Uso</th><th class="p-2 text-rose-400">Comprar</th><th class="p-2 no-print text-center">Ações</th></tr></thead><tbody class="divide-y divide-slate-800 bg-slate-900/50">`;
+      loteSaved.forEach((item, idx) => { html += `<tr><td class="p-2 font-bold text-white">${item.profile}</td><td class="p-2">${item.color}</td><td class="p-2">${item.newBarsCount}</td><td class="p-2 font-bold text-rose-400">${item.barsToBuy}</td><td class="p-2 no-print flex justify-center gap-3"><button onclick="viewLoteItem(${idx})" class="text-sky-400"><i class="fa-solid fa-eye"></i></button><button onclick="editLoteItem(${idx})" class="text-amber-400"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="loteSaved.splice(${idx}, 1); renderLoteSummary();" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
       box.innerHTML = html + `</tbody></table></div></div>`;
     }
 
-    function viewLoteItem(idx) {
-      if (!loteSaved[idx]) return;
-      currentCalculation = loteSaved[idx]; renderResultOutput(currentCalculation);
-      document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
-      document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function editLoteItem(idx) {
-      if (!loteSaved[idx]) return;
-      const item = loteSaved[idx];
-      document.getElementById('profileCode').value = item.profile;
-      document.getElementById('profileColor').value = item.color;
-      document.getElementById('barSize').value = item.barSize;
-      document.getElementById('bladeSize').value = item.blade;
-      document.getElementById('paintSize').value = item.paint;
-      document.getElementById('angleModeInput').value = item.mode;
-      document.getElementById('limitBarsCheckbox').checked = item.isLimitBars;
-      document.getElementById('availableBarsCount').value = item.availableBarsLimit;
-      toggleLimitBarsInput();
-      stocks = [...item.stocks]; pieces = [...item.pieces]; renderLists();
-      currentCalculation = item; renderResultOutput(currentCalculation);
-      document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function sendWhatsAppOrder() {
-      const itemsToBuy = loteSaved.filter(i => i.barsToBuy > 0);
-      if (itemsToBuy.length === 0) { showToast("Nada a comprar!", "error"); return; }
-      let text = `🛒 *PEDIDO*\n----------------\n`; let total = 0;
-      itemsToBuy.forEach(item => { text += `• ${item.profile} (${item.color}) - Qtd: *${item.barsToBuy}*\n`; total += item.barsToBuy; });
-      text += `----------------\n📦 *TOTAL: ${total} barras*`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-    }
+    function viewLoteItem(idx) { if (!loteSaved[idx]) return; currentCalculation = loteSaved[idx]; renderResultOutput(currentCalculation); document.getElementById('postCalcActions').classList.replace('hidden', 'flex'); document.getElementById('output').scrollIntoView({ behavior: 'smooth' }); }
+    function editLoteItem(idx) { if (!loteSaved[idx]) return; const item = loteSaved[idx]; document.getElementById('profileCode').value = item.profile; document.getElementById('profileColor').value = item.color; document.getElementById('barSize').value = item.barSize; document.getElementById('bladeSize').value = item.blade; document.getElementById('paintSize').value = item.paint; document.getElementById('angleModeInput').value = item.mode; document.getElementById('limitBarsCheckbox').checked = item.isLimitBars; document.getElementById('availableBarsCount').value = item.availableBarsLimit; toggleLimitBarsInput(); stocks = [...item.stocks]; pieces = [...item.pieces]; renderLists(); currentCalculation = item; renderResultOutput(currentCalculation); document.getElementById('postCalcActions').classList.replace('hidden', 'flex'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function sendWhatsAppOrder() { const itemsToBuy = loteSaved.filter(i => i.barsToBuy > 0); if (itemsToBuy.length === 0) { showToast("Nada a comprar!", "error"); return; } let text = `🛒 *PEDIDO*\n----------------\n`; let total = 0; itemsToBuy.forEach(item => { text += `• ${item.profile} (${item.color}) - Qtd: *${item.barsToBuy}*\n`; total += item.barsToBuy; }); text += `----------------\n📦 *TOTAL: ${total} barras*`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank'); }
   </script>
 </body>
 </html>
