@@ -202,6 +202,40 @@
     </div>
   </div>
 
+  <!-- MODAL DE BOAS VINDAS GESTOR (PRIMEIRO ACESSO) -->
+  <div id="gestor-welcome-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden transition-opacity">
+    <div class="glass-card max-w-md w-full p-8 rounded-3xl shadow-2xl border border-amber-500/30 m-4 transform transition-all scale-95 opacity-0 text-center" id="gestor-welcome-content">
+      <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-amber-500/30 shadow-inner">
+        <i class="fa-solid fa-crown"></i>
+      </div>
+      <h3 class="font-black text-white text-2xl mb-2">Bem-vindo(a) ao Comando!</h3>
+      <p class="text-xs text-slate-400 mb-6">Como você prefere ser chamado(a) na plataforma?</p>
+      
+      <div class="space-y-4 text-left">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1">Título & Nome</label>
+          <div class="flex gap-2">
+            <select id="gestorPrefTitle" class="w-1/3 px-3 py-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-amber-500 outline-none cursor-pointer">
+              <option value="">(Nenhum)</option>
+              <option value="Sr.">Sr.</option>
+              <option value="Sra.">Sra.</option>
+              <option value="Dr.">Dr.</option>
+              <option value="Dra.">Dra.</option>
+              <option value="Mestre">Mestre</option>
+              <option value="Lorde">Lorde</option>
+              <option value="Imperador">Imperador</option>
+              <option value="Chefe">Chefe</option>
+            </select>
+            <input type="text" id="gestorPrefName" placeholder="Seu Nome" class="w-2/3 px-3 py-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-amber-500 outline-none">
+          </div>
+        </div>
+        <button type="button" onclick="saveGestorPreferences()" class="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white font-bold text-sm rounded-xl transition-all shadow-lg flex justify-center items-center gap-2">
+          Acessar Meu Painel <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- =============================== -->
   <!-- TELA DE LOGIN & CADASTRO        -->
   <!-- =============================== -->
@@ -620,7 +654,7 @@
 
     async function carregarConfiguracoes() {
         try {
-            const urlConfigRaw = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/homologacao/oppah.json'; // Substitua pelo link real
+            const urlConfigRaw = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json'; // Substitua pelo link real
             const response = await fetch(urlConfigRaw);
             if (!response.ok) throw new Error("Não foi possível carregar as configurações RAW.");
             OPPAH_CONFIG = await response.json();
@@ -1018,6 +1052,27 @@
       location.reload();
     }
 
+    function saveGestorPreferences() {
+      const title = document.getElementById('gestorPrefTitle').value;
+      const name = document.getElementById('gestorPrefName').value.trim() || 'Gestor';
+      const sessao = JSON.parse(localStorage.getItem('oppah_session'));
+      
+      if (sessao) {
+        const prefsKey = 'oppah_gestor_prefs_' + sessao.id_empresa;
+        localStorage.setItem(prefsKey, JSON.stringify({ title, name }));
+      }
+      
+      document.getElementById('gestorWelcomeName').innerText = `${title} ${name}`.trim();
+      
+      const modal = document.getElementById('gestor-welcome-modal');
+      const content = document.getElementById('gestor-welcome-content');
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => { modal.classList.add('hidden'); }, 300);
+      
+      showToast('Bem-vindo(a) ao seu Painel!', 'success');
+    }
+
     function loadGestorDashboard(sessao) {
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('app-dashboard').style.display = 'none';
@@ -1034,9 +1089,29 @@
       // Header Updates
       document.getElementById('gestorEmail').innerText = empresa.email;
 
-      // Hero Banner Updates
+      // Hero Banner Updates & Welcome Modal Logic
       const primeiroNome = empresa.nome_gestor ? empresa.nome_gestor.split(' ')[0] : 'Gestor';
-      document.getElementById('gestorWelcomeName').innerText = primeiroNome;
+      
+      const prefsKey = 'oppah_gestor_prefs_' + empresa.id_empresa;
+      const prefsStr = localStorage.getItem(prefsKey);
+      
+      if (!prefsStr) {
+        // Primeiro acesso do Gestor
+        const modal = document.getElementById('gestor-welcome-modal');
+        const content = document.getElementById('gestor-welcome-content');
+        document.getElementById('gestorPrefName').value = primeiroNome;
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          content.classList.remove('scale-95', 'opacity-0');
+          content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+        document.getElementById('gestorWelcomeName').innerText = primeiroNome; // Fallback
+      } else {
+        // Já tem preferência salva
+        const prefs = JSON.parse(prefsStr);
+        document.getElementById('gestorWelcomeName').innerText = `${prefs.title} ${prefs.name}`.trim();
+      }
+
       document.getElementById('gestorWelcomeCompany').innerText = empresa.nome_empresa;
 
       // Plan Details
