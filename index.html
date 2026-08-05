@@ -654,7 +654,7 @@
 
     async function carregarConfiguracoes() {
         try {
-            const urlConfigRaw = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json'; // Substitua pelo link real
+            const urlConfigRaw = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/homologacao/oppah.json'; // Substitua pelo link real
             const response = await fetch(urlConfigRaw);
             if (!response.ok) throw new Error("Não foi possível carregar as configurações RAW.");
             OPPAH_CONFIG = await response.json();
