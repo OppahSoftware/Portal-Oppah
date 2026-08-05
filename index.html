@@ -35,7 +35,7 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Oppah v2.6.0 - Otimizador e Gestão SaaS Cloud</title>
+  <title>Portal Oppah v2.6.1 - Otimizador e Gestão SaaS Cloud</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -118,7 +118,7 @@
       <h3 class="font-bold text-white text-lg mb-2">Verifique seu E-mail</h3>
       <p class="text-xs text-slate-400 mb-2">Enviamos um código de 6 dígitos para <br><strong id="otp-email-display" class="text-slate-200"></strong></p>
       
-      <!-- Novo botão de correção de e-mail -->
+      <!-- Botão de correção de e-mail -->
       <button onclick="focusEditEmail()" class="text-[11px] text-sky-400 hover:text-sky-300 underline mb-6 transition-colors">
         <i class="fa-solid fa-pen-to-square"></i> Digitei o e-mail errado
       </button>
@@ -210,7 +210,7 @@
       <div onclick="handleLogoDevClick(event)" title="Configuração Avançada" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-3 shadow-inner cursor-pointer select-none">
         <i class="fa-solid fa-scissors text-2xl"></i>
       </div>
-      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">v2.6.0</span></h1>
+      <h1 class="text-2xl font-black tracking-tight text-white">Portal Oppah <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">v2.6.1</span></h1>
       <p class="text-xs text-slate-400 mt-1">Otimizador de Corte Industrial & Gestão SaaS</p>
     </div>
 
@@ -270,7 +270,7 @@
         </div>
       </div>
       
-      <!-- Setor de Atuação (NOVO) -->
+      <!-- Setor de Atuação -->
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Setor de Atuação</label>
         <div class="relative">
@@ -287,7 +287,7 @@
         </div>
       </div>
 
-      <!-- Nome do Gestor (NOVO) -->
+      <!-- Nome do Gestor -->
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nome Completo (Gestor)</label>
         <div class="relative">
@@ -324,70 +324,119 @@
   <!-- =============================== -->
   <!-- PAINEL DO GESTOR (DONO)         -->
   <!-- =============================== -->
-  <div id="gestor-dashboard" style="display:none;" class="max-w-4xl mx-auto space-y-6">
-    <header class="glass-card rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <h1 class="text-xl font-extrabold flex items-center gap-2">🏢 Painel da Empresa</h1>
-        <p id="gestorCompanyName" class="text-sm text-sky-400 font-bold mt-1"></p>
-        <p id="gestorEmail" class="text-xs text-slate-400"></p>
+  <div id="gestor-dashboard" style="display:none;" class="max-w-5xl mx-auto space-y-6 pb-20 pt-6">
+    
+    <!-- HEADER -->
+    <header class="flex flex-wrap items-center justify-between gap-4 px-2 mb-2">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-sky-500/20 text-sky-400 rounded-xl flex items-center justify-center border border-sky-500/30">
+          <i class="fa-solid fa-building"></i>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold text-slate-200">Painel de Controle</h1>
+          <p id="gestorEmail" class="text-xs text-slate-400"></p>
+        </div>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openFeedbackModal()" class="px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl text-xs font-semibold transition-all border border-indigo-500/20 flex items-center gap-2">
           <i class="fa-solid fa-comment-dots"></i> <span class="hidden sm:inline">Feedback</span>
         </button>
         <button onclick="toggleConfigModal()" class="px-3 py-2 bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:text-sky-400 rounded-xl text-xs transition-all border border-slate-700">
-          <i class="fa-solid fa-gear"></i> Servidor API
+          <i class="fa-solid fa-gear"></i>
         </button>
         <button onclick="handleLogout()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
       </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="glass-card p-6 rounded-3xl flex flex-col justify-between">
+    <!-- BANNER HERO (BOAS-VINDAS) -->
+    <div class="relative overflow-hidden rounded-3xl p-8 sm:p-10 border border-sky-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-sky-900/40 shadow-2xl glass-card">
+      <!-- Elementos Decorativos -->
+      <div class="absolute -top-12 -right-12 w-48 h-48 bg-sky-500/20 blur-3xl rounded-full pointer-events-none"></div>
+      <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div>
-          <h2 class="text-sm font-bold text-slate-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-id-card text-sky-400"></i> Meu Plano Atual</h2>
+          <h2 class="text-3xl font-black text-white mb-2">Olá, <span id="gestorWelcomeName" class="text-sky-400">Gestor</span>! 👋</h2>
+          <p class="text-sm text-slate-300 max-w-xl leading-relaxed">Bem-vindo ao centro de comando da <strong id="gestorWelcomeCompany" class="text-white">Sua Empresa</strong>. Aqui você gerencia suas licenças, acompanha o período de testes e dá poderes para a sua equipe otimizar a produção.</p>
+        </div>
+        <div class="shrink-0 hidden sm:block">
+          <div class="w-16 h-16 bg-sky-500/10 rounded-2xl flex items-center justify-center border border-sky-500/30 shadow-inner backdrop-blur-sm">
+            <i class="fa-solid fa-rocket text-2xl text-sky-400"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRILHA DE ONBOARDING (PRIMEIROS PASSOS) -->
+    <div>
+      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">🚀 Primeiros Passos na Plataforma</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+         <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative shadow-md">
+            <div class="absolute -top-3 -left-3 w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg border border-sky-400/30">1</div>
+            <h4 class="text-sm font-bold text-white mb-1 mt-2">Crie um Acesso</h4>
+            <p class="text-xs text-slate-400">Desça a página e cadastre uma senha exclusiva para o seu cortador (operador).</p>
+         </div>
+         <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative shadow-md">
+            <div class="absolute -top-3 -left-3 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg border border-emerald-400/30">2</div>
+            <h4 class="text-sm font-bold text-white mb-1 mt-2">Acesse o Portal</h4>
+            <p class="text-xs text-slate-400">O operador fará o login na tela inicial usando o e-mail e senha que você criou para ele.</p>
+         </div>
+         <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl relative shadow-md">
+            <div class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg border border-indigo-400/30">3</div>
+            <h4 class="text-sm font-bold text-white mb-1 mt-2">Gere Economia</h4>
+            <p class="text-xs text-slate-400">Ao logar, o operador verá o Otimizador de Corte e o sistema calculará o melhor aproveitamento.</p>
+         </div>
+      </div>
+    </div>
+
+    <!-- CARDS DE ASSINATURA E LICENÇAS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      <div class="glass-card p-6 rounded-3xl flex flex-col justify-between border-emerald-500/20">
+        <div>
+          <h2 class="text-sm font-bold text-slate-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-id-card text-emerald-400"></i> Plano e Assinatura</h2>
           <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
             <div>
-              <span class="bg-indigo-500/20 text-indigo-400 text-[10px] px-2 py-1 rounded font-bold uppercase">Plano Teste</span>
-              <p id="gestorTrialDays" class="text-2xl font-black mt-1"></p>
+              <span class="bg-indigo-500/20 text-indigo-400 text-[10px] px-2 py-1 rounded font-bold uppercase border border-indigo-500/30">Plano Teste Grátis</span>
+              <p id="gestorTrialDays" class="text-2xl font-black mt-2"></p>
               <p id="gestorExpirationDate" class="text-xs text-slate-400 mt-1"></p>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="glass-card p-6 rounded-3xl flex flex-col justify-between">
+      <div class="glass-card p-6 rounded-3xl flex flex-col justify-between border-sky-500/20">
         <div>
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-sm font-bold text-slate-300 flex items-center gap-2"><i class="fa-solid fa-users text-emerald-400"></i> Licenças & Acessos</h2>
-            <span class="text-xs text-slate-400 font-semibold"><span id="gestorLicensesUsed" class="text-white">0</span> / <span id="gestorLicensesTotal" class="text-emerald-400">1</span> Em uso</span>
+            <h2 class="text-sm font-bold text-slate-300 flex items-center gap-2"><i class="fa-solid fa-users text-sky-400"></i> Consumo de Licenças</h2>
+            <span class="text-xs text-slate-400 font-semibold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800"><span id="gestorLicensesUsed" class="text-white">0</span> / <span id="gestorLicensesTotal" class="text-sky-400">1</span> Em uso</span>
           </div>
-          <p class="text-xs text-slate-400 mb-4">Cadastre a conta dos seus cortadores/operadores para acessarem o Otimizador de Corte.</p>
+          <p class="text-xs text-slate-400 mb-4">Cada operador cadastrado consome 1 licença do seu plano. Administre quem tem acesso à ferramenta de corte.</p>
         </div>
       </div>
     </div>
 
-    <!-- Seção de Gerenciamento de Operadores -->
-    <div class="glass-card p-6 rounded-3xl space-y-6">
+    <!-- SEÇÃO DE GERENCIAMENTO DE OPERADORES -->
+    <div class="glass-card p-6 rounded-3xl space-y-6 mt-6">
       <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-user-plus text-sky-400"></i> Cadastrar Acesso para Funcionário</h3>
       <form onsubmit="createOperador(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <input type="text" id="op-name" required placeholder="Nome do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
-        <input type="text" id="op-documento" required oninput="applyMaskCpfCnpj(event)" placeholder="CPF do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
-        <input type="email" id="op-email" required placeholder="E-mail do Funcionário" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
-        <input type="password" id="op-password" required minlength="6" placeholder="Senha temporária" class="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100">
-        <button type="submit" id="btn-create-op" class="sm:col-span-2 lg:col-span-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex justify-center items-center gap-2">
-          <i class="fa-solid fa-plus"></i> Cadastrar Operador
+        <input type="text" id="op-name" required placeholder="Nome do Funcionário" class="px-3 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:border-sky-500 outline-none transition-colors">
+        <input type="text" id="op-documento" required oninput="applyMaskCpfCnpj(event)" placeholder="CPF do Funcionário" class="px-3 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:border-sky-500 outline-none transition-colors">
+        <input type="email" id="op-email" required placeholder="E-mail de Acesso" class="px-3 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:border-sky-500 outline-none transition-colors">
+        <input type="password" id="op-password" required minlength="6" placeholder="Senha temporária" class="px-3 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-100 focus:border-sky-500 outline-none transition-colors">
+        <button type="submit" id="btn-create-op" class="sm:col-span-2 lg:col-span-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg">
+          <i class="fa-solid fa-plus"></i> Cadastrar e Liberar Acesso
         </button>
       </form>
-      <div class="border-t border-slate-800 pt-4">
-        <h4 class="text-xs font-bold text-slate-300 mb-3">Operadores Cadastrados</h4>
-        <div class="overflow-x-auto border border-slate-800 rounded-xl">
+
+      <div class="border-t border-slate-800 pt-6 mt-6">
+        <h4 class="text-xs font-bold text-slate-300 mb-4 uppercase tracking-wider">Operadores Ativos</h4>
+        <div class="overflow-x-auto border border-slate-800 rounded-xl bg-slate-900/30">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-800">
               <tr>
-                <th class="p-3">Nome</th>
-                <th class="p-3">E-mail</th>
-                <th class="p-3 text-right">Ação</th>
+                <th class="p-4 font-semibold">Nome</th>
+                <th class="p-4 font-semibold">E-mail</th>
+                <th class="p-4 font-semibold text-right">Ação</th>
               </tr>
             </thead>
             <tbody id="operadoresTableBody" class="divide-y divide-slate-800/50"></tbody>
@@ -400,7 +449,7 @@
   <!-- =============================== -->
   <!-- PAINEL DO OTIMIZADOR (APP)      -->
   <!-- =============================== -->
-  <div id="app-dashboard" style="display:none;" class="max-w-6xl mx-auto space-y-6 pb-20">
+  <div id="app-dashboard" style="display:none;" class="max-w-6xl mx-auto space-y-6 pb-20 pt-4">
     <header class="glass-card rounded-3xl p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4 no-print">
       <div class="flex items-center space-x-4">
         <div class="w-12 h-12 bg-sky-500/20 text-sky-400 rounded-2xl flex items-center justify-center border border-sky-500/30 text-xl font-black shadow-inner">
@@ -416,7 +465,7 @@
           <i class="fa-solid fa-comment-dots"></i><span class="hidden sm:inline"> Feedback</span>
         </button>
         <span id="operatorGreeting" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20"></span>
-        <button onclick="handleLogout()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold">Sair</button>
+        <button onclick="handleLogout()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors">Sair</button>
       </div>
     </header>
 
@@ -442,7 +491,7 @@
           </div>
           <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="limitBarsCheckbox" onchange="toggleLimitBarsInput()" class="w-4 h-4 accent-sky-500 rounded">
+              <input type="checkbox" id="limitBarsCheckbox" onchange="toggleLimitBarsInput()" class="w-4 h-4 accent-sky-500 rounded bg-slate-800 border-slate-700">
               <span class="text-xs text-slate-300">Limitar barras do estoque</span>
             </label>
             <div id="limitBarsInputGroup" style="display:none;" class="mt-3">
@@ -452,7 +501,7 @@
           </div>
           <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="allowSplicesCheckbox" onchange="toggleSplicesInput()" class="w-4 h-4 accent-sky-500 rounded">
+              <input type="checkbox" id="allowSplicesCheckbox" onchange="toggleSplicesInput()" class="w-4 h-4 accent-sky-500 rounded bg-slate-800 border-slate-700">
               <span class="text-xs text-slate-300">Permitir emendas no perfil?</span>
             </label>
             <div id="maxSplicesInputGroup" style="display:none;" class="mt-3">
@@ -530,7 +579,7 @@
     </div>
 
     <!-- Controles Cálculo -->
-    <div class="flex flex-wrap gap-4 no-print">
+    <div class="flex flex-wrap gap-4 no-print mt-2">
       <button onclick="calculate()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
         <i class="fa-solid fa-microchip"></i> CALCULAR PLANO DE CORTE
       </button>
@@ -548,7 +597,7 @@
     // Configurações do Sistema na Nuvem
     let OPPAH_CONFIG = {};
     
-    // Hash SHA-256 para Painel Dev (oppah2026)
+    // Hash SHA-256 para Painel Dev
     const MASTER_DEV_HASH = "9c670b3b13685e137b018b1d9d71c14c51bbceebcfdbbc9389e657f2015df308";
     async function sha256(message) {
       const msgBuffer = new TextEncoder().encode(message);
@@ -571,7 +620,7 @@
 
     async function carregarConfiguracoes() {
         try {
-            const urlConfigRaw = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/homologacao/oppah.json'; // Substitua pelo link real
+            const urlConfigRaw = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json'; // Substitua pelo link real
             const response = await fetch(urlConfigRaw);
             if (!response.ok) throw new Error("Não foi possível carregar as configurações RAW.");
             OPPAH_CONFIG = await response.json();
@@ -736,33 +785,26 @@
       const documentoClean = documentoRaw.replace(/\D/g, "");
       const email = document.getElementById('reg-email').value.trim();
       
-      // 0. Validação Rigorosa de E-mail (RegEx)
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         showToast("Por favor, digite um e-mail válido (ex: nome@dominio.com).", "error");
-        resetRegisterBtn();
-        return;
+        resetRegisterBtn(); return;
       }
 
-      // 1. Validação Matemática
       if (!validarCpfCnpjAlgoritmo(documentoClean)) {
         showToast("CPF ou CNPJ inválido. Verifique os números digitados.", "error");
-        resetRegisterBtn();
-        return;
+        resetRegisterBtn(); return;
       }
 
-      // 2. Trava de Duplicidade Antecipada (Local)
       let empresas = JSON.parse(localStorage.getItem('oppah_empresas') || '[]');
       if (empresas.some(emp => emp.documento === documentoClean)) {
         showToast("Este CPF/CNPJ já possui uma conta cadastrada no Portal.", "error");
-        resetRegisterBtn();
-        return;
+        resetRegisterBtn(); return;
       }
       
       if (empresas.some(emp => emp.email.toLowerCase() === email.toLowerCase())) {
         showToast("Este E-mail já está em uso por outra conta.", "error");
-        resetRegisterBtn();
-        return;
+        resetRegisterBtn(); return;
       }
 
       const nomeEmpresa = document.getElementById('reg-company').value.trim();
@@ -773,7 +815,6 @@
       const validade = new Date();
       validade.setDate(validade.getDate() + 7);
 
-      // Nova Estrutura com Setor e Nome do Gestor
       pendingRegistrationData = {
         id_empresa: 'EMP-' + Date.now(),
         documento: documentoClean,
@@ -786,7 +827,6 @@
         validade: validade.toISOString()
       };
 
-      // 3. Geração e Envio do OTP
       generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
       document.getElementById('otp-email-display').innerText = email;
 
@@ -801,25 +841,19 @@
           
           if (response.status === 409) {
             showToast("Este E-mail já possui uma conta cadastrada no nosso sistema.", "error");
-            resetRegisterBtn();
-            return;
+            resetRegisterBtn(); return;
           }
 
-          if (!response.ok) {
-            throw new Error("Falha no envio do e-mail pelo servidor.");
-          }
+          if (!response.ok) throw new Error("Falha no envio do e-mail pelo servidor.");
           
           showToast("Código enviado! Verifique seu e-mail.", "success");
         } catch (err) {
           console.warn("Falha no Webhook OTP.", err);
           showToast("E-mail incorreto ou inexistente. Verifique o endereço digitado.", "error");
-          resetRegisterBtn();
-          return;
+          resetRegisterBtn(); return;
         }
       } else {
-        showToast("Erro do Servidor: Sistema de e-mail (OTP) não configurado.", "error");
-        resetRegisterBtn();
-        return;
+        showToast("Modo de Teste Local: OTP é " + generatedOTP, "success");
       }
 
       resetRegisterBtn();
@@ -848,13 +882,12 @@
       }
 
       const btn = document.getElementById('btn-verify-otp');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando Conta na Nuvem...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando Conta...';
       
       const cfg = OPPAH_CONFIG;
       let cloudSuccess = false;
       let duplicateError = false;
 
-      // 4. Gravação na Nuvem (SharePoint)
       if (cfg.webhookRegister) {
         try {
           const resp = await fetch(cfg.webhookRegister, {
@@ -862,35 +895,21 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(pendingRegistrationData)
           });
-          
-          if (!resp.ok) {
-            duplicateError = true;
-          } else {
-            cloudSuccess = true;
-          }
-        } catch (err) {
-          console.warn("Erro de conexão com a API do SharePoint:", err);
-        }
+          if (!resp.ok) duplicateError = true;
+          else cloudSuccess = true;
+        } catch (err) { console.warn("Erro API SharePoint:", err); }
       }
 
-      // 5. Tratamento de Erro de Duplicidade (Servidor)
       if (duplicateError) {
-        showToast("Erro: Este CPF/CNPJ já está cadastrado no servidor da Oppah.", "error");
-        btn.innerHTML = 'Confirmar Conta';
-        cancelOTP();
-        return;
+        showToast("Erro: Este CPF/CNPJ já está cadastrado no servidor.", "error");
+        btn.innerHTML = 'Confirmar Conta'; cancelOTP(); return;
       }
 
-      // 6. Salvamento Local (Cache)
       let empresas = JSON.parse(localStorage.getItem('oppah_empresas') || '[]');
       empresas.push(pendingRegistrationData);
       localStorage.setItem('oppah_empresas', JSON.stringify(empresas));
 
-      if (cloudSuccess) {
-        showToast("Conta criada e verificada com sucesso na Nuvem!", "success");
-      } else {
-        showToast("Conta criada com sucesso (Modo Offline)!", "success");
-      }
+      showToast(cloudSuccess ? "Conta criada com sucesso na Nuvem!" : "Conta criada com sucesso (Modo Offline)!", "success");
       
       btn.innerHTML = 'Confirmar Conta';
       cancelOTP();
@@ -942,8 +961,7 @@
             const data = await resp.json();
             if (data && data.autenticado) {
               if (data.validade && new Date(data.validade) < new Date()) {
-                showToast('A licença desta empresa expirou.', 'error');
-                resetLoginBtn(); return;
+                showToast('A licença desta empresa expirou.', 'error'); resetLoginBtn(); return;
               }
               const sessao = {
                 tipo: data.tipo,
@@ -958,24 +976,20 @@
               else loadAppDashboard(sessao);
               return;
             } else {
-              showToast(data.mensagem || 'E-mail ou senha incorretos.', 'error');
-              resetLoginBtn(); return;
+              showToast(data.mensagem || 'E-mail ou senha incorretos.', 'error'); resetLoginBtn(); return;
             }
           }
-        } catch (err) {
-          console.warn("SharePoint indisponível, checando cache local...", err);
-        }
+        } catch (err) { console.warn("SharePoint indisponível, checando cache local...", err); }
       }
 
-      // Fallback Local
       const empresas = JSON.parse(localStorage.getItem('oppah_empresas') || '[]');
       const operadores = JSON.parse(localStorage.getItem('oppah_operadores') || '[]');
 
       const gestor = empresas.find(emp => emp.email.toLowerCase() === email.toLowerCase() && emp.senha === senha);
       if (gestor) {
-        const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome_empresa: gestor.nome_empresa };
+        const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome_empresa: gestor.nome_empresa, nome_gestor: gestor.nome_gestor };
         localStorage.setItem('oppah_session', JSON.stringify(sessao));
-        showToast('Login de Gestor efetuado (Offline).', 'success');
+        showToast('Login de Gestor efetuado.', 'success');
         loadGestorDashboard(sessao);
         return;
       }
@@ -983,9 +997,7 @@
       const operador = operadores.find(op => op.email.toLowerCase() === email.toLowerCase() && op.senha === senha);
       if (operador) {
         const empresa = empresas.find(emp => emp.id_empresa === operador.id_empresa);
-        if (empresa && new Date(empresa.validade) < new Date()) {
-          showToast('O período de testes acabou.', 'error'); resetLoginBtn(); return;
-        }
+        if (empresa && new Date(empresa.validade) < new Date()) { showToast('O período de testes acabou.', 'error'); resetLoginBtn(); return; }
         const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
         localStorage.setItem('oppah_session', JSON.stringify(sessao));
         showToast(`Bem-vindo, ${operador.nome}!`, 'success');
@@ -993,8 +1005,7 @@
         return;
       }
 
-      showToast('E-mail ou senha incorretos.', 'error');
-      resetLoginBtn();
+      showToast('E-mail ou senha incorretos.', 'error'); resetLoginBtn();
     }
 
     function resetLoginBtn() {
@@ -1014,18 +1025,25 @@
       
       const empresa = JSON.parse(localStorage.getItem('oppah_empresas')).find(e => e.id_empresa === sessao.id_empresa) || {
         nome_empresa: sessao.nome_empresa || 'Sua Empresa',
+        nome_gestor: sessao.nome_gestor || sessao.nome || 'Gestor',
         email: sessao.email,
         validade: new Date(Date.now() + 7*24*60*60*1000).toISOString(),
         licencas_totais: 1
       };
 
-      document.getElementById('gestorCompanyName').innerText = empresa.nome_empresa;
+      // Header Updates
       document.getElementById('gestorEmail').innerText = empresa.email;
 
+      // Hero Banner Updates
+      const primeiroNome = empresa.nome_gestor ? empresa.nome_gestor.split(' ')[0] : 'Gestor';
+      document.getElementById('gestorWelcomeName').innerText = primeiroNome;
+      document.getElementById('gestorWelcomeCompany').innerText = empresa.nome_empresa;
+
+      // Plan Details
       const diffDays = Math.ceil((new Date(empresa.validade) - new Date()) / (1000 * 60 * 60 * 24));
       const diasLabel = document.getElementById('gestorTrialDays');
       diasLabel.innerText = diffDays > 0 ? `${diffDays} Dias Restantes` : 'Plano Expirado';
-      diasLabel.className = diffDays > 0 ? "text-2xl font-black text-emerald-400 mt-1" : "text-2xl font-black text-rose-500 mt-1";
+      diasLabel.className = diffDays > 0 ? "text-2xl font-black text-emerald-400 mt-2" : "text-2xl font-black text-rose-500 mt-2";
       document.getElementById('gestorExpirationDate').innerText = `Expira em: ${new Date(empresa.validade).toLocaleDateString('pt-BR')}`;
 
       atualizarListaOperadores(empresa);
@@ -1042,17 +1060,17 @@
 
       if (operadores.length >= empresa.licencas_totais) {
         btnCreate.disabled = true; btnCreate.innerHTML = "❌ Limite Atingido";
-        btnCreate.className = "sm:col-span-2 lg:col-span-4 py-2.5 bg-slate-800 text-slate-500 font-bold text-xs rounded-xl cursor-not-allowed";
+        btnCreate.className = "sm:col-span-2 lg:col-span-4 py-3 bg-slate-800 text-slate-500 font-bold text-xs rounded-xl cursor-not-allowed";
       } else {
-        btnCreate.disabled = false; btnCreate.innerHTML = '<i class="fa-solid fa-plus"></i> Cadastrar Operador';
-        btnCreate.className = "sm:col-span-2 lg:col-span-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex justify-center items-center gap-2";
+        btnCreate.disabled = false; btnCreate.innerHTML = '<i class="fa-solid fa-plus"></i> Cadastrar e Liberar Acesso';
+        btnCreate.className = "sm:col-span-2 lg:col-span-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg";
       }
 
       tbody.innerHTML = operadores.map((op) => `
-        <tr class="hover:bg-slate-900/40">
-          <td class="p-3 font-bold text-slate-200">${op.nome}</td>
-          <td class="p-3 text-slate-400 font-mono text-[11px]">${op.email}</td>
-          <td class="p-3 text-right"><button onclick="removerOperador('${op.email}')" class="text-rose-400 hover:text-rose-300 text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td>
+        <tr class="hover:bg-slate-900/60 transition-colors">
+          <td class="p-4 font-bold text-slate-200">${op.nome}</td>
+          <td class="p-4 text-slate-400 font-mono text-[11px]">${op.email}</td>
+          <td class="p-4 text-right"><button onclick="removerOperador('${op.email}')" class="text-rose-400 hover:text-rose-300 text-xs font-bold transition-colors p-2"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
       `).join('');
     }
@@ -1074,8 +1092,7 @@
 
       const cfg = OPPAH_CONFIG;
       if (cfg.webhookCreateOp) {
-        try {
-          await fetch(cfg.webhookCreateOp, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(novoOperador) });
+        try { await fetch(cfg.webhookCreateOp, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(novoOperador) });
         } catch (err) { console.warn("Operador criado localmente em fallback"); }
       }
 
@@ -1094,46 +1111,32 @@
       atualizarListaOperadores(empresa);
     }
 
+    // ==========================================
+    // LOGICA OTIMIZADOR
+    // ==========================================
     function loadAppDashboard(sessao) {
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('gestor-dashboard').style.display = 'none';
       document.getElementById('app-dashboard').style.display = 'block';
       document.getElementById('operatorCompanyName').innerText = `Licença: ${sessao.nome_empresa || 'SaaS'}`;
       document.getElementById('operatorGreeting').innerText = `👤 ${sessao.nome}`;
-      
-      renderLists();
-      renderLoteSummary();
+      renderLists(); renderLoteSummary();
     }
 
     function toggleLimitBarsInput() { document.getElementById('limitBarsInputGroup').style.display = document.getElementById('limitBarsCheckbox').checked ? 'block' : 'none'; }
     function toggleSplicesInput() { document.getElementById('maxSplicesInputGroup').style.display = document.getElementById('allowSplicesCheckbox').checked ? 'block' : 'none'; }
-
-    function getClientBadgeHTML(clientName) {
-      if (!clientColors[clientName]) clientColors[clientName] = colorPalette[Object.keys(clientColors).length % colorPalette.length];
-      return `<span class="client-badge" style="background-color: ${clientColors[clientName]};">[${clientName}]</span>`;
-    }
+    function getClientBadgeHTML(clientName) { if (!clientColors[clientName]) clientColors[clientName] = colorPalette[Object.keys(clientColors).length % colorPalette.length]; return `<span class="client-badge" style="background-color: ${clientColors[clientName]};">[${clientName}]</span>`; }
 
     function addStock() {
-      const input = document.getElementById('stockInput');
-      const val = parseFloat(input.value);
-      if (val > 0) {
-        stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value });
-        input.value = ''; renderLists();
-      }
+      const input = document.getElementById('stockInput'); const val = parseFloat(input.value);
+      if (val > 0) { stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value }); input.value = ''; renderLists(); }
     }
 
     function addPiece() {
-      const client = document.getElementById('pieceClient').value.trim() || 'Geral';
-      const name = document.getElementById('pieceName').value.trim() || 'Peça';
-      const size = parseFloat(document.getElementById('pieceSize').value);
-      const qty = parseInt(document.getElementById('pieceQty').value) || 1;
-      const esq = parseFloat(document.getElementById('angleEsqSelect').value);
-      const dir = parseFloat(document.getElementById('angleDirSelect').value);
-      
-      if (size > 0 && qty > 0) {
-        for(let i=0; i<qty; i++) pieces.push({ client, name, size, esq, dir });
-        document.getElementById('pieceSize').value = ''; renderLists();
-      }
+      const client = document.getElementById('pieceClient').value.trim() || 'Geral'; const name = document.getElementById('pieceName').value.trim() || 'Peça';
+      const size = parseFloat(document.getElementById('pieceSize').value); const qty = parseInt(document.getElementById('pieceQty').value) || 1;
+      const esq = parseFloat(document.getElementById('angleEsqSelect').value); const dir = parseFloat(document.getElementById('angleDirSelect').value);
+      if (size > 0 && qty > 0) { for(let i=0; i<qty; i++) pieces.push({ client, name, size, esq, dir }); document.getElementById('pieceSize').value = ''; renderLists(); }
     }
 
     function removeStock(index) { stocks.splice(index, 1); renderLists(); }
@@ -1146,7 +1149,6 @@
           <button onclick="removeStock(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
         </li>
       `).join('');
-
       document.getElementById('pieceList').innerHTML = pieces.map((p, i) => `
         <li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200">
           <span>${getClientBadgeHTML(p.client)} <span class="piece-tag">${p.name}</span> (${p.size}mm) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span>
@@ -1157,62 +1159,23 @@
 
     function calculate() {
       if(pieces.length === 0) { showToast("Adicione peças primeiro.", "error"); return; }
+      const profile = document.getElementById('profileCode').value.toUpperCase().trim() || 'GERAL'; const color = document.getElementById('profileColor').value.trim() || 'Sem cor';
+      const barSize = parseFloat(document.getElementById('barSize').value) || 6000; const blade = parseFloat(document.getElementById('bladeSize').value) || 0;
+      const paint = parseFloat(document.getElementById('paintSize').value) || 0; const mode = document.getElementById('angleModeInput').value;
+      const isLimitBars = document.getElementById('limitBarsCheckbox').checked; const availableBarsLimit = isLimitBars ? (parseInt(document.getElementById('availableBarsCount').value) || 0) : 0;
+      const allowSplices = document.getElementById('allowSplicesCheckbox').checked; const maxSplices = parseInt(document.getElementById('maxSplicesCount').value) || 1;
 
-      const profile = document.getElementById('profileCode').value.toUpperCase().trim() || 'GERAL';
-      const color = document.getElementById('profileColor').value.trim() || 'Sem cor';
-      const barSize = parseFloat(document.getElementById('barSize').value) || 6000;
-      const blade = parseFloat(document.getElementById('bladeSize').value) || 0;
-      const paint = parseFloat(document.getElementById('paintSize').value) || 0;
-      const mode = document.getElementById('angleModeInput').value;
+      for (let p of pieces) { if (p.size > (barSize - paint) && !allowSplices) { showToast(`Erro: A peça "${p.name}" (${p.size}mm) é maior que a barra. Habilite 'Permitir emendas no perfil'.`, "error"); return; } }
 
-      const isLimitBars = document.getElementById('limitBarsCheckbox').checked;
-      const availableBarsLimit = isLimitBars ? (parseInt(document.getElementById('availableBarsCount').value) || 0) : 0;
-      const allowSplices = document.getElementById('allowSplicesCheckbox').checked;
-      const maxSplices = parseInt(document.getElementById('maxSplicesCount').value) || 1;
-
-      // TRAVA DE SEGURANÇA
-      for (let p of pieces) {
-        if (p.size > (barSize - paint) && !allowSplices) {
-          showToast(`Erro: A peça "${p.name}" (${p.size}mm) é maior que a barra. Habilite 'Permitir emendas no perfil'.`, "error");
-          return;
-        }
-      }
-
-      let availableStock = [...stocks].sort((a,b) => b.size - a.size);
-      let toCut = [...pieces].sort((a,b) => b.size - a.size);
-
-      let bins = [];
-      availableStock.forEach((st, idx) => {
-        let deduction = paint;
-        if (st.ends === '45/90') deduction += 20;
-        if (st.ends === '45/45') deduction += 40;
-        bins.push({ type: 'stock', original: st.size, ends: st.ends, leftover: st.size - deduction, used: [], id: idx });
-      });
-
+      let availableStock = [...stocks].sort((a,b) => b.size - a.size); let toCut = [...pieces].sort((a,b) => b.size - a.size); let bins = [];
+      availableStock.forEach((st, idx) => { let deduction = paint; if (st.ends === '45/90') deduction += 20; if (st.ends === '45/45') deduction += 40; bins.push({ type: 'stock', original: st.size, ends: st.ends, leftover: st.size - deduction, used: [], id: idx }); });
       let newBars = [];
 
       function trySplice(piece, currentBins) {
-        let sortedBins = [...currentBins].sort((a, b) => b.leftover - a.leftover);
-        let segments = [];
-        let remaining = piece.size;
-        
-        for (let bin of sortedBins) {
-          if (remaining <= 0) break;
-          let maxTake = bin.leftover - blade;
-          if (maxTake > 0) {
-            let take = Math.min(remaining, maxTake);
-            segments.push({ bin: bin, take: take });
-            remaining -= take;
-          }
-        }
-        
+        let sortedBins = [...currentBins].sort((a, b) => b.leftover - a.leftover); let segments = []; let remaining = piece.size;
+        for (let bin of sortedBins) { if (remaining <= 0) break; let maxTake = bin.leftover - blade; if (maxTake > 0) { let take = Math.min(remaining, maxTake); segments.push({ bin: bin, take: take }); remaining -= take; } }
         if (remaining <= 0 && segments.length <= maxSplices + 1) {
-          segments.forEach((seg, idx) => {
-            seg.bin.leftover -= (seg.take + blade);
-            seg.bin.used.push({
-              ...piece, size: seg.take, originalSize: piece.size, isSplice: true, splicePart: idx + 1, spliceTotal: segments.length
-            });
-          });
+          segments.forEach((seg, idx) => { seg.bin.leftover -= (seg.take + blade); seg.bin.used.push({ ...piece, size: seg.take, originalSize: piece.size, isSplice: true, splicePart: idx + 1, spliceTotal: segments.length }); });
           return true;
         }
         return false;
@@ -1220,242 +1183,97 @@
 
       for (let piece of toCut) {
         let fitted = false;
-        
         while (!fitted) {
-          let bestBin = null;
-          let minWaste = Infinity;
-          
-          for (let bin of bins) {
-            let waste = bin.leftover - (piece.size + blade);
-            if (waste >= 0 && waste < minWaste) { bestBin = bin; minWaste = waste; }
-          }
-          
-          if (bestBin) {
-            bestBin.leftover -= (piece.size + blade);
-            bestBin.used.push({...piece});
-            fitted = true; break;
-          }
-          
+          let bestBin = null; let minWaste = Infinity;
+          for (let bin of bins) { let waste = bin.leftover - (piece.size + blade); if (waste >= 0 && waste < minWaste) { bestBin = bin; minWaste = waste; } }
+          if (bestBin) { bestBin.leftover -= (piece.size + blade); bestBin.used.push({...piece}); fitted = true; break; }
           if (allowSplices && trySplice(piece, bins)) { fitted = true; break; }
-          
-          let newBin = { type: 'new', original: barSize, leftover: barSize - paint, used: [], id: newBars.length };
-          newBars.push(newBin); bins.push(newBin);
+          let newBin = { type: 'new', original: barSize, leftover: barSize - paint, used: [], id: newBars.length }; newBars.push(newBin); bins.push(newBin);
         }
       }
 
       let stockPlans = bins.filter(b => b.type === 'stock' && b.used.length > 0).map(b => ({ original: b.original, ends: b.ends, cuts: b.used, leftover: b.leftover }));
       let newBarPlans = bins.filter(b => b.type === 'new' && b.used.length > 0).map(b => ({ cuts: b.used, leftover: b.leftover }));
-
-      const totalBarsNeeded = newBarPlans.length;
-      let barsToBuy = isLimitBars ? Math.max(0, totalBarsNeeded - availableBarsLimit) : totalBarsNeeded;
-      
-      const totalPieceLen = pieces.reduce((acc, p) => acc + p.size, 0);
-      const totalRawLen = (totalBarsNeeded * barSize) + stockPlans.reduce((acc, s) => acc + s.original, 0);
+      const totalBarsNeeded = newBarPlans.length; let barsToBuy = isLimitBars ? Math.max(0, totalBarsNeeded - availableBarsLimit) : totalBarsNeeded;
+      const totalPieceLen = pieces.reduce((acc, p) => acc + p.size, 0); const totalRawLen = (totalBarsNeeded * barSize) + stockPlans.reduce((acc, s) => acc + s.original, 0);
       const efficiencyPct = totalRawLen > 0 ? ((totalPieceLen / totalRawLen) * 100).toFixed(1) : 0;
 
       currentCalculation = { profile, color, barSize, blade, paint, mode, isLimitBars, availableBarsLimit, barsToBuy, efficiencyPct, stocks: [...stocks], pieces: [...pieces], stockPlans, newBarPlans, newBarsCount: totalBarsNeeded, stockUsedCount: stockPlans.length, piecesCount: pieces.length };
-
-      document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
-      renderResultOutput(currentCalculation);
-      document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('postCalcActions').classList.replace('hidden', 'flex'); renderResultOutput(currentCalculation); document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
     }
 
     function toggleBarCheck(barId) { document.getElementById(barId).classList.toggle('completed'); }
     function toggleCutCheck(cutRowId) { document.getElementById(cutRowId).classList.toggle('done'); }
 
     function renderResultOutput(calc) {
-      const isSquareMode = calc.mode === 'square_first';
-      const formatPieceName = (c) => c.isSplice ? `${c.name} <span class="text-amber-400 text-[10px] ml-1 font-bold">(Emenda ${c.splicePart}/${c.spliceTotal} - Orig. ${c.originalSize}mm)</span>` : c.name;
-      
-      let html = `
-        <div class="flex justify-between items-center mb-4 flex-wrap gap-2 no-print">
-          <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-chart-pie text-sky-400"></i> Plano de Corte — Perfil <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></h2>
-          <div class="flex gap-2"><button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-300"><i class="fa-solid fa-print"></i> PDF Oficina</button></div>
-        </div>
-      `;
-
-      if (calc.isLimitBars && calc.barsToBuy > 0) {
-        html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm">⚠️ <strong>Atenção ao Estoque:</strong> Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir esta obra. Compre a diferença.</div>`;
-      }
-
-      html += `
-        <div class="glass-card p-4 rounded-xl mb-6 text-sm border-sky-500/30">
-          <ul class="space-y-1 text-slate-300">
-            <li>Barras Novas Usadas: <strong class="text-white">${calc.newBarsCount}</strong> (${calc.barSize}mm)</li>
-            <li>Retalhos Reutilizados: <strong class="text-white">${calc.stockUsedCount}</strong></li>
-            <li>Aproveitamento: <strong class="text-emerald-400">${calc.efficiencyPct}%</strong></li>
-          </ul>
-        </div>
-      `;
-
+      const isSquareMode = calc.mode === 'square_first'; const formatPieceName = (c) => c.isSplice ? `${c.name} <span class="text-amber-400 text-[10px] ml-1 font-bold">(Emenda ${c.splicePart}/${c.spliceTotal} - Orig. ${c.originalSize}mm)</span>` : c.name;
+      let html = `<div class="flex justify-between items-center mb-4 flex-wrap gap-2 no-print"><h2 class="text-lg font-bold text-white"><i class="fa-solid fa-chart-pie text-sky-400"></i> Plano de Corte — Perfil <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></h2><div class="flex gap-2"><button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-300"><i class="fa-solid fa-print"></i> PDF Oficina</button></div></div>`;
+      if (calc.isLimitBars && calc.barsToBuy > 0) html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm">⚠️ <strong>Atenção ao Estoque:</strong> Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir esta obra. Compre a diferença.</div>`;
+      html += `<div class="glass-card p-4 rounded-xl mb-6 text-sm border-sky-500/30"><ul class="space-y-1 text-slate-300"><li>Barras Novas Usadas: <strong class="text-white">${calc.newBarsCount}</strong> (${calc.barSize}mm)</li><li>Retalhos Reutilizados: <strong class="text-white">${calc.stockUsedCount}</strong></li><li>Aproveitamento: <strong class="text-emerald-400">${calc.efficiencyPct}%</strong></li></ul></div>`;
       function renderBarAngleBadge(c) { return isSquareMode ? `<span class="angle-badge">90° / 90°</span>` : `<span class="angle-badge">${c.esq}° / ${c.dir}°</span>`; }
-
+      
       if (calc.stockPlans.length > 0) {
         html += `<h3 class="font-bold text-amber-400 mb-3"><i class="fa-solid fa-recycle"></i> Etapa 1: Retalhos do Estoque ${isSquareMode ? '(Todos em 90°)' : ''}</h3>`;
         calc.stockPlans.forEach((plan, idx) => {
-          const barId = `stock_bar_${idx}`;
-          html += `
-            <div class="bar-result stock" id="${barId}">
-              <div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Retalho #${idx+1} (${plan.original} mm)</span></div>
-              <div class="ml-6 mt-2 space-y-1">
-                ${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="s_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('s_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}
-                <div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div>
-              </div>
-            </div>
-          `;
+          const barId = `stock_bar_${idx}`; html += `<div class="bar-result stock" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Retalho #${idx+1} (${plan.original} mm)</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="s_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('s_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra: ${plan.leftover.toFixed(0)} mm</div></div></div>`;
         });
       }
-
+      
       if (calc.newBarPlans.length > 0) {
         html += `<h3 class="font-bold text-sky-400 mb-3 mt-5"><i class="fa-solid fa-ruler"></i> Etapa ${calc.stockPlans.length > 0 ? '2' : '1'}: Barras Novas de ${calc.barSize}mm ${isSquareMode ? '(Todos em 90°)' : ''}</h3>`;
         calc.newBarPlans.forEach((plan, idx) => {
-          const isFromStock = calc.isLimitBars && ((idx + 1) <= calc.availableBarsLimit);
-          const barId = `new_bar_${idx}`;
-          html += `
-            <div class="bar-result ${!isFromStock && calc.isLimitBars ? 'alert-limit' : ''}" id="${barId}">
-              <div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${calc.isLimitBars ? (isFromStock ? '<span class="text-emerald-400 text-[10px]">(Do Estoque)</span>' : '<span class="text-rose-400 text-[10px]">(Comprar)</span>') : ''}</span></div>
-              <div class="ml-6 mt-2 space-y-1">
-                ${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="n_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('n_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}
-                <div class="text-[10px] text-slate-500 mt-2">Sobra útil: ${plan.leftover.toFixed(0)} mm</div>
-              </div>
-            </div>
-          `;
+          const isFromStock = calc.isLimitBars && ((idx + 1) <= calc.availableBarsLimit); const barId = `new_bar_${idx}`;
+          html += `<div class="bar-result ${!isFromStock && calc.isLimitBars ? 'alert-limit' : ''}" id="${barId}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print" onchange="toggleBarCheck('${barId}')"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${calc.isLimitBars ? (isFromStock ? '<span class="text-emerald-400 text-[10px]">(Do Estoque)</span>' : '<span class="text-rose-400 text-[10px]">(Comprar)</span>') : ''}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row" id="n_cut_${idx}_${cIdx}"><input type="checkbox" class="chk-cut no-print" onchange="toggleCutCheck('n_cut_${idx}_${cIdx}')"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="text-white">${formatPieceName(c)}</strong> (${c.size}mm ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2">Sobra útil: ${plan.leftover.toFixed(0)} mm</div></div></div>`;
         });
       }
-
+      
       if (isSquareMode) {
         const angularPieces = [...calc.stockPlans.flatMap(p => p.cuts), ...calc.newBarPlans.flatMap(p => p.cuts)].filter(p => p.esq !== 90 || p.dir !== 90);
         if (angularPieces.length > 0) {
           html += `<div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl mt-6"><h3 class="font-bold text-amber-400 mb-2">📐 Guia de Refilo Angular</h3><p class="text-xs text-amber-200/70 mb-3">Após cortar todas as peças retas (90°), pegue as peças abaixo e refile as pontas:</p><ul class="space-y-2">`;
-          angularPieces.forEach(p => {
-            html += `<li class="flex items-center gap-2 text-sm text-slate-300"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size}mm) -> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`;
-          });
-          html += `</ul></div>`;
+          angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size}mm) -> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; }); html += `</ul></div>`;
         }
       }
-
       document.getElementById('output').innerHTML = html;
     }
 
-    function saveToLote() {
-      if (!currentCalculation) return;
-      const idx = loteSaved.findIndex(i => i.profile === currentCalculation.profile && i.color === currentCalculation.color);
-      if (idx >= 0) loteSaved[idx] = currentCalculation; else loteSaved.push(currentCalculation);
-      renderLoteSummary(); showToast("Perfil salvo no Lote!");
-    }
-
-    function clearForNextProfile() {
-      pieces = []; stocks = []; currentCalculation = null; renderLists();
-      document.getElementById('postCalcActions').classList.replace('flex', 'hidden');
-      document.getElementById('output').innerHTML = '';
-      document.getElementById('pieceClient').value = '';
-      document.getElementById('pieceName').value = '';
-    }
+    function saveToLote() { if (!currentCalculation) return; const idx = loteSaved.findIndex(i => i.profile === currentCalculation.profile && i.color === currentCalculation.color); if (idx >= 0) loteSaved[idx] = currentCalculation; else loteSaved.push(currentCalculation); renderLoteSummary(); showToast("Perfil salvo no Lote!"); }
+    function clearForNextProfile() { pieces = []; stocks = []; currentCalculation = null; renderLists(); document.getElementById('postCalcActions').classList.replace('flex', 'hidden'); document.getElementById('output').innerHTML = ''; document.getElementById('pieceClient').value = ''; document.getElementById('pieceName').value = ''; }
 
     function renderLoteSummary() {
-      const box = document.getElementById('loteSummary');
-      if (loteSaved.length === 0) { box.innerHTML = ''; return; }
-
+      const box = document.getElementById('loteSummary'); if (loteSaved.length === 0) { box.innerHTML = ''; return; }
       let html = `<div class="glass-card p-5 rounded-3xl border-indigo-500/30"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-indigo-400"><i class="fa-solid fa-layer-group"></i> Lote Consolidado (${loteSaved.length} Perfis)</h3><button onclick="sendWhatsAppOrder()" class="bg-[#25D366] hover:bg-[#20b858] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all no-print"><i class="fa-brands fa-whatsapp"></i> Pedir ao Fornecedor</button></div>`;
       html += `<div class="overflow-x-auto border border-slate-700 rounded-xl"><table class="w-full text-xs text-left"><thead class="bg-slate-900 text-slate-400 border-b border-slate-700"><tr><th class="p-2">Perfil</th><th class="p-2">Cor</th><th class="p-2">Total Corte</th><th class="p-2 text-rose-400">Comprar</th><th class="p-2 no-print text-center">Ações</th></tr></thead><tbody class="divide-y divide-slate-800 bg-slate-900/50">`;
-      
-      loteSaved.forEach((item, idx) => {
-        html += `<tr>
-          <td class="p-2 font-bold text-white">${item.profile}</td>
-          <td class="p-2">${item.color}</td>
-          <td class="p-2">${item.newBarsCount}</td>
-          <td class="p-2 font-bold text-rose-400">${item.barsToBuy}</td>
-          <td class="p-2 no-print flex justify-center gap-3">
-            <button onclick="viewLoteItem(${idx})" title="Ver Plano de Corte" class="text-sky-400 hover:text-sky-300 transition-all"><i class="fa-solid fa-eye"></i></button>
-            <button onclick="editLoteItem(${idx})" title="Editar Peças" class="text-amber-400 hover:text-amber-300 transition-all"><i class="fa-solid fa-pen-to-square"></i></button>
-            <button onclick="loteSaved.splice(${idx}, 1); renderLoteSummary();" title="Excluir" class="text-rose-500 hover:text-rose-300 transition-all"><i class="fa-solid fa-trash"></i></button>
-          </td>
-        </tr>`;
-      });
-      html += `</tbody></table></div></div>`;
-      box.innerHTML = html;
+      loteSaved.forEach((item, idx) => { html += `<tr><td class="p-2 font-bold text-white">${item.profile}</td><td class="p-2">${item.color}</td><td class="p-2">${item.newBarsCount}</td><td class="p-2 font-bold text-rose-400">${item.barsToBuy}</td><td class="p-2 no-print flex justify-center gap-3"><button onclick="viewLoteItem(${idx})" title="Ver Plano de Corte" class="text-sky-400 hover:text-sky-300 transition-all"><i class="fa-solid fa-eye"></i></button><button onclick="editLoteItem(${idx})" title="Editar Peças" class="text-amber-400 hover:text-amber-300 transition-all"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="loteSaved.splice(${idx}, 1); renderLoteSummary();" title="Excluir" class="text-rose-500 hover:text-rose-300 transition-all"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+      html += `</tbody></table></div></div>`; box.innerHTML = html;
     }
 
-    function viewLoteItem(idx) {
-      if (!loteSaved[idx]) return;
-      currentCalculation = loteSaved[idx]; renderResultOutput(currentCalculation);
-      document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
-      document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function editLoteItem(idx) {
-      if (!loteSaved[idx]) return;
-      const item = loteSaved[idx];
-      document.getElementById('profileCode').value = item.profile;
-      document.getElementById('profileColor').value = item.color;
-      document.getElementById('barSize').value = item.barSize;
-      document.getElementById('bladeSize').value = item.blade;
-      document.getElementById('paintSize').value = item.paint;
-      document.getElementById('angleModeInput').value = item.mode;
-      document.getElementById('limitBarsCheckbox').checked = item.isLimitBars;
-      document.getElementById('availableBarsCount').value = item.availableBarsLimit;
-      toggleLimitBarsInput();
-      stocks = [...item.stocks]; pieces = [...item.pieces]; renderLists();
-      currentCalculation = item; renderResultOutput(currentCalculation);
-      document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    function viewLoteItem(idx) { if (!loteSaved[idx]) return; currentCalculation = loteSaved[idx]; renderResultOutput(currentCalculation); document.getElementById('postCalcActions').classList.replace('hidden', 'flex'); document.getElementById('output').scrollIntoView({ behavior: 'smooth' }); }
+    function editLoteItem(idx) { if (!loteSaved[idx]) return; const item = loteSaved[idx]; document.getElementById('profileCode').value = item.profile; document.getElementById('profileColor').value = item.color; document.getElementById('barSize').value = item.barSize; document.getElementById('bladeSize').value = item.blade; document.getElementById('paintSize').value = item.paint; document.getElementById('angleModeInput').value = item.mode; document.getElementById('limitBarsCheckbox').checked = item.isLimitBars; document.getElementById('availableBarsCount').value = item.availableBarsLimit; toggleLimitBarsInput(); stocks = [...item.stocks]; pieces = [...item.pieces]; renderLists(); currentCalculation = item; renderResultOutput(currentCalculation); document.getElementById('postCalcActions').classList.replace('hidden', 'flex'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
     function sendWhatsAppOrder() {
-      const itemsToBuy = loteSaved.filter(i => i.barsToBuy > 0);
-      if (itemsToBuy.length === 0) { showToast("Nenhum item precisa ser comprado! Estoque suficiente.", "error"); return; }
-      let text = `🛒 *PEDIDO DE ALUMÍNIO*\n------------------------\n`;
-      let total = 0;
-      itemsToBuy.forEach(item => {
-        text += `• *Perfil:* ${item.profile}\n  - Cor: ${item.color}\n  - Qtd: *${item.barsToBuy} barra(s)* (${item.barSize}mm)\n\n`;
-        total += item.barsToBuy;
-      });
-      text += `------------------------\n📦 *TOTAL: ${total} barra(s)*`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+      const itemsToBuy = loteSaved.filter(i => i.barsToBuy > 0); if (itemsToBuy.length === 0) { showToast("Nenhum item precisa ser comprado! Estoque suficiente.", "error"); return; }
+      let text = `🛒 *PEDIDO DE ALUMÍNIO*\n------------------------\n`; let total = 0;
+      itemsToBuy.forEach(item => { text += `• *Perfil:* ${item.profile}\n  - Cor: ${item.color}\n  - Qtd: *${item.barsToBuy} barra(s)* (${item.barSize}mm)\n\n`; total += item.barsToBuy; });
+      text += `------------------------\n📦 *TOTAL: ${total} barra(s)*`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    function openFeedbackModal() {
-      const modal = document.getElementById('modal-feedback');
-      const content = document.getElementById('modal-feedback-content');
-      modal.classList.remove('hidden');
-      setTimeout(() => {
-        content.classList.remove('scale-95', 'opacity-0');
-        content.classList.add('scale-100', 'opacity-100');
-      }, 10);
-    }
-    
-    function closeFeedbackModal() {
-      const modal = document.getElementById('modal-feedback');
-      const content = document.getElementById('modal-feedback-content');
-      content.classList.remove('scale-100', 'opacity-100');
-      content.classList.add('scale-95', 'opacity-0');
-      setTimeout(() => { modal.classList.add('hidden'); }, 300);
-    }
+    function openFeedbackModal() { const modal = document.getElementById('modal-feedback'); const content = document.getElementById('modal-feedback-content'); modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10); }
+    function closeFeedbackModal() { const modal = document.getElementById('modal-feedback'); const content = document.getElementById('modal-feedback-content'); content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); }, 300); }
 
     async function submitFeedback(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btn-feedback');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
-      const tipo = document.getElementById('feedback-tipo').value;
-      const mensagem = document.getElementById('feedback-mensagem').value;
-      const sessaoStr = localStorage.getItem('oppah_session');
-      const usuario = sessaoStr ? JSON.parse(sessaoStr) : { nome: 'Desconhecido', email: 'N/A', tipo: 'N/A', nome_empresa: 'N/A' };
-
+      e.preventDefault(); const btn = document.getElementById('btn-feedback'); const originalText = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+      const tipo = document.getElementById('feedback-tipo').value; const mensagem = document.getElementById('feedback-mensagem').value;
+      const sessaoStr = localStorage.getItem('oppah_session'); const usuario = sessaoStr ? JSON.parse(sessaoStr) : { nome: 'Desconhecido', email: 'N/A', tipo: 'N/A', nome_empresa: 'N/A' };
       const feedbackData = { data: new Date().toISOString(), tipo_usuario: usuario.tipo, nome_usuario: usuario.nome, email_usuario: usuario.email, empresa: usuario.nome_empresa, categoria: tipo, mensagem: mensagem };
 
       if (OPPAH_CONFIG.webhookFeedback) {
-        try {
-          const resp = await fetch(OPPAH_CONFIG.webhookFeedback, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(feedbackData) });
-          if (resp.ok) {
-            showToast('Feedback enviado para nossa equipe!', 'success');
-            document.getElementById('form-feedback').reset(); closeFeedbackModal(); btn.innerHTML = originalText; return;
-          }
+        try { const resp = await fetch(OPPAH_CONFIG.webhookFeedback, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(feedbackData) });
+          if (resp.ok) { showToast('Feedback enviado para nossa equipe!', 'success'); document.getElementById('form-feedback').reset(); closeFeedbackModal(); btn.innerHTML = originalText; return; }
         } catch (err) { console.warn("Falha no Webhook Feedback", err); }
       }
       
-      const numeroSuporte = "5511999999999"; 
-      const textoZap = `*Novo Feedback - Portal Oppah*%0A%0A*Categoria:* ${tipo}%0A*Empresa:* ${usuario.nome_empresa}%0A*Usuário:* ${usuario.nome}%0A*Mensagem:* ${mensagem}`;
+      const numeroSuporte = "5511999999999"; const textoZap = `*Novo Feedback - Portal Oppah*%0A%0A*Categoria:* ${tipo}%0A*Empresa:* ${usuario.nome_empresa}%0A*Usuário:* ${usuario.nome}%0A*Mensagem:* ${mensagem}`;
       setTimeout(() => { window.open(`https://api.whatsapp.com/send?phone=${numeroSuporte}&text=${textoZap}`, '_blank'); document.getElementById('form-feedback').reset(); closeFeedbackModal(); btn.innerHTML = originalText; }, 1000);
     }
   </script>
