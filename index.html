@@ -214,8 +214,8 @@
         <div class="w-20 h-20 bg-gradient-to-br from-indigo-900 to-fuchsia-900 text-fuchsia-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border border-fuchsia-400/50 shadow-[0_0_20px_rgba(217,70,239,0.3)]">
           <i class="fa-solid fa-atom"></i>
         </div>
-        <h3 class="font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-fuchsia-400 text-2xl mb-2">Portal Quântico Ativado</h3>
-        <p class="text-xs text-slate-300 mb-6">A magia da otimização encontra o futuro da sua fábrica. Configure sua identidade no sistema.</p>
+        <h3 class="font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-fuchsia-400 text-2xl mb-2 uppercase tracking-tight">BEM VINDO AO PORTAL OPPAH!</h3>
+        <p class="text-xs text-slate-300 mb-6">Onde a magia da otimização encontra o futuro da sua fábrica. Configure sua identidade no sistema.</p>
         
         <div class="space-y-4 text-left">
           <div>
@@ -251,7 +251,7 @@
           </div>
           
           <button type="button" onclick="saveGestorPreferences()" class="w-full py-3 mt-2 bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-[0_0_15px_rgba(192,38,211,0.4)] flex justify-center items-center gap-2">
-            Iniciar Sistema <i class="fa-solid fa-bolt"></i>
+            Ativar Portal! <i class="fa-solid fa-bolt"></i>
           </button>
         </div>
       </div>
@@ -676,7 +676,7 @@
 
     async function carregarConfiguracoes() {
         try {
-            const urlConfigRaw = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/homologacao/oppah.json'; // Substitua pelo link real
+            const urlConfigRaw = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json'; // Substitua pelo link real
             const response = await fetch(urlConfigRaw);
             if (!response.ok) throw new Error("Não foi possível carregar as configurações RAW.");
             OPPAH_CONFIG = await response.json();
