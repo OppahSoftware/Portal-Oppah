@@ -316,7 +316,7 @@
         <span id="operatorGreeting" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 hidden"></span>
         <button onclick="openPreferencesModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all border border-slate-700 shadow-sm"><i class="fa-solid fa-gear"></i> Preferências</button>
         <!-- Botão Voltar para Gestor -->
-        <button onclick="window.location.href='index.html'" class="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl text-xs font-bold transition-all border border-rose-500/20 flex items-center gap-2" title="Sair do Otimizador">
+        <button onclick="logoutOperador()" class="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl text-xs font-bold transition-all border border-rose-500/20 flex items-center gap-2" title="Sair do Otimizador">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
         </button>
       </div>
@@ -1615,6 +1615,19 @@
             renderLoteSummary(); showToast("Perfil removido.");
         }
     }
+    function logoutOperador() {
+    // Se estiver cortando, pausa para não perder tempo
+    if (currentCalculation && currentCalculation.status === 'cortando') {
+        pauseProduction(true);
+        persistCurrentProject();
+    }
+    
+    // Apaga a sessão da memória
+    localStorage.removeItem('oppah_session');
+    
+    // Volta para o login
+    window.location.href = 'index.html';
+}
 
     function sendWhatsAppOrder() {
       const itemsToBuy = loteSaved.filter(i => i.barsToBuy > 0);
