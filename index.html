@@ -346,7 +346,7 @@
 
     async function carregarConfiguracoes() {
         try {
-            const urlConfigRaw = 'https://raw.githubusercontent.com/SEU_USUARIO/portal-oppah/main/config.json'; 
+            const urlConfigRaw = 'https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/teste-v3/oppah.json'; 
             const response = await fetch(urlConfigRaw);
             if (!response.ok) throw new Error("Não carregou");
             OPPAH_CONFIG = await response.json();
