@@ -362,11 +362,18 @@
       if (!localStorage.getItem('oppah_empresas')) localStorage.setItem('oppah_empresas', JSON.stringify([]));
       if (!localStorage.getItem('oppah_operadores')) localStorage.setItem('oppah_operadores', JSON.stringify([]));
 
-      if (OPPAH_CONFIG.webhookLogin) document.getElementById('webhook-login').value = OPPAH_CONFIG.webhookLogin;
+     if (OPPAH_CONFIG.webhookLogin) document.getElementById('webhook-login').value = OPPAH_CONFIG.webhookLogin;
       if (OPPAH_CONFIG.webhookRegister) document.getElementById('webhook-register').value = OPPAH_CONFIG.webhookRegister;
       if (OPPAH_CONFIG.webhookOTP) document.getElementById('webhook-otp').value = OPPAH_CONFIG.webhookOTP;
       if (OPPAH_CONFIG.webhookCreateOp) document.getElementById('webhook-create-op').value = OPPAH_CONFIG.webhookCreateOp;
-
+      
+      // -- LINHAS NOVAS PARA APARECER NA TELA DE CONFIG --
+      if (OPPAH_CONFIG.webhookSaveObra && document.getElementById('webhook-save-obra')) {
+          document.getElementById('webhook-save-obra').value = OPPAH_CONFIG.webhookSaveObra;
+      }
+      if (OPPAH_CONFIG.webhookGetObras && document.getElementById('webhook-get-obras')) {
+          document.getElementById('webhook-get-obras').value = OPPAH_CONFIG.webhookGetObras;
+      }
       const sessaoStr = localStorage.getItem('oppah_session');
       if (sessaoStr) {
         const sessao = JSON.parse(sessaoStr);
