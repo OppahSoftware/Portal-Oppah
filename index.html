@@ -536,7 +536,7 @@
 
     function focusEditEmail() { cancelOTP(); setTimeout(() => { const emailInput = document.getElementById('reg-email'); emailInput.focus(); emailInput.select(); }, 350); }
 
-    async function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   const btnText = document.getElementById('btn-login-text');
   const btnIcon = document.getElementById('btn-login-icon');
@@ -560,7 +560,9 @@
         const data = await resp.json();
         if (data && data.autenticado) {
           if (data.validade && new Date(data.validade) < new Date()) {
-            showToast('A licença desta empresa expirou.', 'error'); resetLoginBtn(); return;
+            showToast('A licença desta empresa expirou.', 'error'); 
+            resetLoginBtn(); 
+            return;
           }
           const sessao = {
             tipo: data.tipo,
@@ -572,25 +574,26 @@
           };
           localStorage.setItem('oppah_session', JSON.stringify(sessao));
           
-          // O SEGREDO DO REDIRECIONAMENTO ESTÁ AQUI:
           if (data.tipo === 'gestor') {
              showToast(`Login de Gestor efetuado!`, 'success');
              loadGestorDashboard(sessao);
           } else {
              showToast(`Bem-vindo, Operador!`, 'success');
-             window.location.href = 'otimizador.html'; // Manda direto pro corte
+             window.location.href = 'otimizador.html';
           }
           return;
         }
       }
-    } catch (err) { console.warn("API indisponível, checando local...", err); }
+    } catch (err) { 
+        console.warn("API indisponível, checando local...", err); 
+    }
   }
 
-  // 2. FALLBACK: LOGIN LOCAL (Se a internet cair ou webhook falhar)
+  // 2. FALLBACK: LOGIN LOCAL
   const empresas = JSON.parse(localStorage.getItem('oppah_empresas') || '[]');
   const operadores = JSON.parse(localStorage.getItem('oppah_operadores') || '[]');
 
-  // Checa se é Gestor (Dono da Empresa)
+  // Checa Gestor
   const gestor = empresas.find(emp => emp.email.toLowerCase() === email.toLowerCase() && emp.senha === senha);
   if (gestor) {
     const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome_empresa: gestor.nome_empresa, nome_gestor: gestor.nome_gestor };
@@ -600,17 +603,20 @@
     return;
   }
 
-  // Checa se é Operador
+  // Checa Operador
   const operador = operadores.find(op => op.email.toLowerCase() === email.toLowerCase() && op.senha === senha);
   if (operador) {
     const empresa = empresas.find(emp => emp.id_empresa === operador.id_empresa);
-    if (empresa && new Date(empresa.validade) < new Date()) { showToast('O período de testes acabou.', 'error'); resetLoginBtn(); return; }
+    if (empresa && new Date(empresa.validade) < new Date()) { 
+        showToast('O período de testes acabou.', 'error'); 
+        resetLoginBtn(); 
+        return; 
+    }
     
     const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, email: operador.email, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
     localStorage.setItem('oppah_session', JSON.stringify(sessao));
     showToast(`Bem-vindo, ${operador.nome}!`, 'success');
     
-    // REDIRECIONA PARA O OTIMIZADOR
     setTimeout(() => {
         window.location.href = 'otimizador.html';
     }, 800);
