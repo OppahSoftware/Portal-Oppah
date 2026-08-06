@@ -1349,49 +1349,62 @@
 
     // NOVA FUNÇÃO: Abrir Lista conectando com a Nuvem
     async function openSavedProjectsModal() {
-        const modal = document.getElementById('modal-saved-projects');
-        const content = document.getElementById('modal-saved-projects-content');
-        const container = document.getElementById('saved-projects-list');
+    const modal = document.getElementById('modal-saved-projects');
+    const content = document.getElementById('modal-saved-projects-content');
+    const container = document.getElementById('saved-projects-list');
 
-        modal.classList.remove('hidden');
-        setTimeout(() => { 
-            content.classList.remove('scale-95', 'opacity-0'); 
-            content.classList.add('scale-100', 'opacity-100'); 
-        }, 10);
+    modal.classList.remove('hidden');
+    setTimeout(() => { 
+        content.classList.remove('scale-95', 'opacity-0'); 
+        content.classList.add('scale-100', 'opacity-100'); 
+    }, 10);
 
-        // Mostra um aviso de carregamento enquanto busca
-        container.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-sky-500 text-4xl mb-4"></i><p class="text-sm text-slate-400">Sincronizando com a nuvem...</p></div>';
+    container.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-sky-500 text-4xl mb-4"></i><p class="text-sm text-slate-400">Sincronizando com a nuvem...</p></div>';
 
-        const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
-        const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
-        const userEmail = sessao.email || (prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local');
-        const idEmpresa = sessao.id_empresa || 'LOCAL';
-        
-        const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+    const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
+    const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
+    const userEmail = sessao.email || (prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local');
+    const idEmpresa = sessao.id_empresa || 'LOCAL';
+    
+    const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
 
-        // Tenta buscar as obras na nuvem
-        if (cfg.webhookGetObras) {
-            try {
-                const resp = await fetch(cfg.webhookGetObras, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, id_empresa: idEmpresa })
-                });
+    if (cfg.webhookGetObras) {
+        try {
+            const resp = await fetch(cfg.webhookGetObras, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userEmail, id_empresa: idEmpresa })
+            });
+            
+            if (resp.ok) {
+                let cloudProjects = await resp.json();
                 
-                if (resp.ok) {
-                    const cloudProjects = await resp.json();
-                    // Se retornou array, atualiza o storage local com os dados da nuvem
-                    if (Array.isArray(cloudProjects)) {
-                        localStorage.setItem('oppah_saved_projects', JSON.stringify(cloudProjects));
-                    }
+                // BLINDAGEM 1: Se o Power Automate embrulhou a lista em um objeto, nós desembrulhamos
+                if (!Array.isArray(cloudProjects)) {
+                    if (cloudProjects.value) cloudProjects = cloudProjects.value;
+                    else if (cloudProjects.body) cloudProjects = cloudProjects.body;
+                    else cloudProjects = [cloudProjects]; // Tenta forçar array
                 }
-            } catch (error) {
-                console.warn("Modo offline: Falha ao buscar na nuvem.", error);
-            }
-        }
 
-        // Renderiza a lista (atualizada pela nuvem ou usando o backup local)
-        renderSavedProjectsList();
+                // BLINDAGEM 2: Se o plano de corte (data) veio como texto em vez de JSON, nós convertemos
+                cloudProjects = cloudProjects.map(p => {
+                    if (typeof p.data === 'string') {
+                        try { p.data = JSON.parse(p.data); } catch(e) { p.data = []; }
+                    }
+                    return p;
+                });
+
+                if (Array.isArray(cloudProjects)) {
+                    localStorage.setItem('oppah_saved_projects', JSON.stringify(cloudProjects));
+                    console.log("✅ Obras sincronizadas da nuvem com sucesso!");
+                }
+            }
+        } catch (error) {
+            console.warn("⚠️ Modo offline: Falha ao buscar na nuvem.", error);
+        }
+    }
+
+    renderSavedProjectsList();
     }
 
     function closeSavedProjectsModal() {
@@ -1403,12 +1416,15 @@
 
     // AJUSTADA para usar o Email da Sessão
     function renderSavedProjectsList() {
-      const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
-      const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
-      const userEmail = sessao.email || (prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local');
-      
-      const projects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]').filter(p => p.userEmail === userEmail);
-      const container = document.getElementById('saved-projects-list');
+    const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
+    const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
+    const userEmail = sessao.email || (prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local');
+    
+    // BLINDAGEM 3: Ignora letras maiúsculas/minúsculas na hora de comparar o e-mail
+    const allProjects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]');
+    const projects = allProjects.filter(p => p.userEmail && p.userEmail.toLowerCase() === userEmail.toLowerCase());
+    
+    const container = document.getElementById('saved-projects-list');
       
       if(projects.length === 0) {
         container.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-box-archive text-slate-600 text-4xl mb-4"></i><p class="text-sm text-slate-400">Nenhuma obra salva ainda.</p></div>'; return;
