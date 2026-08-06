@@ -537,50 +537,89 @@
     function focusEditEmail() { cancelOTP(); setTimeout(() => { const emailInput = document.getElementById('reg-email'); emailInput.focus(); emailInput.select(); }, 350); }
 
     async function handleLogin(e) {
-      e.preventDefault();
-      const btnText = document.getElementById('btn-login-text'); const btnIcon = document.getElementById('btn-login-icon');
-      btnText.innerText = "Autenticando..."; btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
+  e.preventDefault();
+  const btnText = document.getElementById('btn-login-text');
+  const btnIcon = document.getElementById('btn-login-icon');
+  btnText.innerText = "Autenticando...";
+  btnIcon.className = "fa-solid fa-spinner fa-spin text-xs";
 
-      const email = document.getElementById('login-email').value.trim(); const senha = document.getElementById('login-password').value; const cfg = OPPAH_CONFIG;
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-password').value;
+  const cfg = OPPAH_CONFIG;
 
-      if (cfg.webhookLogin) {
-        try {
-          const resp = await fetch(cfg.webhookLogin, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, senha }) });
-          if (resp.ok) {
-            const data = await resp.json();
-            if (data && data.autenticado) {
-              if (data.validade && new Date(data.validade) < new Date()) { showToast('Licença expirou.', 'error'); resetLoginBtn(); return; }
-              const sessao = { tipo: data.tipo, id_empresa: data.id_empresa, email: data.email, nome: data.nome || data.nome_empresa, nome_empresa: data.nome_empresa, nome_gestor: data.nome_gestor || data.nome };
-              localStorage.setItem('oppah_session', JSON.stringify(sessao));
-              
-              if (data.tipo === 'gestor') { showToast('Login Gestor.', 'success'); loadGestorDashboard(sessao); }
-              else { window.location.href = 'otimizador.html'; } // REDIRECT OTIMIZADOR
-              return;
-            } else { showToast(data.mensagem || 'E-mail ou senha incorretos.', 'error'); resetLoginBtn(); return; }
-          }
-        } catch (err) { console.warn("SharePoint fallback...", err); }
-      }
-
-      const empresas = JSON.parse(localStorage.getItem('oppah_empresas') || '[]'); const operadores = JSON.parse(localStorage.getItem('oppah_operadores') || '[]');
-      const gestor = empresas.find(emp => emp.email.toLowerCase() === email.toLowerCase() && emp.senha === senha);
+  // 1. TENTA LOGIN VIA NUVEM (WEBHOOK)
+  if (cfg.webhookLogin) {
+    try {
+      const resp = await fetch(cfg.webhookLogin, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      });
       
-      if (gestor) {
-        const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome_empresa: gestor.nome_empresa, nome_gestor: gestor.nome_gestor };
-        localStorage.setItem('oppah_session', JSON.stringify(sessao));
-        showToast('Login efetuado.', 'success'); loadGestorDashboard(sessao); return;
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.autenticado) {
+          if (data.validade && new Date(data.validade) < new Date()) {
+            showToast('A licença desta empresa expirou.', 'error'); resetLoginBtn(); return;
+          }
+          const sessao = {
+            tipo: data.tipo,
+            id_empresa: data.id_empresa,
+            email: data.email,
+            nome: data.nome || data.nome_empresa,
+            nome_empresa: data.nome_empresa,
+            nome_gestor: data.nome_gestor || data.nome
+          };
+          localStorage.setItem('oppah_session', JSON.stringify(sessao));
+          
+          // O SEGREDO DO REDIRECIONAMENTO ESTÁ AQUI:
+          if (data.tipo === 'gestor') {
+             showToast(`Login de Gestor efetuado!`, 'success');
+             loadGestorDashboard(sessao);
+          } else {
+             showToast(`Bem-vindo, Operador!`, 'success');
+             window.location.href = 'otimizador.html'; // Manda direto pro corte
+          }
+          return;
+        }
       }
+    } catch (err) { console.warn("API indisponível, checando local...", err); }
+  }
 
-      const operador = operadores.find(op => op.email.toLowerCase() === email.toLowerCase() && op.senha === senha);
-      if (operador) {
-        const empresa = empresas.find(emp => emp.id_empresa === operador.id_empresa);
-        if (empresa && new Date(empresa.validade) < new Date()) { showToast('Teste expirado.', 'error'); resetLoginBtn(); return; }
-        const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
-        localStorage.setItem('oppah_session', JSON.stringify(sessao));
-        window.location.href = 'otimizador.html'; // REDIRECT OTIMIZADOR
-        return;
-      }
-      showToast('E-mail ou senha incorretos.', 'error'); resetLoginBtn();
-    }
+  // 2. FALLBACK: LOGIN LOCAL (Se a internet cair ou webhook falhar)
+  const empresas = JSON.parse(localStorage.getItem('oppah_empresas') || '[]');
+  const operadores = JSON.parse(localStorage.getItem('oppah_operadores') || '[]');
+
+  // Checa se é Gestor (Dono da Empresa)
+  const gestor = empresas.find(emp => emp.email.toLowerCase() === email.toLowerCase() && emp.senha === senha);
+  if (gestor) {
+    const sessao = { tipo: 'gestor', id_empresa: gestor.id_empresa, email: gestor.email, nome_empresa: gestor.nome_empresa, nome_gestor: gestor.nome_gestor };
+    localStorage.setItem('oppah_session', JSON.stringify(sessao));
+    showToast('Login de Gestor efetuado.', 'success');
+    loadGestorDashboard(sessao);
+    return;
+  }
+
+  // Checa se é Operador
+  const operador = operadores.find(op => op.email.toLowerCase() === email.toLowerCase() && op.senha === senha);
+  if (operador) {
+    const empresa = empresas.find(emp => emp.id_empresa === operador.id_empresa);
+    if (empresa && new Date(empresa.validade) < new Date()) { showToast('O período de testes acabou.', 'error'); resetLoginBtn(); return; }
+    
+    const sessao = { tipo: 'operador', id_empresa: operador.id_empresa, nome: operador.nome, email: operador.email, nome_empresa: empresa ? empresa.nome_empresa : 'Empresa' };
+    localStorage.setItem('oppah_session', JSON.stringify(sessao));
+    showToast(`Bem-vindo, ${operador.nome}!`, 'success');
+    
+    // REDIRECIONA PARA O OTIMIZADOR
+    setTimeout(() => {
+        window.location.href = 'otimizador.html';
+    }, 800);
+    return;
+  }
+
+  showToast('E-mail ou senha incorretos.', 'error'); 
+  resetLoginBtn();
+}
 
     function resetLoginBtn() { document.getElementById('btn-login-text').innerText = "Acessar Portal"; document.getElementById('btn-login-icon').className = "fa-solid fa-arrow-right text-xs"; }
     function handleLogout() { localStorage.removeItem('oppah_session'); location.reload(); }
