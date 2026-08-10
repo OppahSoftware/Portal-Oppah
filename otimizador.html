@@ -163,7 +163,7 @@
     </div>
   </div>
 
-  <!-- OUTROS MODAIS DO OTIMIZADOR -->
+  <!-- MODAL DE FEEDBACK -->
   <div id="modal-feedback" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm transition-opacity hidden">
     <div class="glass-card max-w-md w-full p-8 rounded-3xl shadow-2xl border border-indigo-500/30 m-4 transform transition-all scale-95 opacity-0" id="modal-feedback-content">
         <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-6"><h3 class="font-bold text-white text-lg flex items-center gap-2"><i class="fa-solid fa-comment-dots text-indigo-400"></i> Enviar Feedback</h3><button onclick="closeFeedbackModal()" class="text-slate-400 hover:text-white bg-slate-800 p-2 rounded-lg transition-colors"><i class="fa-solid fa-xmark"></i></button></div>
@@ -303,6 +303,58 @@
   </div>
 
   <script>
+    // --- FUNÇÕES GLOBAIS DE UI INJETADAS ---
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const title = document.getElementById('toast-title');
+        const msg = document.getElementById('toast-message');
+        const icon = document.getElementById('toast-icon');
+        if (!toast) return;
+
+        msg.innerText = message;
+        
+        if (type === 'success') {
+            title.innerText = 'Sucesso';
+            icon.innerHTML = '<i class="fa-solid fa-check text-sm"></i>';
+            icon.className = 'w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0';
+        } else {
+            title.innerText = 'Atenção';
+            icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-sm"></i>';
+            icon.className = 'w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0';
+        }
+
+        toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+        
+        setTimeout(() => { toast.classList.add('translate-y-[-150%]', 'opacity-0'); }, 3000);
+    }
+
+    function openFeedbackModal() {
+        const modal = document.getElementById('modal-feedback');
+        const content = document.getElementById('modal-feedback-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
+    }
+
+    function closeFeedbackModal() {
+        const modal = document.getElementById('modal-feedback');
+        const content = document.getElementById('modal-feedback-content');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
+
+    function submitFeedback(e) {
+        e.preventDefault();
+        // A integração com o PowerAutomate (SharePoint) vai aqui no futuro.
+        showToast("Feedback enviado com sucesso!", "success");
+        closeFeedbackModal();
+        document.getElementById('feedback-mensagem').value = '';
+    }
+
+    function sendWhatsAppOrder() {
+        showToast("Pedido de material preparado (Em breve WhatsApp)!", "success");
+    }
+
     // --- LÓGICA DO IMPORTADOR (ROTEADOR INTELIGENTE V3.3) ---
     let extractedProfilesGlobal = {};
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -333,7 +385,6 @@
     function handleImportFileUpload(e) { if(e.target.files.length) processPDF(e.target.files[0]); }
 
     async function processPDF(file) {
-        // Correção 1: Checa a extensão do arquivo em vez do tipo do Windows
         if(!file.name.toLowerCase().endsWith('.pdf')) { 
             showToast("Apenas arquivos PDF são aceitos.", "error"); 
             return; 
@@ -345,14 +396,7 @@
 
         try {
             const arrayBuffer = await file.arrayBuffer();
-            
-            // Correção 2: Adicionada configuração para ler fontes complexas e evitar trava de Worker
-            const loadingTask = pdfjsLib.getDocument({
-                data: arrayBuffer,
-                cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-                cMapPacked: true
-            });
-            
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer, cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/', cMapPacked: true });
             const pdf = await loadingTask.promise;
             let fullText = "";
             
@@ -373,21 +417,14 @@
         }
     }
 
-    // O ROTEADOR QUE DIRECIONA PARA O MOTOR CORRETO
     function processImportText() {
         const text = document.getElementById('import-raw-textarea').value;
         if(!text.trim()) { document.getElementById('import-results-container').innerHTML = '<p class="text-amber-500 text-center mt-10">Insira texto.</p>'; return; }
 
         const pdfType = document.getElementById('import-pdf-type').value;
-        
-        if (pdfType === 'wvetro') {
-            processWvetroLogic(text);
-        } else {
-            processCEMLogic(text);
-        }
+        if (pdfType === 'wvetro') { processWvetroLogic(text); } else { processCEMLogic(text); }
     }
 
-    // MOTOR 1: EXCLUSIVO WVETRO (A Lógica que deu 100% certo na v3.1)
     function processWvetroLogic(text) {
         extractedProfilesGlobal = {}; 
         let currentProfile = "INDEFINIDO"; let currentColor = "Sem cor";
@@ -403,22 +440,14 @@
             if(!cleanLine || cleanLine.includes("===") || cleanLine === "|") return;
             let upLine = cleanLine.toUpperCase();
 
-            // 1. Rastreador Exato de Venda e Cliente (Wvetro)
             if (upLine === "NRO.ORCAMENTO" || upLine === "NRO. ORCAMENTO") { state = "EXPECT_VENDA"; return; }
             if (state === "EXPECT_VENDA") { globalVenda = cleanLine; state = "EXPECT_CLIENTE"; return; }
             if (state === "EXPECT_CLIENTE") { globalCliente = cleanLine; state = "SEARCHING"; return; }
-
-            // 2. Rastreador Auxiliar de Obra (Opcional)
             if (upLine === "EMISSÃO :") { state = "EXPECT_OBRA"; return; }
             if (state === "EXPECT_OBRA") { globalObra = cleanLine; state = "SEARCHING"; return; }
 
-            // 3. Rastreador de Cor (Para cabeçalhos)
-            if (colorKeywords.some(c => upLine.includes(c))) {
-                currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim();
-            }
+            if (colorKeywords.some(c => upLine.includes(c))) { currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); }
 
-            // 4. Gatilho do Perfil (ANTES DO FILTRO DE LIXO)
-            // Regra aceita letras (BG057) ou números com X (100X50)
             const isProfileMatch = /^([A-Z]{2,4}-?\d{2,4}[A-Z]?|\d+X\d+)$/i.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15;
             
             if (isProfileMatch) {
@@ -432,14 +461,12 @@
                 state = "SEARCHING"; return;
             }
 
-            // 5. Filtro de Lixo (Só atua depois de garantir que a linha não era o perfil 100x50)
             if (/x/i.test(cleanLine) && /\d/.test(cleanLine)) return; 
             if (upLine === "X") return;
             if (noiseWords.some(noise => upLine === noise || upLine.startsWith(noise))) return;
 
             buffer.push(cleanLine);
 
-            // 6. Pescador de Peças
             if (buffer.length >= 4) {
                 let window = buffer.slice(-4);
                 const isQty = (val) => /^\d+$/.test(val) && parseInt(val) > 0 && parseInt(val) < 500;
@@ -455,17 +482,14 @@
 
                 if (matched && size >= 10 && qty > 0) {
                     if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
-                    
                     let finalName = name; 
                     if (/^\d+$/.test(name)) finalName = "Item " + name;
                     
-                    // MONTAGEM PERFEITA DA ETIQUETA DA OBRA
                     let finalClientString = "";
                     if (globalVenda) finalClientString += `(Ped. ${globalVenda}) `;
                     if (globalCliente) finalClientString += globalCliente;
                     if (globalCliente && globalObra) finalClientString += ` - ${globalObra}`;
                     else if (!globalCliente && globalObra) finalClientString += globalObra;
-                    
                     if (finalClientString === "") finalClientString = "Projeto Geral";
 
                     extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: finalName, client: finalClientString, color: currentColor });
@@ -477,7 +501,6 @@
         renderImportResults(extractedProfilesGlobal); switchImportTab('parsed');
     }
 
-    // MOTOR 2: EXCLUSIVO SMARTCEM (Lógica construída com seu cabeçalho)
     function processCEMLogic(text) {
         extractedProfilesGlobal = {}; 
         let currentProfile = "INDEFINIDO"; let currentColor = "Sem cor";
@@ -485,29 +508,20 @@
         let state = "SEARCHING"; let buffer = []; 
         const lines = text.split('\n');
 
-        const noiseWords = [
-            "QTD:", "TAMANHO", "CORTE", "ITENS", "SOBRA", "JÁ CORTADO", "TIPO", "QUANTIDADE", 
-            "ANG. CORTE", "BARRAS:", "NÍVEL OTIMIZAÇÃO:", "PART.:", "TRAT.:", "SEPARAR", 
-            "P/ CORTAR", "BARRA ÚTIL:", "SEVEA", "ESQUEMA DE CORTE", "ITEM", "PAGINA :", 
-            "EMISSÃO :", "DT.CADASTRO:", "TRATAMENTO", "Nº BARRAS/FEIXE:", "N/A"
-        ];
+        const noiseWords = [ "QTD:", "TAMANHO", "CORTE", "ITENS", "SOBRA", "JÁ CORTADO", "TIPO", "QUANTIDADE", "ANG. CORTE", "BARRAS:", "NÍVEL OTIMIZAÇÃO:", "PART.:", "TRAT.:", "SEPARAR", "P/ CORTAR", "BARRA ÚTIL:", "SEVEA", "ESQUEMA DE CORTE", "ITEM", "PAGINA :", "EMISSÃO :", "DT.CADASTRO:", "TRATAMENTO", "Nº BARRAS/FEIXE:", "N/A" ];
 
         lines.forEach(line => {
             let cleanLine = line.trim();
             if(!cleanLine || cleanLine.includes("===") || cleanLine === "|") return;
             let upLine = cleanLine.toUpperCase();
 
-            // Rastreadores CEM
             if (upLine === "CLIENTE:") { state = "EXPECT_CLIENTE_CEM"; return; }
             if (state === "EXPECT_CLIENTE_CEM") { globalCliente = cleanLine; state = "SEARCHING"; return; }
-
             if (upLine === "OBRA" || upLine === "OBRA:") { state = "EXPECT_OBRA_CEM"; return; }
             if (state === "EXPECT_OBRA_CEM") { globalObra = cleanLine.replace(/^:/, '').trim(); state = "SEARCHING"; return; }
-
             if (upLine === "PADRÕES DE CORTES") { state = "EXPECT_VENDA_CEM"; return; }
             if (state === "EXPECT_VENDA_CEM") { globalVenda = cleanLine; state = "SEARCHING"; return; }
 
-            // Gatilho Perfil CEM
             if (/^[A-Z]{2,4}-?\d{2,4}[A-Z]?$/.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15) {
                 currentProfile = cleanLine.toUpperCase(); buffer = []; 
                 state = "EXPECT_COLOR_CEM"; return;
@@ -539,7 +553,6 @@
                     if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
                     let fullObraStr = globalObra || "Obra Geral"; let descCliente = globalCliente ? ` - ${globalCliente}` : "";
                     let finalClientString = `${fullObraStr}${descCliente}`; if (globalVenda) finalClientString += ` (Ped: ${globalVenda})`;
-
                     extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: name, client: finalClientString, color: currentColor });
                     buffer = []; 
                 } 
@@ -650,7 +663,6 @@
             contentRaw.classList.remove('hidden'); contentParsed.classList.add('hidden');
         }
     }
-
 
     // --- LÓGICA DO OTIMIZADOR (PRINCIPAL) ---
     const CURRENT_SYSTEM_VERSION = "3.3.0";
