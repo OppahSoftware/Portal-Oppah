@@ -519,8 +519,47 @@
     }
 
     window.onload = function() {
-      loadPreferences();
-      checkWhatsNewAlert(); 
+      // --- MOTOR DE ARRANQUE AUTÔNOMO (SOLUÇÃO DEFINITIVA) ---
+    async function initOptimizer() {
+        let cfg = JSON.parse(localStorage.getItem('oppah_config_api') || 'null');
+        
+        // Se a memória estiver vazia (Operador abriu direto no tablet)
+        if (!cfg || !cfg.webhookSaveObras) {
+            console.log("Memória limpa detectada. Buscando rotas da nuvem...");
+            
+            // COLE AQUI O LINK DO GATILHO QUE BUSCA AS CONFIGURAÇÕES (O MESMO QUE FICA NO INDEX)
+            const webhookBuscarConfigs = "COLE_O_LINK_DE_BUSCAR_CONFIG_AQUI"; 
+            
+            if (webhookBuscarConfigs !== "COLE_O_LINK_DE_BUSCAR_CONFIG_AQUI") {
+                try {
+                    // Faz a busca na Nuvem (Ajuste para POST ou GET dependendo de como está no seu Power Automate)
+                    const response = await fetch(webhookBuscarConfigs, { 
+                        method: 'POST', // Se o seu fluxo exige POST
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        let data = await response.json();
+                        // Garante que pega o objeto correto retornado pelo Automate
+                        if (data.value) data = data.value[0] || data.value; 
+                        
+                        // Salva as configurações na memória do celular do operador
+                        localStorage.setItem('oppah_config_api', JSON.stringify(data));
+                        console.log("✅ Rotas da nuvem injetadas com sucesso!");
+                    }
+                } catch (error) {
+                    console.error("⚠️ Falha ao conectar com o banco de configurações.", error);
+                }
+            }
+        }
+        
+        // Inicia a interface do Otimizador normalmente
+        loadPreferences(); 
+        renderImportQueue();
+    }
+
+    // Inicializa o sistema ao abrir a página
+    window.onload = initOptimizer;
     };
 
     // =====================================
