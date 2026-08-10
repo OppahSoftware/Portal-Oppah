@@ -691,7 +691,40 @@
     document.addEventListener("visibilitychange", () => { if (document.hidden && currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
     window.addEventListener("beforeunload", (e) => { if (currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
 
-    window.onload = function() { loadPreferences(); renderImportQueue(); };
+   // --- MOTOR DE ARRANQUE AUTÔNOMO (VIA OPPAH.JSON) ---
+    async function initOptimizer() {
+        let cfg = JSON.parse(localStorage.getItem('oppah_config_api') || 'null');
+        
+        // Se a memória estiver vazia ou faltando o link principal
+        if (!cfg || !cfg.webhookSaveObras) {
+            console.log("Memória limpa. Buscando configurações do oppah.json...");
+            
+            try {
+                // Como o oppah.json estará na mesma pasta, usamos o caminho relativo
+                // Se preferir, pode colar o link RAW direto do GitHub aqui dentro
+                const response = await fetch('./oppah.json?v=' + Date.now()); 
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Salva as configurações na memória do celular do operador
+                    localStorage.setItem('oppah_config_api', JSON.stringify(data));
+                    console.log("✅ Rotas injetadas com sucesso a partir do oppah.json!");
+                } else {
+                    console.warn("⚠️ Arquivo oppah.json não encontrado.");
+                }
+            } catch (error) {
+                console.error("⚠️ Falha ao ler o oppah.json.", error);
+            }
+        }
+        
+        // Inicia a interface do Otimizador normalmente
+        loadPreferences(); 
+        renderImportQueue();
+    }
+
+    // Inicializa o sistema ao abrir a página
+    window.onload = initOptimizer;
 
     function loadPreferences() {
       const prefsStr = localStorage.getItem('oppah_standalone_prefs');
