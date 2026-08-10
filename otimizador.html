@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.3</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.3.1 (Cloud)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -97,7 +97,6 @@
             <div id="import-col-input" class="w-full lg:w-5/12 bg-slate-800/80 border border-slate-700 p-5 rounded-2xl flex flex-col h-full shadow-inner shrink-0 transition-all duration-300">
                 <h2 class="font-bold text-white mb-4"><i class="fa-solid fa-file-arrow-up text-emerald-400"></i> 1. Inserir PDF da Obra</h2>
                 
-                <!-- NOVIDADE: SELETOR DE SISTEMA -->
                 <div class="mb-4">
                     <label class="block text-[11px] font-semibold text-emerald-400 mb-1">Qual o sistema de origem?</label>
                     <select id="import-pdf-type" class="w-full px-3 py-2.5 bg-slate-950 border border-emerald-500/50 rounded-xl text-xs text-white font-bold outline-none focus:border-emerald-400 shadow-inner">
@@ -220,7 +219,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.3</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.3.1 Cloud</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -303,7 +302,7 @@
   </div>
 
   <script>
-    // --- FUNÇÕES GLOBAIS DE UI INJETADAS ---
+    // --- FUNÇÕES GLOBAIS DE UI E NUVEM ---
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
         const title = document.getElementById('toast-title');
@@ -324,7 +323,6 @@
         }
 
         toast.classList.remove('translate-y-[-150%]', 'opacity-0');
-        
         setTimeout(() => { toast.classList.add('translate-y-[-150%]', 'opacity-0'); }, 3000);
     }
 
@@ -343,9 +341,27 @@
         setTimeout(() => { modal.classList.add('hidden'); }, 300);
     }
 
-    function submitFeedback(e) {
+    async function submitFeedback(e) {
         e.preventDefault();
-        // A integração com o PowerAutomate (SharePoint) vai aqui no futuro.
+        const tipo = document.getElementById('feedback-tipo').value;
+        const msg = document.getElementById('feedback-mensagem').value;
+        
+        const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
+        const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
+        const userName = sessao.nome || (prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local');
+        
+        const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+        
+        if (cfg.webhookFeedback) {
+            try {
+                await fetch(cfg.webhookFeedback, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: userName, tipo: tipo, mensagem: msg, data_hora: new Date().toISOString() })
+                });
+            } catch(erro) { console.error("Erro no feedback", erro); }
+        }
+
         showToast("Feedback enviado com sucesso!", "success");
         closeFeedbackModal();
         document.getElementById('feedback-mensagem').value = '';
@@ -665,7 +681,7 @@
     }
 
     // --- LÓGICA DO OTIMIZADOR (PRINCIPAL) ---
-    const CURRENT_SYSTEM_VERSION = "3.3.0";
+    const CURRENT_SYSTEM_VERSION = "3.3.1";
     let stocks = []; let pieces = []; let loteSaved = []; let currentProjectName = null; let currentCalculation = null;
     const clientColors = {}; const colorPalette = ['#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#a855f7', '#14b8a6', '#f97316'];
     let userPreferences = {}; let uiTimerInterval = null; let idleTimeout = null; let warningTimeout = null; let warningCountdownInterval = null;
@@ -977,6 +993,42 @@
       html += `</div>`; document.getElementById('output').innerHTML = html;
     }
 
+    // --- COMUNICAÇÃO COM A NUVEM (POWER AUTOMATE) ---
+    async function persistCurrentProject() {
+       const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
+       const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
+       const userName = sessao.nome || (prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local');
+       const userEmail = sessao.email || 'local@app';
+       const idEmpresa = sessao.id_empresa || 'LOCAL';
+       
+       let projects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]');
+       const pIdx = projects.findIndex(p => p.title === currentProjectName && p.userEmail === userEmail);
+       
+       const projectData = { 
+           id: pIdx >= 0 ? projects[pIdx].id : 'PRJ-' + Date.now(), 
+           userEmail: userEmail, 
+           id_empresa: idEmpresa,
+           title: currentProjectName, 
+           date: new Date().toISOString(), 
+           data: loteSaved 
+       };
+       
+       if (pIdx >= 0) projects[pIdx] = projectData; else projects.push(projectData);
+       localStorage.setItem('oppah_saved_projects', JSON.stringify(projects));
+
+       const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+       if (cfg.webhookSaveObras) {
+           try {
+               await fetch(cfg.webhookSaveObras, {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify(projectData)
+               });
+               console.log("✅ Nuvem: Obra enviada para o SharePoint com sucesso!");
+           } catch (error) { console.error("⚠️ Erro ao enviar para a nuvem:", error); }
+       }
+    }
+
     function saveToLote() {
       if (!currentCalculation) return;
       if (!currentProjectName) {
@@ -1004,21 +1056,51 @@
         return { total, done, pct: total === 0 ? 0 : Math.round((done / total) * 100), time: totalTimeMs };
     }
 
-    function persistCurrentProject() {
-       const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
-       const userName = prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local';
-       let projects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]');
-       const pIdx = projects.findIndex(p => p.title === currentProjectName && p.userEmail === userName);
-       
-       const projectData = { id: pIdx >= 0 ? projects[pIdx].id : 'PRJ-' + Date.now(), userEmail: userName, title: currentProjectName, date: new Date().toISOString(), data: loteSaved };
-       if (pIdx >= 0) projects[pIdx] = projectData; else projects.push(projectData);
-       localStorage.setItem('oppah_saved_projects', JSON.stringify(projects));
-    }
+    async function openSavedProjectsModal() {
+        const modal = document.getElementById('modal-saved-projects');
+        const content = document.getElementById('modal-saved-projects-content');
+        const container = document.getElementById('saved-projects-list');
 
-    function openSavedProjectsModal() {
-      renderSavedProjectsList();
-      const modal = document.getElementById('modal-saved-projects'); const content = document.getElementById('modal-saved-projects-content');
-      modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
+        modal.classList.remove('hidden');
+        setTimeout(() => { 
+            content.classList.remove('scale-95', 'opacity-0'); 
+            content.classList.add('scale-100', 'opacity-100'); 
+        }, 10);
+
+        container.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-sky-500 text-4xl mb-4"></i><p class="text-sm text-slate-400">Sincronizando com a nuvem...</p></div>';
+
+        const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
+        const userEmail = sessao.email || 'local@app';
+        const idEmpresa = sessao.id_empresa || 'LOCAL';
+        const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+
+        if (cfg.webhookGetObras) {
+            try {
+                const resp = await fetch(cfg.webhookGetObras, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, id_empresa: idEmpresa })
+                });
+                
+                if (resp.ok) {
+                    let cloudProjects = await resp.json();
+                    if (!Array.isArray(cloudProjects)) {
+                        if (cloudProjects.value) cloudProjects = cloudProjects.value;
+                        else if (cloudProjects.body) cloudProjects = cloudProjects.body;
+                        else cloudProjects = [cloudProjects]; 
+                    }
+                    cloudProjects = cloudProjects.map(p => {
+                        if (typeof p.data === 'string') { try { p.data = JSON.parse(p.data); } catch(e) { p.data = []; } }
+                        return p;
+                    });
+                    if (Array.isArray(cloudProjects)) {
+                        localStorage.setItem('oppah_saved_projects', JSON.stringify(cloudProjects));
+                    }
+                }
+            } catch (error) { console.warn("⚠️ Modo offline ativo.", error); }
+        }
+
+        renderSavedProjectsList();
     }
 
     function closeSavedProjectsModal() {
@@ -1027,9 +1109,12 @@
     }
 
     function renderSavedProjectsList() {
-      const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
-      const userName = prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local';
-      const projects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]').filter(p => p.userEmail === userName);
+      const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
+      const idEmpresaLogada = sessao.id_empresa || 'LOCAL';
+      
+      const allProjects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]');
+      const projects = allProjects.filter(p => p.id_empresa === idEmpresaLogada || !p.id_empresa);
+      
       const container = document.getElementById('saved-projects-list');
       
       if(projects.length === 0) { container.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-box-archive text-slate-600 text-4xl mb-4"></i><p class="text-sm text-slate-400">Nenhuma obra salva ainda.</p></div>'; return; }
@@ -1063,10 +1148,8 @@
 
     function loadSavedProject(id) {
       if (currentCalculation && currentCalculation.status === 'cortando') pauseProduction();
-      const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
-      const userName = prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local';
-      const projects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]');
-      const project = projects.find(p => p.id === id && p.userEmail === userName);
+      const allProjects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]');
+      const project = allProjects.find(p => p.id === id);
       
       if(project) {
         currentProjectName = project.title; loteSaved = project.data || []; renderLoteSummary(); closeSavedProjectsModal();
@@ -1077,10 +1160,8 @@
 
     function deleteSavedProject(id) {
       if(!confirm("Excluir esta obra do histórico?")) return;
-      const prefs = JSON.parse(localStorage.getItem('oppah_standalone_prefs') || '{}');
-      const userName = prefs.name ? `${prefs.title || ''} ${prefs.name}`.trim() : 'Operador_Local';
       let projects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]');
-      projects = projects.filter(p => !(p.id === id && p.userEmail === userName));
+      projects = projects.filter(p => p.id !== id);
       localStorage.setItem('oppah_saved_projects', JSON.stringify(projects));
       if(currentProjectName && projects.findIndex(p => p.title === currentProjectName) === -1) currentProjectName = null;
       renderSavedProjectsList(); renderLoteSummary(); showToast('Obra excluída.', 'success');
