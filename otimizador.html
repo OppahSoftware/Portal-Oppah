@@ -691,30 +691,31 @@
     document.addEventListener("visibilitychange", () => { if (document.hidden && currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
     window.addEventListener("beforeunload", (e) => { if (currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
 
-   // --- MOTOR DE ARRANQUE AUTÔNOMO (VIA OPPAH.JSON) ---
+   // --- MOTOR DE ARRANQUE AUTÔNOMO (VIA GITHUB RAW) ---
     async function initOptimizer() {
         let cfg = JSON.parse(localStorage.getItem('oppah_config_api') || 'null');
         
-        // Se a memória estiver vazia ou faltando o link principal
+        // Se a memória estiver limpa
         if (!cfg || !cfg.webhookSaveObras) {
-            console.log("Memória limpa. Buscando configurações do oppah.json...");
+            console.log("Memória limpa. Buscando configurações do oppah.json na nuvem...");
             
             try {
-                // Como o oppah.json estará na mesma pasta, usamos o caminho relativo
-                // Se preferir, pode colar o link RAW direto do GitHub aqui dentro
-                const response = await fetch('./oppah.json?v=' + Date.now()); 
+                // COLE AQUI O LINK "RAW" DO SEU OPPAH.JSON HOSPEDADO NO GITHUB
+                const linkRawGithub = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/oppah.json";
+                
+                const response = await fetch(linkRawGithub + '?v=' + Date.now()); 
                 
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Salva as configurações na memória do celular do operador
+                    // Salva na memória do celular do operador
                     localStorage.setItem('oppah_config_api', JSON.stringify(data));
-                    console.log("✅ Rotas injetadas com sucesso a partir do oppah.json!");
+                    console.log("✅ Rotas injetadas com sucesso via nuvem!");
                 } else {
-                    console.warn("⚠️ Arquivo oppah.json não encontrado.");
+                    console.warn("⚠️ Arquivo oppah.json não encontrado no link.");
                 }
             } catch (error) {
-                console.error("⚠️ Falha ao ler o oppah.json.", error);
+                console.error("⚠️ Falha ao ler o oppah.json. Verifique o link RAW ou a sintaxe do arquivo.", error);
             }
         }
         
@@ -722,6 +723,9 @@
         loadPreferences(); 
         renderImportQueue();
     }
+
+    // Inicializa o sistema ao abrir a página
+    window.onload = initOptimizer;
 
     // Inicializa o sistema ao abrir a página
     window.onload = initOptimizer;
