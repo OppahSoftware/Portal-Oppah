@@ -443,7 +443,15 @@
             document.getElementById('import-raw-textarea').value = fullText; document.getElementById('import-extracted-debug').value = fullText;
             processImportText();
         } catch (error) { 
-            document.getElementById('import-results-container').innerHTML = `<p class="text-rose-500 text-center mt-10 font-bold">Erro ao ler PDF.</p>`; 
+            console.error("Erro detalhado do PDF:", error);
+            document.getElementById('import-results-container').innerHTML = `
+                <div class="text-rose-500 text-center mt-10">
+                    <p class="font-bold text-lg mb-2">Erro ao ler PDF.</p>
+                    <p class="text-[10px] bg-slate-900 p-2 rounded border border-rose-500/30 text-rose-300 font-mono max-w-xs mx-auto">
+                        Motivo: ${error.message || error.name || 'Erro desconhecido'}
+                    </p>
+                </div>
+            `; 
         }
     }
 
