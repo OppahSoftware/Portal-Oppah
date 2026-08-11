@@ -691,38 +691,52 @@
     document.addEventListener("visibilitychange", () => { if (document.hidden && currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
     window.addEventListener("beforeunload", (e) => { if (currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
 
-   // --- MOTOR DE ARRANQUE AUTÔNOMO (VIA GITHUB RAW) ---
+   // --- MOTOR DE ARRANQUE AUTÔNOMO (VIA OPPAH.JSON NO GITHUB) ---
     async function initOptimizer() {
         let cfg = JSON.parse(localStorage.getItem('oppah_config_api') || 'null');
         
-        // Se a memória estiver limpa
-        if (!cfg || !cfg.webhookSaveObras) {
+        // Se a memória estiver limpa ou faltando o link de salvar (agora no singular!)
+        if (!cfg || !cfg.webhookSaveObra) {
             console.log("Memória limpa. Buscando configurações do oppah.json na nuvem...");
             
             try {
-                // COLE AQUI O LINK "RAW" DO SEU OPPAH.JSON HOSPEDADO NO GITHUB
-                const linkRawGithub = "https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/teste-v3/oppah.json";
+                // Link direto e absoluto para o oppah.json no seu repositório Teste-v3
+                const linkRawGithub = "https://raw.githubusercontent.com/JonnyLemoel/Teste-v3/main/oppah.json";
                 
+                // O ?v=Date.now() evita que o navegador leia uma versão antiga do cache
                 const response = await fetch(linkRawGithub + '?v=' + Date.now()); 
                 
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Salva na memória do celular do operador
+                    // Salva as configurações na memória do celular/computador do operador
                     localStorage.setItem('oppah_config_api', JSON.stringify(data));
-                    console.log("✅ Rotas injetadas com sucesso via nuvem!");
+                    console.log("✅ Rotas injetadas com sucesso via oppah.json!");
+                    
+                    // Como a chave de salvar no JSON está no singular,
+                    // caso outros pontos do código procurem no plural, a gente replica aqui por segurança
+                    if(data.webhookSaveObra && !data.webhookSaveObras) {
+                        data.webhookSaveObras = data.webhookSaveObra;
+                        localStorage.setItem('oppah_config_api', JSON.stringify(data));
+                    }
+
                 } else {
-                    console.warn("⚠️ Arquivo oppah.json não encontrado no link.");
+                    console.warn("⚠️ Arquivo oppah.json não encontrado no link do GitHub.");
                 }
             } catch (error) {
-                console.error("⚠️ Falha ao ler o oppah.json. Verifique o link RAW ou a sintaxe do arquivo.", error);
+                console.error("⚠️ Falha ao ler o oppah.json. Verifique o link RAW.", error);
             }
+        } else {
+             console.log("✅ Rotas já configuradas na memória.");
         }
         
         // Inicia a interface do Otimizador normalmente
         loadPreferences(); 
         renderImportQueue();
     }
+
+    // Inicializa o sistema ao abrir a página
+    window.onload = initOptimizer;
 
     // Inicializa o sistema ao abrir a página
     window.onload = initOptimizer;
