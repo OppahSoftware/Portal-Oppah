@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.3.1 (Cloud)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.3.2 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -48,7 +48,6 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 
-    /* Estilos do Importador Integrado */
     #import-dropzone.dragover { background-color: rgba(56, 189, 248, 0.1); border-color: #38bdf8; }
     .piece-card { transition: all 0.2s ease; cursor: pointer; }
     .piece-card:hover { border-color: #38bdf8; background-color: rgba(30, 41, 59, 0.8); }
@@ -93,7 +92,6 @@
         
         <div class="flex flex-col lg:flex-row gap-6 flex-1 overflow-y-auto lg:overflow-hidden p-6 bg-slate-900/30">
             
-            <!-- COLUNA ESQUERDA: ENTRADA -->
             <div id="import-col-input" class="w-full lg:w-5/12 bg-slate-800/80 border border-slate-700 p-5 rounded-2xl flex flex-col h-full shadow-inner shrink-0 transition-all duration-300">
                 <h2 class="font-bold text-white mb-4"><i class="fa-solid fa-file-arrow-up text-emerald-400"></i> 1. Inserir PDF da Obra</h2>
                 
@@ -123,7 +121,6 @@
                 </button>
             </div>
 
-            <!-- COLUNA DIREITA: CONFERÊNCIA -->
             <div id="import-col-results" class="flex-1 bg-slate-800/80 border border-slate-700 p-5 rounded-2xl flex flex-col h-full relative shadow-inner min-h-0 transition-all duration-300">
                 <div class="flex justify-between items-center mb-4 shrink-0">
                     <div class="flex items-center gap-3">
@@ -219,7 +216,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.3.1 Cloud</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.3.2</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -302,6 +299,35 @@
   </div>
 
   <script>
+    // --- MOTOR DE ARRANQUE AUTÔNOMO (LÊ SEMPRE DO OPPAH.JSON) ---
+    async function initOptimizer() {
+        console.log("Iniciando Otimizador e conectando à nuvem...");
+        
+        try {
+            // Usa o fetch chamando o arquivo com um '?v=Date.now()' para forçar o navegador a ler a versão nova e ignorar o cache antigo!
+            const response = await fetch('./oppah.json?v=' + Date.now()); 
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Salva a configuração nova do json por cima de qualquer coisa velha na memória
+                localStorage.setItem('oppah_config_api', JSON.stringify(data));
+                console.log("✅ Rotas da nuvem injetadas com sucesso no navegador:", data);
+            } else {
+                console.warn("⚠️ Arquivo oppah.json não encontrado na raiz.");
+            }
+        } catch (error) {
+            console.error("⚠️ Falha ao ler o oppah.json.", error);
+        }
+        
+        loadPreferences(); 
+        renderImportQueue();
+    }
+    
+    // Dispara a leitura obrigatória toda vez que a página abre
+    window.onload = initOptimizer;
+
+
     // --- FUNÇÕES GLOBAIS DE UI E NUVEM ---
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
@@ -359,19 +385,22 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nome: userName, tipo: tipo, mensagem: msg, data_hora: new Date().toISOString() })
                 });
-            } catch(erro) { console.error("Erro no feedback", erro); }
+                showToast("✅ Nuvem: Feedback enviado ao SharePoint!", "success");
+            } catch(erro) { 
+                console.error("Erro no feedback", erro); 
+                showToast("Erro ao conectar com a nuvem.", "error");
+            }
+        } else {
+            showToast("Mensagem salva apenas localmente.", "error");
         }
 
-        showToast("Feedback enviado com sucesso!", "success");
         closeFeedbackModal();
         document.getElementById('feedback-mensagem').value = '';
     }
 
-    function sendWhatsAppOrder() {
-        showToast("Pedido de material preparado (Em breve WhatsApp)!", "success");
-    }
+    function sendWhatsAppOrder() { showToast("Pedido de material preparado!", "success"); }
 
-    // --- LÓGICA DO IMPORTADOR (ROTEADOR INTELIGENTE V3.3) ---
+    // --- LÓGICA DO IMPORTADOR ---
     let extractedProfilesGlobal = {};
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -387,7 +416,7 @@
 
     function resetImportador() {
         document.getElementById('import-col-input').classList.remove('hidden'); document.getElementById('btn-voltar-import').classList.add('hidden');
-        document.getElementById('import-results-container').innerHTML = '<div class="text-center text-slate-500 mt-20"><i class="fa-solid fa-robot text-5xl mb-4 opacity-50"></i><p class="text-sm font-semibold">Aguardando dados da leitura...</p><p class="text-xs mt-2 max-w-xs mx-auto">Selecione o formato, arraste o PDF e a coluna ao lado será ocultada para facilitar sua visualização.</p></div>';
+        document.getElementById('import-results-container').innerHTML = '<div class="text-center text-slate-500 mt-20"><i class="fa-solid fa-robot text-5xl mb-4 opacity-50"></i><p class="text-sm font-semibold">Aguardando dados da leitura...</p></div>';
         document.getElementById('import-total-pieces-badge').classList.add('hidden'); document.getElementById('import-approval-bar').classList.add('hidden');
         document.getElementById('import-raw-textarea').value = ''; document.getElementById('import-extracted-debug').value = ''; extractedProfilesGlobal = {};
     }
@@ -401,42 +430,29 @@
     function handleImportFileUpload(e) { if(e.target.files.length) processPDF(e.target.files[0]); }
 
     async function processPDF(file) {
-        if(!file.name.toLowerCase().endsWith('.pdf')) { 
-            showToast("Apenas arquivos PDF são aceitos.", "error"); 
-            return; 
-        }
-        
+        if(!file.name.toLowerCase().endsWith('.pdf')) { showToast("Apenas PDF.", "error"); return; }
         document.getElementById('import-results-container').innerHTML = '<div class="text-center mt-20"><i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400 mb-4"></i><p class="text-slate-300 font-bold">Extraindo...</p></div>';
-        document.getElementById('import-approval-bar').classList.add('hidden');
-        switchImportTab('parsed');
-
+        document.getElementById('import-approval-bar').classList.add('hidden'); switchImportTab('parsed');
         try {
             const arrayBuffer = await file.arrayBuffer();
             const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer, cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/', cMapPacked: true });
             const pdf = await loadingTask.promise;
             let fullText = "";
-            
             for(let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
+                const page = await pdf.getPage(i); const content = await page.getTextContent();
                 const strings = content.items.map(item => item.str.trim()).filter(s => s.length > 0);
                 fullText += strings.join("\n") + "\n";
             }
-            
-            document.getElementById('import-raw-textarea').value = fullText;
-            document.getElementById('import-extracted-debug').value = fullText;
+            document.getElementById('import-raw-textarea').value = fullText; document.getElementById('import-extracted-debug').value = fullText;
             processImportText();
-            
         } catch (error) { 
-            console.error("Erro no PDF.js:", error);
-            document.getElementById('import-results-container').innerHTML = `<p class="text-rose-500 text-center mt-10 font-bold">Erro ao ler PDF.</p><p class="text-xs text-slate-400 text-center mt-2">Pressione a tecla F12 e veja a aba "Console" para detalhes.</p>`; 
+            document.getElementById('import-results-container').innerHTML = `<p class="text-rose-500 text-center mt-10 font-bold">Erro ao ler PDF.</p>`; 
         }
     }
 
     function processImportText() {
         const text = document.getElementById('import-raw-textarea').value;
         if(!text.trim()) { document.getElementById('import-results-container').innerHTML = '<p class="text-amber-500 text-center mt-10">Insira texto.</p>'; return; }
-
         const pdfType = document.getElementById('import-pdf-type').value;
         if (pdfType === 'wvetro') { processWvetroLogic(text); } else { processCEMLogic(text); }
     }
@@ -467,14 +483,11 @@
             const isProfileMatch = /^([A-Z]{2,4}-?\d{2,4}[A-Z]?|\d+X\d+)$/i.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15;
             
             if (isProfileMatch) {
-                currentProfile = cleanLine.toUpperCase(); buffer = []; 
-                state = "EXPECT_COLOR";
-                return;
+                currentProfile = cleanLine.toUpperCase(); buffer = []; state = "EXPECT_COLOR"; return;
             }
 
             if (state === "EXPECT_COLOR") {
-                currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim();
-                state = "SEARCHING"; return;
+                currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); state = "SEARCHING"; return;
             }
 
             if (/x/i.test(cleanLine) && /\d/.test(cleanLine)) return; 
@@ -482,7 +495,6 @@
             if (noiseWords.some(noise => upLine === noise || upLine.startsWith(noise))) return;
 
             buffer.push(cleanLine);
-
             if (buffer.length >= 4) {
                 let window = buffer.slice(-4);
                 const isQty = (val) => /^\d+$/.test(val) && parseInt(val) > 0 && parseInt(val) < 500;
@@ -498,9 +510,7 @@
 
                 if (matched && size >= 10 && qty > 0) {
                     if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
-                    let finalName = name; 
-                    if (/^\d+$/.test(name)) finalName = "Item " + name;
-                    
+                    let finalName = name; if (/^\d+$/.test(name)) finalName = "Item " + name;
                     let finalClientString = "";
                     if (globalVenda) finalClientString += `(Ped. ${globalVenda}) `;
                     if (globalCliente) finalClientString += globalCliente;
@@ -508,8 +518,7 @@
                     else if (!globalCliente && globalObra) finalClientString += globalObra;
                     if (finalClientString === "") finalClientString = "Projeto Geral";
 
-                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: finalName, client: finalClientString, color: currentColor });
-                    buffer = []; 
+                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: finalName, client: finalClientString, color: currentColor }); buffer = []; 
                 } 
             }
             if(buffer.length > 6) buffer.shift();
@@ -539,13 +548,11 @@
             if (state === "EXPECT_VENDA_CEM") { globalVenda = cleanLine; state = "SEARCHING"; return; }
 
             if (/^[A-Z]{2,4}-?\d{2,4}[A-Z]?$/.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15) {
-                currentProfile = cleanLine.toUpperCase(); buffer = []; 
-                state = "EXPECT_COLOR_CEM"; return;
+                currentProfile = cleanLine.toUpperCase(); buffer = []; state = "EXPECT_COLOR_CEM"; return;
             }
 
             if (state === "EXPECT_COLOR_CEM") {
-                currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim();
-                state = "SEARCHING"; return;
+                currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); state = "SEARCHING"; return;
             }
 
             if (/x/i.test(cleanLine) && /\d/.test(cleanLine)) return; 
@@ -554,7 +561,6 @@
             if (noiseWords.some(noise => upLine === noise || upLine.startsWith(noise))) return;
 
             buffer.push(cleanLine);
-
             if (buffer.length >= 4) {
                 let window = buffer.slice(-4);
                 const isQty = (val) => /^\d+$/.test(val) && parseInt(val) > 0 && parseInt(val) < 500;
@@ -569,8 +575,7 @@
                     if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
                     let fullObraStr = globalObra || "Obra Geral"; let descCliente = globalCliente ? ` - ${globalCliente}` : "";
                     let finalClientString = `${fullObraStr}${descCliente}`; if (globalVenda) finalClientString += ` (Ped: ${globalVenda})`;
-                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: name, client: finalClientString, color: currentColor });
-                    buffer = []; 
+                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: name, client: finalClientString, color: currentColor }); buffer = []; 
                 } 
             }
             if(buffer.length > 6) buffer.shift();
@@ -578,24 +583,16 @@
         renderImportResults(extractedProfilesGlobal); switchImportTab('parsed');
     }
 
-    function togglePieceCard(checkbox) {
-        const card = document.getElementById(checkbox.getAttribute('data-card-id'));
-        if (checkbox.checked) card.classList.remove('unchecked'); else card.classList.add('unchecked');
-    }
+    function togglePieceCard(checkbox) { const card = document.getElementById(checkbox.getAttribute('data-card-id')); if (checkbox.checked) card.classList.remove('unchecked'); else card.classList.add('unchecked'); }
 
     function renderImportResults(profiles) {
-        const container = document.getElementById('import-results-container');
-        const badge = document.getElementById('import-total-pieces-badge');
-        const approvalBar = document.getElementById('import-approval-bar');
-        const colInput = document.getElementById('import-col-input');
-        const btnVoltar = document.getElementById('btn-voltar-import');
+        const container = document.getElementById('import-results-container'); const badge = document.getElementById('import-total-pieces-badge');
+        const approvalBar = document.getElementById('import-approval-bar'); const colInput = document.getElementById('import-col-input'); const btnVoltar = document.getElementById('btn-voltar-import');
         const keys = Object.keys(profiles);
 
         if (keys.length === 0) {
-            container.innerHTML = '<div class="text-center text-rose-400 mt-20"><i class="fa-solid fa-face-frown text-5xl mb-4"></i><p class="font-bold">Nenhum padrão encontrado.</p></div>';
-            badge.classList.add('hidden'); approvalBar.classList.add('hidden'); 
-            if(colInput) colInput.classList.remove('hidden'); if(btnVoltar) btnVoltar.classList.add('hidden');
-            return;
+            container.innerHTML = '<div class="text-center text-rose-400 mt-20"><p class="font-bold">Nenhum padrão encontrado.</p></div>';
+            badge.classList.add('hidden'); approvalBar.classList.add('hidden'); if(colInput) colInput.classList.remove('hidden'); if(btnVoltar) btnVoltar.classList.add('hidden'); return;
         }
 
         if(colInput) colInput.classList.add('hidden'); if(btnVoltar) btnVoltar.classList.remove('hidden');
@@ -608,7 +605,7 @@
             html += `
             <div class="bg-slate-900/80 border border-slate-700 p-5 rounded-2xl shadow-sm mb-4">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-                    <div><h3 class="font-black text-white text-lg flex items-center gap-2"><i class="fa-solid fa-layer-group text-sky-500"></i> ${prof}</h3><p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-palette text-amber-500"></i> Cor Identificada: <strong class="text-white">${profColor}</strong></p></div>
+                    <div><h3 class="font-black text-white text-lg flex items-center gap-2">${prof}</h3><p class="text-[10px] text-slate-400 mt-1">Cor Identificada: <strong class="text-white">${profColor}</strong></p></div>
                     <span class="text-xs bg-slate-800 text-sky-400 border border-slate-700 px-3 py-1 rounded-lg font-bold">${totalPcs} peças</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -630,27 +627,20 @@
             });
             html += `</div></div>`;
         });
-
-        container.innerHTML = html;
-        badge.innerText = `${globalPieces} Peças Extraídas`; badge.classList.remove('hidden'); approvalBar.classList.remove('hidden');
+        container.innerHTML = html; badge.innerText = `${globalPieces} Peças Extraídas`; badge.classList.remove('hidden'); approvalBar.classList.remove('hidden');
     }
 
     function approveConference() {
-        let checkboxes = document.querySelectorAll('.piece-checkbox');
-        let finalApprovedProfiles = {}; let totalApprovedPieces = 0;
-        
+        let checkboxes = document.querySelectorAll('.piece-checkbox'); let finalApprovedProfiles = {}; let totalApprovedPieces = 0;
         checkboxes.forEach(chk => {
             if(chk.checked) {
                 let prof = chk.getAttribute('data-prof'); let idx = parseInt(chk.getAttribute('data-idx'));
                 if(!finalApprovedProfiles[prof]) finalApprovedProfiles[prof] = [];
                 let piece = extractedProfilesGlobal[prof][idx];
-                for(let i = 0; i < piece.qty; i++) {
-                    finalApprovedProfiles[prof].push({ client: piece.client, name: piece.name, size: piece.size, esq: piece.esq, dir: piece.dir, color: piece.color });
-                }
+                for(let i = 0; i < piece.qty; i++) { finalApprovedProfiles[prof].push({ client: piece.client, name: piece.name, size: piece.size, esq: piece.esq, dir: piece.dir, color: piece.color }); }
                 totalApprovedPieces += piece.qty;
             }
         });
-        
         if(totalApprovedPieces === 0) { showToast("Marque ao menos um item.", "error"); return; }
         
         let filaExistente = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
@@ -658,17 +648,13 @@
             if(!filaExistente[prof]) filaExistente[prof] = [];
             filaExistente[prof] = filaExistente[prof].concat(finalApprovedProfiles[prof]);
         });
-        
-        localStorage.setItem('oppah_fila_importacao', JSON.stringify(filaExistente));
-        showToast(`Sucesso! ${totalApprovedPieces} peças na Fila.`, "success");
-        
+        localStorage.setItem('oppah_fila_importacao', JSON.stringify(filaExistente)); showToast(`Sucesso! ${totalApprovedPieces} peças na Fila.`, "success");
         setTimeout(() => { closeImportadorModal(); renderImportQueue(); resetImportador(); }, 800);
     }
 
     function switchImportTab(tab) {
         const btnParsed = document.getElementById('import-tab-parsed'); const btnRaw = document.getElementById('import-tab-raw');
         const contentParsed = document.getElementById('import-content-parsed'); const contentRaw = document.getElementById('import-content-raw');
-
         if(tab === 'parsed') {
             btnParsed.className = "flex-1 bg-slate-700 text-white py-2 rounded-lg text-xs font-bold border border-slate-500 shadow-inner transition-colors";
             btnRaw.className = "flex-1 bg-slate-900 text-slate-400 py-2 rounded-lg text-xs font-bold border border-slate-700 hover:bg-slate-800 transition-colors";
@@ -680,8 +666,7 @@
         }
     }
 
-    // --- LÓGICA DO OTIMIZADOR (PRINCIPAL) ---
-    const CURRENT_SYSTEM_VERSION = "3.3.1";
+    // --- LÓGICA DO OTIMIZADOR ---
     let stocks = []; let pieces = []; let loteSaved = []; let currentProjectName = null; let currentCalculation = null;
     const clientColors = {}; const colorPalette = ['#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#a855f7', '#14b8a6', '#f97316'];
     let userPreferences = {}; let uiTimerInterval = null; let idleTimeout = null; let warningTimeout = null; let warningCountdownInterval = null;
@@ -691,59 +676,6 @@
     document.addEventListener("visibilitychange", () => { if (document.hidden && currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
     window.addEventListener("beforeunload", (e) => { if (currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
 
-   // --- MOTOR DE ARRANQUE AUTÔNOMO (VIA OPPAH.JSON NO GITHUB) ---
-    async function initOptimizer() {
-        let cfg = JSON.parse(localStorage.getItem('oppah_config_api') || 'null');
-        
-        // Se a memória estiver limpa ou faltando o link de salvar (agora no singular!)
-        if (!cfg || !cfg.webhookSaveObra) {
-            console.log("Memória limpa. Buscando configurações do oppah.json na nuvem...");
-            
-            try {
-                // Link direto e absoluto para o oppah.json no seu repositório Teste-v3
-                const linkRawGithub = "https://raw.githubusercontent.com/OppahSoftware/Portal-Oppah/refs/heads/teste-v3/oppah.json";
-                
-                // O ?v=Date.now() evita que o navegador leia uma versão antiga do cache
-                const response = await fetch(linkRawGithub + '?v=' + Date.now()); 
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Salva as configurações na memória do celular/computador do operador
-                    localStorage.setItem('oppah_config_api', JSON.stringify(data));
-                    console.log("✅ Rotas injetadas com sucesso via oppah.json!");
-                    
-                    // Como a chave de salvar no JSON está no singular,
-                    // caso outros pontos do código procurem no plural, a gente replica aqui por segurança
-                    if(data.webhookSaveObra && !data.webhookSaveObras) {
-                        data.webhookSaveObras = data.webhookSaveObra;
-                        localStorage.setItem('oppah_config_api', JSON.stringify(data));
-                    }
-
-                } else {
-                    console.warn("⚠️ Arquivo oppah.json não encontrado no link do GitHub.");
-                }
-            } catch (error) {
-                console.error("⚠️ Falha ao ler o oppah.json. Verifique o link RAW.", error);
-            }
-        } else {
-             console.log("✅ Rotas já configuradas na memória.");
-        }
-        
-        // Inicia a interface do Otimizador normalmente
-        loadPreferences(); 
-        renderImportQueue();
-    }
-
-    // Inicializa o sistema ao abrir a página
-    window.onload = initOptimizer;
-
-    // Inicializa o sistema ao abrir a página
-    window.onload = initOptimizer;
-
-    // Inicializa o sistema ao abrir a página
-    window.onload = initOptimizer;
-
     function loadPreferences() {
       const prefsStr = localStorage.getItem('oppah_standalone_prefs');
       if (!prefsStr) { userPreferences = { unit: 'mm', blade: 4, mode: 'direct', title: '', name: '' }; openPreferencesModal(true); } 
@@ -751,13 +683,11 @@
     }
 
     function applyPreferencesToUI() {
-      document.getElementById('bladeSize').value = userPreferences.blade;
-      document.getElementById('angleModeInput').value = userPreferences.mode;
+      document.getElementById('bladeSize').value = userPreferences.blade; document.getElementById('angleModeInput').value = userPreferences.mode;
       document.querySelectorAll('.unit-label').forEach(l => l.innerText = userPreferences.unit);
       if(userPreferences.name) {
           const greeting = document.getElementById('operatorGreeting');
-          greeting.innerText = `👤 Olá, ${userPreferences.title ? userPreferences.title + ' ' : ''}${userPreferences.name}!`;
-          greeting.classList.remove('hidden');
+          greeting.innerText = `👤 Olá, ${userPreferences.title ? userPreferences.title + ' ' : ''}${userPreferences.name}!`; greeting.classList.remove('hidden');
       }
     }
 
@@ -769,12 +699,10 @@
       modal.classList.remove('hidden'); if(isForced) modal.onclick = null; else modal.onclick = (e) => { if(e.target === modal) closePreferencesModal(); };
       setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
     }
-
     function closePreferencesModal() {
       const modal = document.getElementById('operator-welcome-modal'); const content = document.getElementById('operator-welcome-content');
       content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
     }
-
     function saveOperatorPreferences() {
       const name = document.getElementById('welcomeOpName').value.trim();
       if(!name) { showToast('Por favor, informe seu nome.', 'error'); return; }
@@ -790,14 +718,12 @@
       const input = document.getElementById('stockInput'); const val = parseFloat(input.value);
       if (val > 0) { stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value }); input.value = ''; renderLists(); }
     }
-
     function addPiece() {
       const client = document.getElementById('pieceClient').value.trim() || 'Geral'; const name = document.getElementById('pieceName').value.trim() || 'Peça';
       const size = parseFloat(document.getElementById('pieceSize').value); const qty = parseInt(document.getElementById('pieceQty').value) || 1;
       const esq = parseFloat(document.getElementById('angleEsqSelect').value); const dir = parseFloat(document.getElementById('angleDirSelect').value);
       if (size > 0 && qty > 0) { for(let i=0; i<qty; i++) pieces.push({ client, name, size, esq, dir }); document.getElementById('pieceSize').value = ''; renderLists(); }
     }
-
     function removeStock(index) { stocks.splice(index, 1); renderLists(); }
     function removePiece(index) { pieces.splice(index, 1); renderLists(); }
 
@@ -890,24 +816,16 @@
     function formatMsToTime(ms) { if(ms < 0) ms = 0; let totalSecs = Math.floor(ms / 1000); let h = Math.floor(totalSecs / 3600); let m = Math.floor((totalSecs % 3600) / 60); let s = totalSecs % 60; return `${h > 0 ? h + 'h ' : ''}${m}m ${s}s`; }
     function updateTimerUI() { if (!currentCalculation || currentCalculation.status !== 'cortando') return; const display = document.getElementById('active-timer-display'); if (display) display.innerText = formatMsToTime(currentCalculation.totalCuttingTime + (Date.now() - currentCalculation.lastStartTime)); }
     function handleUserActivity() { const warningModal = document.getElementById('modal-idle-warning'); if (currentCalculation && currentCalculation.status === 'cortando' && warningModal.classList.contains('hidden')) resetIdleTimer(); }
-
-    function resetIdleTimer() {
-        clearTimeout(idleTimeout); clearInterval(warningCountdownInterval);
-        if (currentCalculation && currentCalculation.status === 'cortando') idleTimeout = setTimeout(showIdleWarning, IDLE_LIMIT_MS);
-    }
-
+    function resetIdleTimer() { clearTimeout(idleTimeout); clearInterval(warningCountdownInterval); if (currentCalculation && currentCalculation.status === 'cortando') idleTimeout = setTimeout(showIdleWarning, IDLE_LIMIT_MS); }
     function showIdleWarning() {
         const modal = document.getElementById('modal-idle-warning'); const content = document.getElementById('modal-idle-content'); const countDisplay = document.getElementById('idle-countdown');
         modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
-        let timeLeft = 60; countDisplay.innerText = timeLeft;
-        warningCountdownInterval = setInterval(() => { timeLeft--; countDisplay.innerText = timeLeft; if (timeLeft <= 0) { clearInterval(warningCountdownInterval); autoPauseDueToIdle(); } }, 1000);
+        let timeLeft = 60; countDisplay.innerText = timeLeft; warningCountdownInterval = setInterval(() => { timeLeft--; countDisplay.innerText = timeLeft; if (timeLeft <= 0) { clearInterval(warningCountdownInterval); autoPauseDueToIdle(); } }, 1000);
     }
-
     function confirmStillCutting() {
         const modal = document.getElementById('modal-idle-warning'); const content = document.getElementById('modal-idle-content');
         content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); }, 300); resetIdleTimer();
     }
-
     function autoPauseDueToIdle() { document.getElementById('modal-idle-warning').classList.add('hidden'); pauseProduction(true); showToast("Pausado por inatividade.", "error"); }
 
     function openStartProductionModal() {
@@ -916,12 +834,10 @@
         const modal = document.getElementById('modal-start-production'); const content = document.getElementById('modal-start-content');
         modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
     }
-
     function closeStartProductionModal() {
         const modal = document.getElementById('modal-start-production'); const content = document.getElementById('modal-start-content');
         content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
     }
-
     function confirmStartProduction() {
         if(!document.getElementById('check-medidas').checked || !document.getElementById('check-calculos').checked || !document.getElementById('check-epi').checked) { showToast("Confirme o checklist.", "error"); return; }
         closeStartProductionModal(); startOrResumeProduction(); showToast("▶️ Produção Iniciada!", "success");
@@ -932,7 +848,6 @@
         clearInterval(uiTimerInterval); uiTimerInterval = setInterval(updateTimerUI, 1000); resetIdleTimer();
         syncAndSaveProgress(); renderResultOutput();
     }
-
     function pauseProduction(isAuto = false) {
         if (currentCalculation.status !== 'cortando') return;
         clearInterval(uiTimerInterval); clearTimeout(idleTimeout);
@@ -940,41 +855,33 @@
         currentCalculation.totalCuttingTime += sessionTime; currentCalculation.lastStartTime = null; currentCalculation.status = 'pausado';
         syncAndSaveProgress(); renderResultOutput(); if(!isAuto) showToast("⏸️ Pausado.");
     }
-
     function pauseForMaterial() {
         if (currentCalculation.status !== 'cortando') return;
         clearInterval(uiTimerInterval); clearTimeout(idleTimeout);
         let sessionTime = Date.now() - currentCalculation.lastStartTime; currentCalculation.totalCuttingTime += sessionTime; currentCalculation.lastStartTime = null; currentCalculation.status = 'pausado_compra';
         syncAndSaveProgress(); renderResultOutput(); showToast("⚠️ Aguardando Compra de Material.", "error");
     }
-
     function receiveMaterial() {
         if(!currentCalculation) return;
         currentCalculation.newBarPlans.forEach(p => { if (p.isToBuy) p.received = true; });
         currentCalculation.barsToBuy = 0; currentCalculation.status = 'pausado'; 
         syncAndSaveProgress(); renderResultOutput(); showToast("📦 Material recebido! Cortes destravados.", "success");
     }
-
     function finishProduction() {
         if (currentCalculation.status === 'cortando') currentCalculation.totalCuttingTime += (Date.now() - currentCalculation.lastStartTime);
         clearInterval(uiTimerInterval); clearTimeout(idleTimeout); currentCalculation.lastStartTime = null; currentCalculation.status = 'concluido';
         syncAndSaveProgress(); renderResultOutput(); showToast("🏆 Obra Finalizada.", "success");
     }
-
     function toggleCutState(type, pIdx, cIdx, isChecked) {
         if(currentCalculation.status !== 'cortando') { showToast("Clique em 'Retomar' primeiro.", "error"); renderResultOutput(); return; }
         let plan = type === 'stock' ? currentCalculation.stockPlans[pIdx] : currentCalculation.newBarPlans[pIdx];
-        plan.cuts[cIdx].done = isChecked; plan.done = plan.cuts.every(c => c.done);
-        checkGlobalProgress(); renderResultOutput(); 
+        plan.cuts[cIdx].done = isChecked; plan.done = plan.cuts.every(c => c.done); checkGlobalProgress(); renderResultOutput(); 
     }
-
     function toggleBarState(type, pIdx, isChecked) {
         if(currentCalculation.status !== 'cortando') { showToast("Clique em 'Retomar' primeiro.", "error"); renderResultOutput(); return; }
         let plan = type === 'stock' ? currentCalculation.stockPlans[pIdx] : currentCalculation.newBarPlans[pIdx];
-        plan.done = isChecked; plan.cuts.forEach(c => c.done = isChecked);
-        checkGlobalProgress(); renderResultOutput();
+        plan.done = isChecked; plan.cuts.forEach(c => c.done = isChecked); checkGlobalProgress(); renderResultOutput();
     }
-
     function checkGlobalProgress() {
         let totalCuts = 0; let doneCuts = 0;
         [...(currentCalculation.stockPlans || []), ...(currentCalculation.newBarPlans || [])].forEach(plan => { (plan.cuts || []).forEach(cut => { totalCuts++; if(cut.done) doneCuts++; }); });
@@ -1067,16 +974,25 @@
        if (pIdx >= 0) projects[pIdx] = projectData; else projects.push(projectData);
        localStorage.setItem('oppah_saved_projects', JSON.stringify(projects));
 
+       // O pulo do gato: puxa a configuração e aceita tanto singular quanto plural
        const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
-       if (cfg.webhookSaveObras) {
+       const webhookSave = cfg.webhookSaveObra || cfg.webhookSaveObras;
+
+       if (webhookSave) {
            try {
-               await fetch(cfg.webhookSaveObras, {
+               await fetch(webhookSave, {
                    method: 'POST',
                    headers: { 'Content-Type': 'application/json' },
                    body: JSON.stringify(projectData)
                });
                console.log("✅ Nuvem: Obra enviada para o SharePoint com sucesso!");
-           } catch (error) { console.error("⚠️ Erro ao enviar para a nuvem:", error); }
+           } catch (error) { 
+               console.error("⚠️ Erro ao enviar para a nuvem:", error);
+               showToast("Erro ao conectar com o SharePoint.", "error"); 
+           }
+       } else {
+           console.warn("⚠️ Link de Salvar Obra não encontrado. Salvo apenas localmente.");
+           showToast("Salvo localmente (Nuvem desconectada)", "error");
        }
     }
 
@@ -1089,7 +1005,7 @@
       }
       const idx = loteSaved.findIndex(i => i.profile === currentCalculation.profile && i.color === currentCalculation.color);
       if (idx >= 0) loteSaved[idx] = currentCalculation; else loteSaved.push(currentCalculation);
-      persistCurrentProject(); renderLoteSummary(); showToast(`Salvo na Obra: ${currentProjectName}`);
+      persistCurrentProject(); renderLoteSummary(); showToast(`✅ Salvo na Obra: ${currentProjectName}`, "success");
     }
 
     function syncAndSaveProgress() {
@@ -1108,26 +1024,19 @@
     }
 
     async function openSavedProjectsModal() {
-        const modal = document.getElementById('modal-saved-projects');
-        const content = document.getElementById('modal-saved-projects-content');
-        const container = document.getElementById('saved-projects-list');
-
-        modal.classList.remove('hidden');
-        setTimeout(() => { 
-            content.classList.remove('scale-95', 'opacity-0'); 
-            content.classList.add('scale-100', 'opacity-100'); 
-        }, 10);
-
+        const modal = document.getElementById('modal-saved-projects'); const content = document.getElementById('modal-saved-projects-content'); const container = document.getElementById('saved-projects-list');
+        modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
         container.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-sky-500 text-4xl mb-4"></i><p class="text-sm text-slate-400">Sincronizando com a nuvem...</p></div>';
 
         const sessao = JSON.parse(localStorage.getItem('oppah_session') || '{}');
-        const userEmail = sessao.email || 'local@app';
-        const idEmpresa = sessao.id_empresa || 'LOCAL';
+        const userEmail = sessao.email || 'local@app'; const idEmpresa = sessao.id_empresa || 'LOCAL';
+        
         const cfg = JSON.parse(localStorage.getItem('oppah_config_api') || '{}');
+        const webhookGet = cfg.webhookGetObras || cfg.webhookGetObra;
 
-        if (cfg.webhookGetObras) {
+        if (webhookGet) {
             try {
-                const resp = await fetch(cfg.webhookGetObras, {
+                const resp = await fetch(webhookGet, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, id_empresa: idEmpresa })
@@ -1150,7 +1059,6 @@
                 }
             } catch (error) { console.warn("⚠️ Modo offline ativo.", error); }
         }
-
         renderSavedProjectsList();
     }
 
@@ -1329,13 +1237,9 @@
         }
     }
 
-    // RENDERIZA A FILA DE IMPORTAÇÃO
     function renderImportQueue() {
         let queue = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
-        const container = document.getElementById('importQueueContainer');
-        const list = document.getElementById('importQueueList');
-        const badge = document.getElementById('queueCountBadge');
-        
+        const container = document.getElementById('importQueueContainer'); const list = document.getElementById('importQueueList'); const badge = document.getElementById('queueCountBadge');
         if(!container || !list || !badge) return;
         const keys = Object.keys(queue); badge.innerText = keys.length;
 
@@ -1353,18 +1257,14 @@
         list.innerHTML = html;
     }
 
-    // PUXA DA FILA PARA A TELA
     function pullFromQueue(prof) {
         if (pieces.length > 0) { if(!confirm("Atenção: A lista atual não está vazia. Substituir os itens atuais?")) return; }
         let queue = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
-        document.getElementById('profileCode').value = prof;
-        pieces = [...queue[prof]];
-        
+        document.getElementById('profileCode').value = prof; pieces = [...queue[prof]];
         if(pieces.length > 0) {
             if(pieces[0].color && pieces[0].color !== "Sem cor") document.getElementById('profileColor').value = pieces[0].color;
             if(pieces[0].client) document.getElementById('pieceClient').value = pieces[0].client;
         }
-        
         delete queue[prof]; localStorage.setItem('oppah_fila_importacao', JSON.stringify(queue));
         renderLists(); renderImportQueue(); showToast(`Perfil ${prof} carregado!`, "success");
     }
