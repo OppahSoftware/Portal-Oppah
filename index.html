@@ -392,20 +392,29 @@
 
     function showToast(message, type = 'success') {
       const toast = document.getElementById('toast');
-      if (!toast) return;
-      document.getElementById('toast-message').innerText = message;
-      const icon = document.getElementById('toast-icon');
-      if (type === 'error') {
-        document.getElementById('toast-title').innerText = 'Atenção';
-        icon.className = 'w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center';
-        icon.innerHTML = '<i class="fa-solid fa-xmark text-sm"></i>';
-      } else {
-        document.getElementById('toast-title').innerText = 'Sucesso';
-        icon.className = 'w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center';
-        icon.innerHTML = '<i class="fa-solid fa-check text-sm"></i>';
-      }
-      toast.style.transform = 'translateY(0)'; toast.style.opacity = '1';
-      setTimeout(() => { toast.style.transform = 'translateY(-150%)'; toast.style.opacity = '0'; }, 4000);
+        const title = document.getElementById('toast-title');
+        const msg = document.getElementById('toast-message');
+        const icon = document.getElementById('toast-icon');
+
+        msg.innerText = message;
+        
+        if (type === 'success') {
+            title.innerText = 'Sucesso';
+            icon.innerHTML = '<i class="fa-solid fa-check text-sm"></i>';
+            icon.className = 'w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0';
+        } else {
+            title.innerText = 'Atenção';
+            icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-sm"></i>';
+            icon.className = 'w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0';
+        }
+
+        // Mostra o Toast
+        toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+        
+        // Esconde depois de 3 segundos
+        setTimeout(() => {
+            toast.classList.add('translate-y-[-150%]', 'opacity-0');
+        }, 3000);
     }
 
     function switchTab(tab) {
