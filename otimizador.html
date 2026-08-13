@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.4.3 (Cloud Beta)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.4.7 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -205,7 +205,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.3</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.7</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -223,7 +223,7 @@
       <div class="glass-card p-5 rounded-3xl flex flex-col">
         <h2 class="text-sm font-bold text-slate-200 border-b border-slate-700 pb-2 mb-4"><i class="fa-solid fa-sliders text-sky-400 mr-2"></i> 1. Perfil e Barras</h2>
         <div class="space-y-3 flex-grow">
-          <div class="flex gap-3"><div class="flex-1"><label class="block text-[11px] font-semibold text-slate-400 mb-1">Código Perfil</label><input type="text" id="profileCode" value="LG028" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none focus:border-sky-500"></div><div class="flex-1"><label class="block text-[11px] font-semibold text-slate-400 mb-1">Cor</label><input type="text" id="profileColor" list="colorsList" value="Branco" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none focus:border-sky-500"><datalist id="colorsList"><option value="Branco"><option value="Preto"><option value="Bronze"><option value="Fosco"></datalist></div></div>
+          <div class="flex gap-3"><div class="flex-1"><label class="block text-[11px] font-semibold text-slate-400 mb-1">Código Perfil</label><input type="text" id="profileCode" value="LG028" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none focus:border-sky-500"></div><div class="flex-1"><label class="block text-[11px] font-semibold text-slate-400 mb-1">Cor Destino</label><input type="text" id="profileColor" list="colorsList" value="Branco" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none focus:border-sky-500"><datalist id="colorsList"><option value="Branco"><option value="Preto"><option value="Bronze"><option value="Fosco"></datalist></div></div>
           <div><label class="block text-[11px] font-semibold text-slate-400 mb-1">Barra Nova (<span class="unit-label">mm</span>)</label><input type="number" id="barSize" value="6000" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none focus:border-sky-500"></div>
           <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="limitBarsCheckbox" onchange="toggleLimitBarsInput()" class="w-4 h-4 accent-sky-500 rounded"><span class="text-xs text-slate-300">Tem barra no estoque?</span></label><div id="limitBarsInputGroup" style="display:none;" class="mt-3"><label class="block text-[10px] text-slate-400 mb-1">Qtd Disponível Físico</label><input type="number" id="availableBarsCount" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white outline-none"></div></div>
           <div class="flex gap-3"><div class="flex-1"><label class="block text-[11px] font-semibold text-slate-400 mb-1">Disco (<span class="unit-label">mm</span>)</label><input type="number" id="bladeSize" value="4" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none"></div><div class="flex-1"><label class="block text-[11px] font-semibold text-slate-400 mb-1">Refilo Padrão (<span class="unit-label">mm</span>)</label><input type="number" id="paintSize" value="10" title="Refilo descontado apenas nas barras novas" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white outline-none"></div></div>
@@ -241,9 +241,15 @@
           <div class="flex items-end"><button onclick="addStock()" class="px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold"><i class="fa-solid fa-plus"></i></button></div>
         </div>
         
-        <div class="flex items-center mb-3 bg-slate-900/50 p-2 rounded-lg border border-slate-800" title="Quantidade exata que deseja limpar da ponta DESTE retalho (O sistema já somará o disco automaticamente)">
-            <label class="text-[10px] font-semibold text-slate-300 mr-2"><i class="fa-solid fa-scissors text-amber-500"></i> Limpar Ponta (mm):</label>
-            <input type="number" id="stockRefiloSize" value="0" min="0" class="w-16 px-2 py-1 bg-slate-950 border border-slate-700 rounded text-xs text-white outline-none focus:border-amber-500">
+        <div class="flex items-center justify-between mb-3 bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+            <div class="flex items-center" title="Quantidade exata que deseja limpar da ponta DESTE retalho (O sistema já somará o disco automaticamente)">
+                <label class="text-[10px] font-semibold text-slate-300 mr-2"><i class="fa-solid fa-scissors text-amber-500"></i> Limpar Ponta (mm):</label>
+                <input type="number" id="stockRefiloSize" value="0" min="0" class="w-12 px-2 py-1 bg-slate-950 border border-slate-700 rounded text-xs text-white outline-none focus:border-amber-500">
+            </div>
+            <label class="flex items-center gap-1 cursor-pointer ml-3" title="Marque se este retalho é de outra cor e precisará de repintura">
+                <input type="checkbox" id="stockRepintura" class="w-4 h-4 accent-fuchsia-500 rounded">
+                <span class="text-[10px] font-bold text-fuchsia-400">Repintar?</span>
+            </label>
         </div>
 
         <div class="flex-1 overflow-y-auto max-h-40 border border-slate-800 rounded-xl bg-slate-950/50 p-2 custom-scrollbar"><ul id="stockList" class="space-y-1"></ul></div>
@@ -366,6 +372,19 @@
     }
     window.onload = initOptimizer;
 
+    // --- FUNÇÃO INTELIGENTE DE EXTRAÇÃO DE COR ---
+    function extractSmartColor(lineStr) {
+        let up = lineStr.toUpperCase();
+        let colors = ["PRETO", "BRANCO", "BRONZE", "FOSCO", "NATURAL", "CEREJEIRA", "CHAMPAGNE", "ANODIZADO"];
+        let found = colors.find(c => up.includes(c));
+        let ral = up.match(/RAL\s*\d{4}/);
+        let res = [];
+        if (found) res.push(found);
+        if (ral && (!found || !found.includes(ral[0]))) res.push(ral[0]);
+        if (res.length > 0) return res.join(" ");
+        return null;
+    }
+
 
     // --- FUNÇÕES GLOBAIS DE UI E NUVEM ---
     function showToast(message, type = 'success') {
@@ -399,7 +418,6 @@
         content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
     }
     
-    // Tratativa do Feedback com atalho CTRL+ENTER
     async function submitFeedback(e) {
         if(e) e.preventDefault();
         const tipo = document.getElementById('feedback-tipo').value; const msg = document.getElementById('feedback-mensagem').value;
@@ -420,7 +438,27 @@
         closeFeedbackModal(); document.getElementById('feedback-mensagem').value = '';
     }
 
-    function sendWhatsAppOrder() { showToast("Pedido de material preparado!", "success"); }
+    function sendWhatsAppOrder() {
+        if(loteSaved.length === 0) return;
+        
+        let buyList = loteSaved.filter(item => item.barsToBuy > 0);
+        
+        if(buyList.length === 0) {
+            showToast("Não há necessidade de compras nesta obra.", "success");
+            return;
+        }
+        
+        let msg = `🛒 *PEDIDO DE MATERIAL*\n`;
+        msg += `🏗️ *Obra:* ${currentProjectName || 'Projeto'}\n\n`;
+        
+        buyList.forEach(item => {
+            msg += `▪️ ${item.barsToBuy}x Barra ${item.barSize}mm\n    Perfil: *${item.profile}* (${item.color})\n\n`;
+        });
+        
+        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+        showToast("Abrindo WhatsApp...", "success");
+    }
 
     // --- LÓGICA DO IMPORTADOR ---
     let extractedProfilesGlobal = {};
@@ -493,7 +531,6 @@
         const lines = text.split('\n');
 
         const noiseWords = ["QTD:", "TAMANHO", "CORTE", "ITENS", "SOBRA", "JÁ CORTADO", "TIPO", "QUANTIDADE", "ANG. CORTE", "BARRAS:", "NÍVEL OTIMIZAÇÃO:", "PART.:", "TRAT.:", "SEPARAR", "P/ CORTAR", "BARRA ÚTIL:", "SEVEA", "ESQUEMA DE CORTE", "ITEM", "PAGINA :", "EMISSÃO :", "DT.CADASTRO:"];
-        const colorKeywords = ["PRETO", "BRANCO", "BRONZE", "FOSCO", "NATURAL", "RAL", "CEREJEIRA", "CHAMPAGNE", "ANODIZADO"];
 
         lines.forEach(line => {
             let cleanLine = line.trim();
@@ -506,14 +543,8 @@
             if (upLine === "EMISSÃO :") { state = "EXPECT_OBRA"; return; }
             if (state === "EXPECT_OBRA") { globalObra = cleanLine; state = "SEARCHING"; return; }
 
-            // Melhoria RAL
-            let ralMatch = upLine.match(/RAL\s*\d{4}/);
-            if (ralMatch) {
-                currentColor = ralMatch[0];
-            } else {
-                let foundColor = colorKeywords.find(c => upLine.includes(c));
-                if (foundColor) currentColor = foundColor;
-            }
+            let extColor1 = extractSmartColor(upLine);
+            if(extColor1) currentColor = extColor1;
 
             const isProfileMatch = /^([A-Z]{2,4}-?\d{2,4}[A-Z]?|\d+X\d+)$/i.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15;
             
@@ -522,13 +553,11 @@
             }
 
             if (state === "EXPECT_COLOR") {
-                let ralMatch2 = cleanLine.toUpperCase().match(/RAL\s*\d{4}/);
-                if (ralMatch2) {
-                    currentColor = ralMatch2[0];
+                let extColor2 = extractSmartColor(cleanLine);
+                if(extColor2) {
+                    currentColor = extColor2;
                 } else {
-                    let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
-                    if (checkColor) currentColor = checkColor;
-                    else currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
+                    currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
                 }
                 state = "SEARCHING"; return;
             }
@@ -552,7 +581,9 @@
                 else if (isAngle(window[0]) && isSize(window[1]) && isQty(window[2]) && isItem(window[3])) { size = parseFloat(window[1].replace(',', '.')); qty = parseInt(window[2]); [esq, dir] = window[0].split('/'); name = window[3]; matched = true; }
 
                 if (matched && size >= 10 && qty > 0) {
-                    if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
+                    let profileKey = currentProfile + " | " + currentColor;
+                    if(!extractedProfilesGlobal[profileKey]) extractedProfilesGlobal[profileKey] = [];
+                    
                     let finalName = name; if (/^\d+$/.test(name)) finalName = "Item " + name;
                     let finalClientString = "";
                     if (globalVenda) finalClientString += `(Ped. ${globalVenda}) `;
@@ -561,7 +592,7 @@
                     else if (!globalCliente && globalObra) finalClientString += globalObra;
                     if (finalClientString === "") finalClientString = "Projeto Geral";
 
-                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: finalName, client: finalClientString, color: currentColor }); buffer = []; 
+                    extractedProfilesGlobal[profileKey].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: finalName, client: finalClientString, color: currentColor, rawProfile: currentProfile }); buffer = []; 
                 } 
             }
             if(buffer.length > 6) buffer.shift();
@@ -577,7 +608,6 @@
         const lines = text.split('\n');
 
         const noiseWords = [ "QTD:", "TAMANHO", "CORTE", "ITENS", "SOBRA", "JÁ CORTADO", "TIPO", "QUANTIDADE", "ANG. CORTE", "BARRAS:", "NÍVEL OTIMIZAÇÃO:", "PART.:", "TRAT.:", "SEPARAR", "P/ CORTAR", "BARRA ÚTIL:", "SEVEA", "ESQUEMA DE CORTE", "ITEM", "PAGINA :", "EMISSÃO :", "DT.CADASTRO:", "TRATAMENTO", "Nº BARRAS/FEIXE:", "N/A" ];
-        const colorKeywords = ["PRETO", "BRANCO", "BRONZE", "FOSCO", "NATURAL", "RAL", "CEREJEIRA", "CHAMPAGNE", "ANODIZADO"];
 
         lines.forEach(line => {
             let cleanLine = line.trim();
@@ -591,27 +621,19 @@
             if (upLine === "PADRÕES DE CORTES") { state = "EXPECT_VENDA_CEM"; return; }
             if (state === "EXPECT_VENDA_CEM") { globalVenda = cleanLine; state = "SEARCHING"; return; }
 
-            // Melhoria RAL
-            let ralMatch = upLine.match(/RAL\s*\d{4}/);
-            if (ralMatch) {
-                currentColor = ralMatch[0];
-            } else {
-                let foundColor = colorKeywords.find(c => upLine.includes(c));
-                if (foundColor) currentColor = foundColor;
-            }
+            let extColor1 = extractSmartColor(upLine);
+            if(extColor1) currentColor = extColor1;
 
             if (/^[A-Z]{2,4}-?\d{2,4}[A-Z]?$/.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15) {
                 currentProfile = cleanLine.toUpperCase(); buffer = []; state = "EXPECT_COLOR_CEM"; return;
             }
 
             if (state === "EXPECT_COLOR_CEM") {
-                let ralMatch2 = cleanLine.toUpperCase().match(/RAL\s*\d{4}/);
-                if (ralMatch2) {
-                    currentColor = ralMatch2[0];
+                let extColor2 = extractSmartColor(cleanLine);
+                if(extColor2) {
+                    currentColor = extColor2;
                 } else {
-                    let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
-                    if (checkColor) currentColor = checkColor;
-                    else currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
+                    currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
                 }
                 state = "SEARCHING"; return;
             }
@@ -633,10 +655,13 @@
                 if (isQty(window[0]) && isSize(window[1]) && isAngle(window[2]) && isItem(window[3])) { qty = parseInt(window[0]); size = parseFloat(window[1].replace(',', '.')); [esq, dir] = window[2].split('/'); name = window[3]; matched = true; }
 
                 if (matched && size >= 10 && qty > 0) {
-                    if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
+                    let profileKey = currentProfile + " | " + currentColor;
+                    if(!extractedProfilesGlobal[profileKey]) extractedProfilesGlobal[profileKey] = [];
+                    
                     let fullObraStr = globalObra || "Obra Geral"; let descCliente = globalCliente ? ` - ${globalCliente}` : "";
                     let finalClientString = `${fullObraStr}${descCliente}`; if (globalVenda) finalClientString += ` (Ped: ${globalVenda})`;
-                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: name, client: finalClientString, color: currentColor }); buffer = []; 
+                    
+                    extractedProfilesGlobal[profileKey].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: name, client: finalClientString, color: currentColor, rawProfile: currentProfile }); buffer = []; 
                 } 
             }
             if(buffer.length > 6) buffer.shift();
@@ -659,24 +684,25 @@
         if(colInput) colInput.classList.add('hidden'); if(btnVoltar) btnVoltar.classList.remove('hidden');
 
         let html = ''; let globalPieces = 0;
-        keys.forEach(prof => {
-            let pts = profiles[prof]; let totalPcs = pts.reduce((acc, p) => acc + p.qty, 0);
-            let profColor = pts.length > 0 ? pts[0].color : "Sem cor"; globalPieces += totalPcs;
+        keys.forEach(profKey => {
+            let pts = profiles[profKey]; let totalPcs = pts.reduce((acc, p) => acc + p.qty, 0);
+            let rawProf = pts[0].rawProfile || profKey.split(' | ')[0];
+            let profColor = pts[0].color || "Sem cor"; globalPieces += totalPcs;
 
             html += `
             <div class="bg-slate-900/80 border border-slate-700 p-5 rounded-2xl shadow-sm mb-4">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-                    <div><h3 class="font-black text-white text-lg flex items-center gap-2">${prof}</h3><p class="text-[10px] text-slate-400 mt-1">Cor Identificada: <strong class="text-white">${profColor}</strong></p></div>
+                    <div><h3 class="font-black text-white text-lg flex items-center gap-2">${rawProf}</h3><p class="text-[10px] text-slate-400 mt-1">Cor Identificada: <strong class="text-white">${profColor}</strong></p></div>
                     <span class="text-xs bg-slate-800 text-sky-400 border border-slate-700 px-3 py-1 rounded-lg font-bold">${totalPcs} peças</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             `;
             pts.forEach((p, idx) => {
-                let cardId = `card-${prof}-${idx}`;
+                let cardId = `card-${profKey.replace(/[^a-zA-Z0-9]/g, '')}-${idx}`;
                 html += `
                 <label id="${cardId}" class="piece-card unchecked bg-slate-800/50 border border-slate-700/50 p-3 rounded-xl flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <input type="checkbox" class="piece-checkbox" data-prof="${prof}" data-idx="${idx}" data-card-id="${cardId}" onchange="togglePieceCard(this)">
+                        <input type="checkbox" class="piece-checkbox" data-prof="${profKey}" data-idx="${idx}" data-card-id="${cardId}" onchange="togglePieceCard(this)">
                         <div class="max-w-[150px]">
                             <span class="block text-[9px] text-slate-400 mb-0.5 truncate" title="${p.client}">Obra: <strong class="text-emerald-400">${p.client}</strong></span>
                             <span class="block text-[10px] text-slate-400 mb-1 truncate" title="${p.name}">Etiq: <strong class="text-white">${p.name}</strong></span>
@@ -695,19 +721,19 @@
         let checkboxes = document.querySelectorAll('.piece-checkbox'); let finalApprovedProfiles = {}; let totalApprovedPieces = 0;
         checkboxes.forEach(chk => {
             if(chk.checked) {
-                let prof = chk.getAttribute('data-prof'); let idx = parseInt(chk.getAttribute('data-idx'));
-                if(!finalApprovedProfiles[prof]) finalApprovedProfiles[prof] = [];
-                let piece = extractedProfilesGlobal[prof][idx];
-                for(let i = 0; i < piece.qty; i++) { finalApprovedProfiles[prof].push({ client: piece.client, name: piece.name, size: piece.size, esq: piece.esq, dir: piece.dir, color: piece.color }); }
+                let profKey = chk.getAttribute('data-prof'); let idx = parseInt(chk.getAttribute('data-idx'));
+                if(!finalApprovedProfiles[profKey]) finalApprovedProfiles[profKey] = [];
+                let piece = extractedProfilesGlobal[profKey][idx];
+                for(let i = 0; i < piece.qty; i++) { finalApprovedProfiles[profKey].push({ client: piece.client, name: piece.name, size: piece.size, esq: piece.esq, dir: piece.dir, color: piece.color }); }
                 totalApprovedPieces += piece.qty;
             }
         });
         if(totalApprovedPieces === 0) { showToast("Marque ao menos um item.", "error"); return; }
         
         let filaExistente = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
-        Object.keys(finalApprovedProfiles).forEach(prof => {
-            if(!filaExistente[prof]) filaExistente[prof] = [];
-            filaExistente[prof] = filaExistente[prof].concat(finalApprovedProfiles[prof]);
+        Object.keys(finalApprovedProfiles).forEach(profKey => {
+            if(!filaExistente[profKey]) filaExistente[profKey] = [];
+            filaExistente[profKey] = filaExistente[profKey].concat(finalApprovedProfiles[profKey]);
         });
         localStorage.setItem('oppah_fila_importacao', JSON.stringify(filaExistente)); showToast(`Sucesso! ${totalApprovedPieces} peças na Fila.`, "success");
         setTimeout(() => { closeImportadorModal(); renderImportQueue(); resetImportador(); }, 800);
@@ -730,6 +756,8 @@
     // --- LÓGICA DO OTIMIZADOR ---
     let stocks = []; let pieces = []; let loteSaved = []; let currentProjectName = null; let currentCalculation = null; let currentCalculationIdx = -1;
     const clientColors = {}; const colorPalette = ['#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#a855f7', '#14b8a6', '#f97316'];
+    const pieceColors = {}; 
+    
     let userPreferences = {}; let uiTimerInterval = null; let idleTimeout = null; let warningTimeout = null; let warningCountdownInterval = null;
     const IDLE_LIMIT_MS = 1 * 60 * 1000;
 
@@ -744,11 +772,9 @@
     document.addEventListener("visibilitychange", () => { if (document.hidden && currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
     window.addEventListener("beforeunload", (e) => { if (currentCalculation && currentCalculation.status === 'cortando') { pauseProduction(true); persistCurrentProject(); } });
 
-    // Preferências Inteligentes Salvas por Operador
     function loadPreferences() {
       const sessao = JSON.parse(sessionStorage.getItem('oppah_session') || '{}');
       const userEmail = sessao.email || 'local';
-      
       const prefsStr = localStorage.getItem('oppah_prefs_' + userEmail) || localStorage.getItem('oppah_standalone_prefs');
       
       if (!prefsStr) { 
@@ -787,24 +813,30 @@
       const name = document.getElementById('welcomeOpName').value.trim();
       if(!name) { showToast('Por favor, informe seu nome.', 'error'); return; }
       userPreferences = { title: document.getElementById('welcomeOpTitle').value, name: name, unit: document.getElementById('welcomeUnit').value, blade: parseFloat(document.getElementById('welcomeBladeSize').value) || 4, mode: document.getElementById('welcomeAngleMode').value };
-      
       const sessao = JSON.parse(sessionStorage.getItem('oppah_session') || '{}');
       const userEmail = sessao.email || 'local';
-      
       localStorage.setItem('oppah_prefs_' + userEmail, JSON.stringify(userPreferences));
       applyPreferencesToUI(); closePreferencesModal(); showToast('Preferências salvas!', 'success');
     }
 
     function toggleLimitBarsInput() { document.getElementById('limitBarsInputGroup').style.display = document.getElementById('limitBarsCheckbox').checked ? 'block' : 'none'; }
     function toggleSpliceInput() { document.getElementById('spliceInputGroup').style.display = document.getElementById('allowSpliceCheckbox').checked ? 'block' : 'none'; }
+    
     function getClientBadgeHTML(clientName) { if (!clientColors[clientName]) clientColors[clientName] = colorPalette[Object.keys(clientColors).length % colorPalette.length]; return `<span class="client-badge" style="background-color: ${clientColors[clientName]};">[${clientName}]</span>`; }
+    
+    function getPieceNameHTML(name, isSplice = false) {
+        if(isSplice) return `<strong class="text-amber-400 bg-amber-500/10 px-1 rounded border border-amber-500/30">${name}</strong>`;
+        if (!pieceColors[name]) pieceColors[name] = colorPalette[(Object.keys(pieceColors).length + 2) % colorPalette.length];
+        return `<strong style="color: ${pieceColors[name]}; text-shadow: 0 0 10px ${pieceColors[name]}40;">${name}</strong>`;
+    }
 
     function addStock() {
       const input = document.getElementById('stockInput'); const val = parseFloat(input.value);
       if (val > 0) { 
           const refiloMm = parseFloat(document.getElementById('stockRefiloSize').value) || 0;
-          stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value, refilo: refiloMm }); 
-          input.value = ''; renderLists(); input.focus(); 
+          const repintura = document.getElementById('stockRepintura').checked;
+          stocks.push({ size: val, ends: document.getElementById('stockEndsSelect').value, refilo: refiloMm, repintura: repintura }); 
+          input.value = ''; document.getElementById('stockRepintura').checked = false; renderLists(); input.focus(); 
       }
     }
     function addPiece() {
@@ -819,14 +851,14 @@
     function renderLists() {
       document.getElementById('stockList').innerHTML = stocks.map((s, i) => `
         <li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200">
-          <span>${s.size} ${userPreferences.unit || 'mm'} <span class="angle-badge">${s.ends}</span> ${s.refilo > 0 ? `<span class="text-[9px] text-amber-500 ml-1 font-bold">(Refilo: ${s.refilo}mm)</span>` : '<span class="text-[9px] text-emerald-500 ml-1 font-bold">(Uso Direto)</span>'}</span>
+          <span>${s.size} ${userPreferences.unit || 'mm'} <span class="angle-badge">${s.ends}</span> ${s.refilo > 0 ? `<span class="text-[9px] text-amber-500 ml-1 font-bold">(Refilo: ${s.refilo}mm)</span>` : '<span class="text-[9px] text-emerald-500 ml-1 font-bold">(Uso Direto)</span>'} ${s.repintura ? '<span class="text-[9px] text-fuchsia-400 bg-fuchsia-500/20 border border-fuchsia-500/30 px-1 rounded ml-1 font-bold">REPINTURA</span>' : ''}</span>
           <button onclick="removeStock(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
         </li>
       `).join('');
 
       document.getElementById('pieceList').innerHTML = pieces.map((p, i) => `
         <li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200">
-          <span class="truncate max-w-[200px]" title="${p.client}">${getClientBadgeHTML(p.client)} <span class="piece-tag">${p.name}</span> (${p.size}${userPreferences.unit || 'mm'}) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span>
+          <span class="truncate max-w-[200px]" title="${p.client}">${getClientBadgeHTML(p.client)} ${getPieceNameHTML(p.name)} (${p.size}${userPreferences.unit || 'mm'}) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span>
           <button onclick="removePiece(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
         </li>
       `).join('');
@@ -845,14 +877,13 @@
       let availableStock = [...stocks].sort((a,b) => b.size - a.size); let toCut = [...pieces].sort((a,b) => b.size - a.size);
       let stockPlans = [], newBarPlans = []; let totalBarsNeeded = 0;
 
-      // ETAPA 0: Encaixe Perfeito (Retalho = Peça)
       for (let i = 0; i < availableStock.length; i++) {
         for (let j = 0; j < toCut.length; j++) {
             let st = availableStock[i]; let item = toCut[j];
             if (st && item && st.size === item.size) {
                 let stEsq = parseFloat(st.ends.split('/')[0]); let stDir = parseFloat(st.ends.split('/')[1]);
                 if ((item.esq === stEsq && item.dir === stDir) || (item.esq === stDir && item.dir === stEsq)) {
-                    stockPlans.push({ original: st.size, ends: st.ends, cuts: [{...item, isSplicePart: false, done: false, exactMatch: true}], leftover: 0, done: false });
+                    stockPlans.push({ original: st.size, ends: st.ends, cuts: [{...item, isSplicePart: false, done: false, exactMatch: true}], leftover: 0, done: false, repintura: st.repintura });
                     availableStock[i] = null; toCut.splice(j, 1); j--; break;
                 }
             }
@@ -860,7 +891,6 @@
       }
       availableStock = availableStock.filter(st => st !== null);
 
-      // ETAPA 1: Uso de Retalhos normais (com cálculo dinâmico do refilo em mm)
       availableStock.forEach((st) => {
         let deduction = st.refilo > 0 ? (st.refilo + blade) : 0; 
         if (mode === 'direct' && st.refilo > 0) { if (st.ends === '45/90') deduction += 20; if (st.ends === '45/45') deduction += 40; }
@@ -887,10 +917,9 @@
                }
            }
         }
-        if (usedInStock.length > 0) stockPlans.push({ original: st.size, ends: st.ends, cuts: usedInStock, leftover: remaining, done: false });
+        if (usedInStock.length > 0) stockPlans.push({ original: st.size, ends: st.ends, cuts: usedInStock, leftover: remaining, done: false, repintura: st.repintura });
       });
 
-      // ETAPA 2: Barras Novas
       while (toCut.length > 0) {
         let remaining = barSize - paint; let usedInBar = []; totalBarsNeeded++;
         for (let i = 0; i < toCut.length; i++) {
@@ -919,7 +948,7 @@
 
       let autoConferido = (barsToBuy === 0);
 
-      currentCalculationIdx = -1; // Nova simulação
+      currentCalculationIdx = -1;
       currentCalculation = { profile, color, barSize, blade, paint, mode, isLimitBars, availableBarsLimit, barsToBuy, efficiencyPct: 0, stocks: [...stocks], pieces: [...pieces], stockPlans, newBarPlans, newBarsCount: totalBarsNeeded, stockUsedCount: stockPlans.length, piecesCount: pieces.length, allowSplice, maxSplices, status: 'iniciando', totalCuttingTime: 0, lastStartTime: null, conferido: autoConferido };
       renderResultOutput(); document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
     }
@@ -1007,6 +1036,26 @@
     function renderResultOutput() {
       const calc = currentCalculation; if(!calc) return;
       const isSquareMode = calc.mode === 'square_first'; const u = userPreferences.unit || 'mm';
+      
+      let actionBarHtml = `
+         <div class="flex flex-wrap justify-between items-center bg-slate-900/80 p-3 rounded-xl border border-slate-700 mb-5 no-print gap-3 shadow-md">
+             <div class="flex items-center gap-3 text-sm">
+                <span class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-layer-group text-indigo-400"></i> Ações deste Perfil</span>
+             </div>
+             <div class="flex flex-wrap items-center gap-2">
+       `;
+       if (currentCalculationIdx >= 0) {
+           actionBarHtml += `
+                <button onclick="editLoteItem(${currentCalculationIdx})" class="px-4 py-2 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-pen-to-square"></i> Editar Peças</button>
+                <button onclick="deleteItemFromLote(${currentCalculationIdx})" class="px-4 py-2 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-trash"></i> Excluir Perfil</button>
+           `;
+       } else {
+           actionBarHtml += `
+                <button onclick="saveToLote()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors shadow-lg shadow-indigo-500/20"><i class="fa-solid fa-floppy-disk"></i> Salvar na Obra</button>
+                <button onclick="clearForNextProfile()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-broom"></i> Limpar Painel</button>
+           `;
+       }
+       actionBarHtml += `</div></div>`;
 
       let timeHeaderHTML = '';
       if (calc.status === 'iniciando') timeHeaderHTML = `<button onclick="openStartProductionModal()" class="bg-sky-600 hover:bg-sky-500 text-white px-5 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> INICIAR PRODUÇÃO</button>`;
@@ -1015,7 +1064,7 @@
       else if (calc.status === 'pausado_compra') timeHeaderHTML = `<div class="flex items-center gap-3"><div class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping"></i> Aguardando Material: <span class="font-mono text-sm">${formatMsToTime(calc.totalCuttingTime)}</span></div><button onclick="startOrResumeProduction()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> Retomar</button></div>`;
       else if (calc.status === 'concluido') timeHeaderHTML = `<div class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-flag-checkered"></i> Tempo do Perfil: <span class="font-mono text-sm text-white">${formatMsToTime(calc.totalCuttingTime)}</span></div>`;
 
-      let html = `<div class="flex justify-between items-center mb-4 flex-wrap gap-3 no-print"><h2 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span>Plano de Corte — <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></span></h2><div class="flex gap-3 items-center">${timeHeaderHTML}</div></div>`;
+      let html = actionBarHtml + `<div class="flex justify-between items-center mb-4 flex-wrap gap-3 no-print"><h2 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span>Plano de Corte — <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></span></h2><div class="flex gap-3 items-center">${timeHeaderHTML}</div></div>`;
       if (calc.barsToBuy > 0) html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm shadow-inner">⚠️ <strong>Atenção às Compras:</strong> Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir esta obra.</div>`;
 
       function renderBarAngleBadge(c) { return isSquareMode ? `<span class="angle-badge">90° / 90°</span>` : `<span class="angle-badge">${c.esq}° / ${c.dir}°</span>`; }
@@ -1027,7 +1076,7 @@
       if (calc.stockPlans.length > 0) {
         html += `<h3 class="font-bold text-amber-400 mb-3"><i class="fa-solid fa-recycle"></i> Etapa 1: Retalhos do Estoque ${isSquareMode ? '(Todos em 90°)' : ''}</h3>`;
         calc.stockPlans.forEach((plan, idx) => {
-          html += `<div class="bar-result stock ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleBarState('stock', ${idx}, this.checked)"><span class="bar-title">Retalho #${idx+1} (${plan.original}${u})</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleCutState('stock', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="${c.isSplicePart ? 'text-amber-300' : 'text-white'}">${c.name}</strong> (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)}) ${c.exactMatch ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1 rounded ml-1 uppercase font-bold tracking-wider">Encaixe Perfeito (0 Refilo)</span>' : ''}</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
+          html += `<div class="bar-result stock ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleBarState('stock', ${idx}, this.checked)"><span class="bar-title">Retalho #${idx+1} (${plan.original}${u})</span> ${plan.repintura ? '<span class="bg-fuchsia-600 text-white text-[9px] px-2 py-0.5 rounded font-black shadow-lg uppercase animate-pulse ml-2"><i class="fa-solid fa-paint-roller"></i> Repintar</span>' : ''}</div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleCutState('stock', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} ${getPieceNameHTML(c.name, c.isSplicePart)} (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)}) ${c.exactMatch ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1 rounded ml-1 uppercase font-bold tracking-wider">Encaixe Perfeito (0 Refilo)</span>' : ''}</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
         });
       }
 
@@ -1045,7 +1094,7 @@
           else if (isReceived) { badgeHtml = '<span class="text-blue-400 text-[10px] bg-blue-500/20 px-1 rounded"><i class="fa-solid fa-box-open"></i> MATERIAL RECEBIDO</span>'; barClass = 'received'; } 
           else { badgeHtml = '<span class="text-emerald-400 text-[10px] bg-emerald-500/20 px-1 rounded">(ESTOQUE LOCAL)</span>'; }
 
-          html += `<div class="bar-result ${barClass} ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleBarState('new', ${idx}, this.checked)"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${badgeHtml}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleCutState('new', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="${c.isSplicePart ? 'text-amber-300' : 'text-white'}">${c.name}</strong> (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
+          html += `<div class="bar-result ${barClass} ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleBarState('new', ${idx}, this.checked)"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${badgeHtml}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleCutState('new', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} ${getPieceNameHTML(c.name, c.isSplicePart)} (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
         });
       }
 
@@ -1053,7 +1102,7 @@
         const angularPieces = [...calc.stockPlans.flatMap(p => p.cuts), ...calc.newBarPlans.flatMap(p => p.cuts)].filter(p => p.esq !== 90 || p.dir !== 90);
         if (angularPieces.length > 0) {
           html += `<div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl mt-6 shadow-inner"><h3 class="font-bold text-amber-400 mb-2">📐 Guia de Refilo Angular</h3><ul class="space-y-2">`;
-          angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 p-2 rounded-lg border border-slate-800"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size.toFixed(1)}${u}) <i class="fa-solid fa-arrow-right-long text-slate-600 mx-2"></i> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; });
+          angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 p-2 rounded-lg border border-slate-800"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} ${getPieceNameHTML(p.name)} (${p.size.toFixed(1)}${u}) <i class="fa-solid fa-arrow-right-long text-slate-600 mx-2"></i> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; });
           html += `</ul></div>`;
         }
       }
@@ -1063,31 +1112,6 @@
           else if (calc.status === 'pausado_compra') html += `<div class="mt-8 p-6 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-inner no-print"><i class="fa-solid fa-truck-fast text-3xl text-blue-500/50 mb-3"></i><h3 class="text-white font-bold text-lg mb-1">O Material Chegou?</h3><button onclick="receiveMaterial()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg mt-4"><i class="fa-solid fa-box-open"></i> DESTRAVAR CORTES</button></div>`;
       }
       html += `</div>`; document.getElementById('output').innerHTML = html;
-
-      // Monta os botões contextuais de Salvar/Atualizar no final
-      let postCalcHtml = '';
-      if (currentCalculationIdx >= 0) {
-          postCalcHtml = `
-          <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex flex-wrap justify-between items-center gap-4 shadow-inner">
-              <span class="text-amber-400 text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Editando Perfil Salvo</span>
-              <div class="flex gap-2">
-                  <button onclick="editLoteItem(${currentCalculationIdx})" class="px-6 py-3 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-xl text-xs font-bold transition-colors shadow-sm"><i class="fa-solid fa-rotate-left"></i> Desfazer Edição</button>
-                  <button onclick="deleteItemFromLote(${currentCalculationIdx})" class="px-6 py-3 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 rounded-xl text-xs font-bold transition-colors shadow-sm"><i class="fa-solid fa-trash"></i> Excluir Perfil</button>
-                  <button onclick="saveToLote()" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black transition-colors shadow-lg"><i class="fa-solid fa-floppy-disk"></i> ATUALIZAR NA OBRA</button>
-              </div>
-          </div>`;
-      } else {
-          postCalcHtml = `
-          <div class="bg-indigo-500/10 border border-indigo-500/30 p-4 rounded-2xl flex flex-wrap justify-between items-center gap-4 shadow-inner">
-              <span class="text-indigo-400 text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> Cálculo Concluído!</span>
-              <button onclick="saveToLote()" class="w-full sm:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-floppy-disk"></i> SALVAR PERFIL NA OBRA</button>
-          </div>`;
-      }
-      const postActionsContainer = document.getElementById('postCalcActions');
-      if (postActionsContainer) {
-          postActionsContainer.innerHTML = postCalcHtml;
-          postActionsContainer.classList.remove('hidden');
-      }
     }
 
     // =========================================================
@@ -1171,6 +1195,45 @@
         report += `\nTempo Total da Obra: ${formatMsToTime(total)}`;
         alert(report);
     }
+    
+    function printRepinturaReport() {
+        let hasRepintura = loteSaved.some(calc => calc.stockPlans && calc.stockPlans.some(plan => plan.repintura));
+        if(!hasRepintura) { showToast("Não há peças marcadas para repintura nesta obra.", "error"); return; }
+        
+        let printWindow = window.open('', '_blank');
+        let html = `<html><head><title>Relatório de Repintura - ${currentProjectName || 'Obra'}</title>
+        <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #111; }
+            h1 { text-align: center; color: #0f172a; margin-bottom: 5px; font-size: 24px; text-transform: uppercase;}
+            .subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 30px; }
+            .perfil-block { border-bottom: 2px dashed #ccc; margin-bottom: 20px; padding-bottom: 20px; page-break-inside: avoid; }
+            .bar-result { border: 1px solid #d946ef; border-left: 5px solid #d946ef; padding: 12px; margin-bottom: 12px; background: #fdf4ff; border-radius: 4px;}
+            .cut-item { margin-left: 24px; font-size: 14px; margin-top: 6px; padding: 4px 0; border-bottom: 1px solid #f5d0fe;}
+            .cut-item:last-child { border-bottom: none; }
+            h2 { color: #86198f; margin-bottom: 10px; font-size: 18px; background: #fae8ff; padding: 10px; border-radius: 4px;}
+        </style></head><body>`;
+        
+        html += `<h1>Relatório de Repintura</h1><div class="subtitle">Obra: <strong>${currentProjectName || 'Projeto'}</strong><br>As peças abaixo foram cortadas de retalhos de outras cores e precisam ser pintadas para a cor destino.</div>`;
+        
+        loteSaved.forEach((calc) => {
+            let repinturaPlans = calc.stockPlans ? calc.stockPlans.filter(p => p.repintura) : [];
+            if(repinturaPlans.length > 0) {
+                html += `<div class="perfil-block"><h2>Perfil: ${calc.profile} <span style="font-weight:normal;">(Cor Destino: <b>${calc.color}</b>)</span></h2>`;
+                repinturaPlans.forEach((plan, pIdx) => {
+                    html += `<div class="bar-result"><strong>Retalho Usado (${plan.original}mm)</strong> -> Pintar para <b>${calc.color}</b><br>`;
+                    plan.cuts.forEach(c => {
+                        html += `<div class="cut-item">- [${c.client}] | <b>${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;]</div>`; 
+                    });
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            }
+        });
+        
+        html += `</body></html>`;
+        printWindow.document.write(html); printWindow.document.close(); printWindow.focus();
+        setTimeout(() => { printWindow.print(); }, 500);
+    }
 
     function printEntireProject() {
         if(loteSaved.length === 0) { showToast("Obra vazia.", "error"); return; }
@@ -1189,6 +1252,7 @@
             h3 { color: #334155; margin-bottom: 8px; font-size: 16px; margin-top: 15px;}
             .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #e2e8f0; color: #334155; margin-left: 8px;}
             .badge-exact { background: #10b981; color: white; }
+            .badge-repint { background: #d946ef; color: white; }
         </style></head><body>`;
         
         let prog = calculateProjectProgress(loteSaved);
@@ -1199,10 +1263,11 @@
             if (calc.stockPlans && calc.stockPlans.length > 0) {
                 html += `<h3>Retalhos Reutilizados</h3>`;
                 calc.stockPlans.forEach((plan, pIdx) => {
-                    html += `<div class="bar-result stock"><strong>Retalho #${pIdx+1} (${plan.original}mm)</strong> <span style="font-size:12px; color:#666;">(Sobra Útil: ${plan.leftover.toFixed(1)}mm)</span><br>`;
+                    let badgeRepintHTML = plan.repintura ? '<span class="badge badge-repint">REPINTURA</span>' : '';
+                    html += `<div class="bar-result stock"><strong>Retalho #${pIdx+1} (${plan.original}mm)</strong> <span style="font-size:12px; color:#666;">(Sobra Útil: ${plan.leftover.toFixed(1)}mm)</span> ${badgeRepintHTML}<br>`;
                     plan.cuts.forEach(c => { 
                         let exactBadge = c.exactMatch ? '<span class="badge badge-exact">ENCAIXE PERFEITO (0 Refilo)</span>' : '';
-                        html += `<div class="cut-item">- [${c.client}] | <b>${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;] ${exactBadge}</div>`; 
+                        html += `<div class="cut-item">- [${c.client}] | <b style="color: #000">${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;] ${exactBadge}</div>`; 
                     });
                     html += `</div>`;
                 });
@@ -1211,7 +1276,7 @@
                 html += `<h3>Barras Novas (${calc.barSize}mm)</h3>`;
                 calc.newBarPlans.forEach((plan, pIdx) => {
                     html += `<div class="bar-result"><strong>Barra #${pIdx+1}</strong> <span style="font-size:12px; color:#666;">(Sobra Útil: ${plan.leftover.toFixed(1)}mm)</span><br>`;
-                    plan.cuts.forEach(c => { html += `<div class="cut-item">- [${c.client}] | <b>${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;]</div>`; });
+                    plan.cuts.forEach(c => { html += `<div class="cut-item">- [${c.client}] | <b style="color: #000">${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;]</div>`; });
                     html += `</div>`;
                 });
             }
@@ -1328,6 +1393,7 @@
       const totalBuy = loteSaved.reduce((acc, item) => acc + item.barsToBuy, 0);
       const prog = calculateProjectProgress(loteSaved);
       const isWaitingMaterial = loteSaved.some(item => item.status === 'pausado_compra');
+      let hasRepintura = loteSaved.some(calc => calc.stockPlans && calc.stockPlans.some(plan => plan.repintura));
       
       let pColor = 'bg-amber-500'; let tColor = 'text-amber-400'; let statusText = `${prog.pct}% Concluído`;
 
@@ -1361,6 +1427,9 @@
         </div>
         <div class="flex gap-2">
           <button onclick="showTimeReport()" class="bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2" title="Ver relatório de tempo por perfil"><i class="fa-solid fa-clock"></i> Tempos</button>
+          
+          <button onclick="printRepinturaReport()" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2 ${hasRepintura ? 'shadow-[0_0_15px_rgba(217,70,239,0.4)] animate-pulse' : 'opacity-50 cursor-not-allowed'}" title="Imprimir lista de peças para repintura"><i class="fa-solid fa-paint-roller"></i> Repintura</button>
+          
           <button onclick="printEntireProject()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2" title="Imprimir todos os perfis desta obra"><i class="fa-solid fa-print"></i> Imprimir Obra</button>
           <button onclick="sendWhatsAppOrder()" class="bg-[#25D366] hover:bg-[#20b858] text-white px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2 ${totalBuy === 0 ? 'opacity-50 cursor-not-allowed' : 'shadow-[0_0_15px_rgba(37,211,102,0.4)]'}"><i class="fa-brands fa-whatsapp text-sm"></i> Pedir ${totalBuy} Barras</button>
         </div>
@@ -1375,19 +1444,17 @@
         if(item.status === 'pausado_compra') stBadge = '<span class="text-rose-400 font-bold"><i class="fa-solid fa-cart-shopping"></i> Falta Material</span>';
         if(item.status === 'concluido') stBadge = '<span class="text-indigo-400 font-bold"><i class="fa-solid fa-check-double"></i> Concluído</span>';
 
-        // Lógica precisa do semáforo: Avalia barras físicas E retalhos
         let dotColor = 'bg-slate-500';
         let localBarsUsed = item.newBarsCount - item.barsToBuy;
-        let localRetalhosUsed = item.stockUsedCount || 0; // Quantos retalhos foram usados
+        let localRetalhosUsed = item.stockUsedCount || 0;
 
         if (item.barsToBuy === 0) {
-            dotColor = 'bg-emerald-500'; // Tudo OK (100% material local)
+            dotColor = 'bg-emerald-500'; 
         } else {
-            // Precisa comprar, MAS usou pelo menos 1 retalho OU 1 barra local
             if (localBarsUsed > 0 || localRetalhosUsed > 0) {
-                dotColor = 'bg-amber-400'; // Parcial
+                dotColor = 'bg-amber-400'; 
             } else {
-                dotColor = 'bg-rose-500'; // Comprar tudo
+                dotColor = 'bg-rose-500'; 
             }
         }
 
@@ -1469,20 +1536,27 @@
         list.innerHTML = html;
     }
 
-    function pullFromQueue(prof) {
+    function pullFromQueue(profKey) {
         if (pieces.length > 0) { if(!confirm("Atenção: A lista atual não está vazia. Substituir os itens atuais?")) return; }
         let queue = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
-        document.getElementById('profileCode').value = prof; pieces = [...queue[prof]];
+        
+        let parts = profKey.split(" | ");
+        let profCode = parts[0] ? parts[0].trim() : profKey;
+        let profColor = parts[1] ? parts[1].trim() : "Sem cor";
+        
+        document.getElementById('profileCode').value = profCode;
+        document.getElementById('profileColor').value = profColor;
+        
+        pieces = [...queue[profKey]];
         if(pieces.length > 0) {
-            if(pieces[0].color && pieces[0].color !== "Sem cor") document.getElementById('profileColor').value = pieces[0].color;
             if(pieces[0].client) document.getElementById('pieceClient').value = pieces[0].client;
         }
-        delete queue[prof]; localStorage.setItem('oppah_fila_importacao', JSON.stringify(queue));
-        renderLists(); renderImportQueue(); showToast(`Perfil ${prof} carregado!`, "success");
+        delete queue[profKey]; localStorage.setItem('oppah_fila_importacao', JSON.stringify(queue));
+        renderLists(); renderImportQueue(); showToast(`Perfil carregado!`, "success");
     }
 
     function deleteFromQueue(prof) {
-        if(!confirm(`Excluir definitivamente o perfil ${prof} da fila de importação?`)) return;
+        if(!confirm(`Excluir definitivamente o perfil da fila de importação?`)) return;
         let queue = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
         delete queue[prof]; localStorage.setItem('oppah_fila_importacao', JSON.stringify(queue));
         renderImportQueue(); showToast(`Perfil excluído da fila.`, "success");
