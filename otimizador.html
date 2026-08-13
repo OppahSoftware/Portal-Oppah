@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.4.3 (Cloud Beta)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.4.4 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -205,7 +205,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.3</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.4</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -366,6 +366,19 @@
     }
     window.onload = initOptimizer;
 
+    // --- FUNÇÃO INTELIGENTE DE EXTRAÇÃO DE COR ---
+    function extractSmartColor(lineStr) {
+        let up = lineStr.toUpperCase();
+        let colors = ["PRETO", "BRANCO", "BRONZE", "FOSCO", "NATURAL", "CEREJEIRA", "CHAMPAGNE", "ANODIZADO"];
+        let found = colors.find(c => up.includes(c));
+        let ral = up.match(/RAL\s*\d{4}/);
+        let res = [];
+        if (found) res.push(found);
+        if (ral) res.push(ral[0]);
+        if (res.length > 0) return res.join(" ");
+        return null;
+    }
+
 
     // --- FUNÇÕES GLOBAIS DE UI E NUVEM ---
     function showToast(message, type = 'success') {
@@ -399,7 +412,6 @@
         content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
     }
     
-    // Tratativa do Feedback com atalho CTRL+ENTER
     async function submitFeedback(e) {
         if(e) e.preventDefault();
         const tipo = document.getElementById('feedback-tipo').value; const msg = document.getElementById('feedback-mensagem').value;
@@ -420,7 +432,27 @@
         closeFeedbackModal(); document.getElementById('feedback-mensagem').value = '';
     }
 
-    function sendWhatsAppOrder() { showToast("Pedido de material preparado!", "success"); }
+    function sendWhatsAppOrder() {
+        if(loteSaved.length === 0) return;
+        
+        let buyList = loteSaved.filter(item => item.barsToBuy > 0);
+        
+        if(buyList.length === 0) {
+            showToast("Não há necessidade de compras nesta obra.", "success");
+            return;
+        }
+        
+        let msg = `🛒 *PEDIDO DE MATERIAL*\n`;
+        msg += `🏗️ *Obra:* ${currentProjectName || 'Projeto'}\n\n`;
+        
+        buyList.forEach(item => {
+            msg += `▪️ ${item.barsToBuy}x Barra ${item.barSize}mm\n    Perfil: *${item.profile}* (${item.color})\n\n`;
+        });
+        
+        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+        showToast("Abrindo WhatsApp...", "success");
+    }
 
     // --- LÓGICA DO IMPORTADOR ---
     let extractedProfilesGlobal = {};
@@ -493,7 +525,6 @@
         const lines = text.split('\n');
 
         const noiseWords = ["QTD:", "TAMANHO", "CORTE", "ITENS", "SOBRA", "JÁ CORTADO", "TIPO", "QUANTIDADE", "ANG. CORTE", "BARRAS:", "NÍVEL OTIMIZAÇÃO:", "PART.:", "TRAT.:", "SEPARAR", "P/ CORTAR", "BARRA ÚTIL:", "SEVEA", "ESQUEMA DE CORTE", "ITEM", "PAGINA :", "EMISSÃO :", "DT.CADASTRO:"];
-        const colorKeywords = ["PRETO", "BRANCO", "BRONZE", "FOSCO", "NATURAL", "RAL", "CEREJEIRA", "CHAMPAGNE", "ANODIZADO"];
 
         lines.forEach(line => {
             let cleanLine = line.trim();
@@ -506,14 +537,9 @@
             if (upLine === "EMISSÃO :") { state = "EXPECT_OBRA"; return; }
             if (state === "EXPECT_OBRA") { globalObra = cleanLine; state = "SEARCHING"; return; }
 
-            // Melhoria RAL
-            let ralMatch = upLine.match(/RAL\s*\d{4}/);
-            if (ralMatch) {
-                currentColor = ralMatch[0];
-            } else {
-                let foundColor = colorKeywords.find(c => upLine.includes(c));
-                if (foundColor) currentColor = foundColor;
-            }
+            // Melhoria Cor
+            let extColor1 = extractSmartColor(upLine);
+            if(extColor1) currentColor = extColor1;
 
             const isProfileMatch = /^([A-Z]{2,4}-?\d{2,4}[A-Z]?|\d+X\d+)$/i.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15;
             
@@ -522,13 +548,11 @@
             }
 
             if (state === "EXPECT_COLOR") {
-                let ralMatch2 = cleanLine.toUpperCase().match(/RAL\s*\d{4}/);
-                if (ralMatch2) {
-                    currentColor = ralMatch2[0];
+                let extColor2 = extractSmartColor(cleanLine);
+                if(extColor2) {
+                    currentColor = extColor2;
                 } else {
-                    let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
-                    if (checkColor) currentColor = checkColor;
-                    else currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
+                    currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
                 }
                 state = "SEARCHING"; return;
             }
@@ -577,7 +601,6 @@
         const lines = text.split('\n');
 
         const noiseWords = [ "QTD:", "TAMANHO", "CORTE", "ITENS", "SOBRA", "JÁ CORTADO", "TIPO", "QUANTIDADE", "ANG. CORTE", "BARRAS:", "NÍVEL OTIMIZAÇÃO:", "PART.:", "TRAT.:", "SEPARAR", "P/ CORTAR", "BARRA ÚTIL:", "SEVEA", "ESQUEMA DE CORTE", "ITEM", "PAGINA :", "EMISSÃO :", "DT.CADASTRO:", "TRATAMENTO", "Nº BARRAS/FEIXE:", "N/A" ];
-        const colorKeywords = ["PRETO", "BRANCO", "BRONZE", "FOSCO", "NATURAL", "RAL", "CEREJEIRA", "CHAMPAGNE", "ANODIZADO"];
 
         lines.forEach(line => {
             let cleanLine = line.trim();
@@ -591,27 +614,20 @@
             if (upLine === "PADRÕES DE CORTES") { state = "EXPECT_VENDA_CEM"; return; }
             if (state === "EXPECT_VENDA_CEM") { globalVenda = cleanLine; state = "SEARCHING"; return; }
 
-            // Melhoria RAL
-            let ralMatch = upLine.match(/RAL\s*\d{4}/);
-            if (ralMatch) {
-                currentColor = ralMatch[0];
-            } else {
-                let foundColor = colorKeywords.find(c => upLine.includes(c));
-                if (foundColor) currentColor = foundColor;
-            }
+            // Melhoria Cor
+            let extColor1 = extractSmartColor(upLine);
+            if(extColor1) currentColor = extColor1;
 
             if (/^[A-Z]{2,4}-?\d{2,4}[A-Z]?$/.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15) {
                 currentProfile = cleanLine.toUpperCase(); buffer = []; state = "EXPECT_COLOR_CEM"; return;
             }
 
             if (state === "EXPECT_COLOR_CEM") {
-                let ralMatch2 = cleanLine.toUpperCase().match(/RAL\s*\d{4}/);
-                if (ralMatch2) {
-                    currentColor = ralMatch2[0];
+                let extColor2 = extractSmartColor(cleanLine);
+                if(extColor2) {
+                    currentColor = extColor2;
                 } else {
-                    let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
-                    if (checkColor) currentColor = checkColor;
-                    else currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
+                    currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
                 }
                 state = "SEARCHING"; return;
             }
@@ -860,7 +876,7 @@
       }
       availableStock = availableStock.filter(st => st !== null);
 
-      // ETAPA 1: Uso de Retalhos normais (com cálculo dinâmico do refilo em mm)
+      // ETAPA 1: Uso de Retalhos normais
       availableStock.forEach((st) => {
         let deduction = st.refilo > 0 ? (st.refilo + blade) : 0; 
         if (mode === 'direct' && st.refilo > 0) { if (st.ends === '45/90') deduction += 20; if (st.ends === '45/45') deduction += 40; }
@@ -1007,6 +1023,26 @@
     function renderResultOutput() {
       const calc = currentCalculation; if(!calc) return;
       const isSquareMode = calc.mode === 'square_first'; const u = userPreferences.unit || 'mm';
+      
+      let actionBarHtml = `
+         <div class="flex flex-wrap justify-between items-center bg-slate-900/80 p-3 rounded-xl border border-slate-700 mb-5 no-print gap-3 shadow-md">
+             <div class="flex items-center gap-3 text-sm">
+                <span class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-layer-group text-indigo-400"></i> Ações deste Perfil</span>
+             </div>
+             <div class="flex flex-wrap items-center gap-2">
+       `;
+       if (currentCalculationIdx >= 0) {
+           actionBarHtml += `
+                <button onclick="editLoteItem(${currentCalculationIdx})" class="px-4 py-2 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-pen-to-square"></i> Editar Peças</button>
+                <button onclick="deleteItemFromLote(${currentCalculationIdx})" class="px-4 py-2 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-trash"></i> Excluir Perfil</button>
+           `;
+       } else {
+           actionBarHtml += `
+                <button onclick="saveToLote()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors shadow-lg shadow-indigo-500/20"><i class="fa-solid fa-floppy-disk"></i> Salvar na Obra</button>
+                <button onclick="clearForNextProfile()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-broom"></i> Limpar Painel</button>
+           `;
+       }
+       actionBarHtml += `</div></div>`;
 
       let timeHeaderHTML = '';
       if (calc.status === 'iniciando') timeHeaderHTML = `<button onclick="openStartProductionModal()" class="bg-sky-600 hover:bg-sky-500 text-white px-5 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> INICIAR PRODUÇÃO</button>`;
@@ -1015,7 +1051,7 @@
       else if (calc.status === 'pausado_compra') timeHeaderHTML = `<div class="flex items-center gap-3"><div class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping"></i> Aguardando Material: <span class="font-mono text-sm">${formatMsToTime(calc.totalCuttingTime)}</span></div><button onclick="startOrResumeProduction()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> Retomar</button></div>`;
       else if (calc.status === 'concluido') timeHeaderHTML = `<div class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-flag-checkered"></i> Tempo do Perfil: <span class="font-mono text-sm text-white">${formatMsToTime(calc.totalCuttingTime)}</span></div>`;
 
-      let html = `<div class="flex justify-between items-center mb-4 flex-wrap gap-3 no-print"><h2 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span>Plano de Corte — <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></span></h2><div class="flex gap-3 items-center">${timeHeaderHTML}</div></div>`;
+      let html = actionBarHtml + `<div class="flex justify-between items-center mb-4 flex-wrap gap-3 no-print"><h2 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span>Plano de Corte — <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></span></h2><div class="flex gap-3 items-center">${timeHeaderHTML}</div></div>`;
       if (calc.barsToBuy > 0) html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm shadow-inner">⚠️ <strong>Atenção às Compras:</strong> Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir esta obra.</div>`;
 
       function renderBarAngleBadge(c) { return isSquareMode ? `<span class="angle-badge">90° / 90°</span>` : `<span class="angle-badge">${c.esq}° / ${c.dir}°</span>`; }
@@ -1375,19 +1411,17 @@
         if(item.status === 'pausado_compra') stBadge = '<span class="text-rose-400 font-bold"><i class="fa-solid fa-cart-shopping"></i> Falta Material</span>';
         if(item.status === 'concluido') stBadge = '<span class="text-indigo-400 font-bold"><i class="fa-solid fa-check-double"></i> Concluído</span>';
 
-        // Lógica precisa do semáforo: Avalia barras físicas E retalhos
         let dotColor = 'bg-slate-500';
         let localBarsUsed = item.newBarsCount - item.barsToBuy;
-        let localRetalhosUsed = item.stockUsedCount || 0; // Quantos retalhos foram usados
+        let localRetalhosUsed = item.stockUsedCount || 0;
 
         if (item.barsToBuy === 0) {
-            dotColor = 'bg-emerald-500'; // Tudo OK (100% material local)
+            dotColor = 'bg-emerald-500'; 
         } else {
-            // Precisa comprar, MAS usou pelo menos 1 retalho OU 1 barra local
             if (localBarsUsed > 0 || localRetalhosUsed > 0) {
-                dotColor = 'bg-amber-400'; // Parcial
+                dotColor = 'bg-amber-400'; 
             } else {
-                dotColor = 'bg-rose-500'; // Comprar tudo
+                dotColor = 'bg-rose-500'; 
             }
         }
 
