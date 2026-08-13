@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.4.2 (Cloud Beta)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.4.3 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -205,7 +205,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.2</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.3</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -280,11 +280,20 @@
       </div>
     </div>
 
-    <div class="flex flex-wrap gap-4 no-print mt-6">
-      <button onclick="calculate()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
+    <!-- BOTÕES PRINCIPAIS DE AÇÃO RESTAURADOS -->
+    <div class="flex flex-wrap gap-3 no-print mt-6">
+      <button onclick="calculate()" class="flex-[2] py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-black text-sm rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2">
         <i class="fa-solid fa-microchip"></i> CALCULAR PLANO DE CORTE
       </button>
+      <button onclick="clearForNextProfile()" class="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2" title="Apagar os dados digitados e limpar o painel">
+        <i class="fa-solid fa-eraser"></i> Limpar Perfil
+      </button>
+      <button onclick="clearEntireLote()" class="flex-1 py-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 font-bold text-xs rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2" title="Fechar a obra atual e começar uma do zero">
+        <i class="fa-solid fa-folder-plus"></i> Próxima Obra
+      </button>
     </div>
+
+    <div id="postCalcActions" class="hidden mt-4 no-print transition-all"></div>
 
     <div id="loteSummary" class="mt-6"></div>
     <div id="output" class="mt-6 text-sm"></div>
@@ -740,7 +749,6 @@
       const sessao = JSON.parse(sessionStorage.getItem('oppah_session') || '{}');
       const userEmail = sessao.email || 'local';
       
-      // Busca preferência atrelada ao email do usuário (Simulando nuvem localmente para garantir o "Não pergunte mais")
       const prefsStr = localStorage.getItem('oppah_prefs_' + userEmail) || localStorage.getItem('oppah_standalone_prefs');
       
       if (!prefsStr) { 
@@ -783,7 +791,7 @@
       const sessao = JSON.parse(sessionStorage.getItem('oppah_session') || '{}');
       const userEmail = sessao.email || 'local';
       
-      localStorage.setItem('oppah_prefs_' + userEmail, JSON.stringify(userPreferences)); // Salva no perfil da nuvem simulada
+      localStorage.setItem('oppah_prefs_' + userEmail, JSON.stringify(userPreferences));
       applyPreferencesToUI(); closePreferencesModal(); showToast('Preferências salvas!', 'success');
     }
 
@@ -854,10 +862,7 @@
 
       // ETAPA 1: Uso de Retalhos normais (com cálculo dinâmico do refilo em mm)
       availableStock.forEach((st) => {
-        // Se o operador exigiu refilo > 0, desconta o refilo dele + o pó da lâmina! Se ele botar 0, usa direto.
         let deduction = st.refilo > 0 ? (st.refilo + blade) : 0; 
-        
-        // Mantém a sobra extra para cortes de 45 no modo direct, se houver refilo ativado
         if (mode === 'direct' && st.refilo > 0) { if (st.ends === '45/90') deduction += 20; if (st.ends === '45/45') deduction += 40; }
         
         let remaining = st.size - deduction; let usedInStock = [];
@@ -912,7 +917,6 @@
       newBarPlans.forEach((plan, idx) => { plan.isToBuy = !isLimitBars || (isLimitBars && (idx + 1) > availableBarsLimit); plan.received = false; });
       let barsToBuy = !isLimitBars ? totalBarsNeeded : Math.max(0, totalBarsNeeded - availableBarsLimit);
 
-      // Regra 7: Marca "Conferido" se não precisar comprar barra nova pra este perfil
       let autoConferido = (barsToBuy === 0);
 
       currentCalculationIdx = -1; // Nova simulação
@@ -1003,26 +1007,6 @@
     function renderResultOutput() {
       const calc = currentCalculation; if(!calc) return;
       const isSquareMode = calc.mode === 'square_first'; const u = userPreferences.unit || 'mm';
-      
-      let actionBarHtml = `
-         <div class="flex flex-wrap justify-between items-center bg-slate-900/80 p-3 rounded-xl border border-slate-700 mb-5 no-print gap-3 shadow-md">
-             <div class="flex items-center gap-3 text-sm">
-                <span class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-layer-group text-indigo-400"></i> Ações deste Perfil</span>
-             </div>
-             <div class="flex flex-wrap items-center gap-2">
-       `;
-       if (currentCalculationIdx >= 0) {
-           actionBarHtml += `
-                <button onclick="editLoteItem(${currentCalculationIdx})" class="px-4 py-2 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-pen-to-square"></i> Editar Peças</button>
-                <button onclick="deleteItemFromLote(${currentCalculationIdx})" class="px-4 py-2 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-trash"></i> Excluir Perfil</button>
-           `;
-       } else {
-           actionBarHtml += `
-                <button onclick="saveToLote()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors shadow-lg shadow-indigo-500/20"><i class="fa-solid fa-floppy-disk"></i> Salvar na Obra</button>
-                <button onclick="clearForNextProfile()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-colors"><i class="fa-solid fa-broom"></i> Limpar Painel</button>
-           `;
-       }
-       actionBarHtml += `</div></div>`;
 
       let timeHeaderHTML = '';
       if (calc.status === 'iniciando') timeHeaderHTML = `<button onclick="openStartProductionModal()" class="bg-sky-600 hover:bg-sky-500 text-white px-5 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> INICIAR PRODUÇÃO</button>`;
@@ -1031,7 +1015,7 @@
       else if (calc.status === 'pausado_compra') timeHeaderHTML = `<div class="flex items-center gap-3"><div class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping"></i> Aguardando Material: <span class="font-mono text-sm">${formatMsToTime(calc.totalCuttingTime)}</span></div><button onclick="startOrResumeProduction()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> Retomar</button></div>`;
       else if (calc.status === 'concluido') timeHeaderHTML = `<div class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-flag-checkered"></i> Tempo do Perfil: <span class="font-mono text-sm text-white">${formatMsToTime(calc.totalCuttingTime)}</span></div>`;
 
-      let html = actionBarHtml + `<div class="flex justify-between items-center mb-4 flex-wrap gap-3 no-print"><h2 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span>Plano de Corte — <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></span></h2><div class="flex gap-3 items-center">${timeHeaderHTML}</div></div>`;
+      let html = `<div class="flex justify-between items-center mb-4 flex-wrap gap-3 no-print"><h2 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span>Plano de Corte — <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></span></h2><div class="flex gap-3 items-center">${timeHeaderHTML}</div></div>`;
       if (calc.barsToBuy > 0) html += `<div class="bg-rose-500/10 border border-rose-500/30 p-4 rounded-xl mb-4 text-rose-200 text-sm shadow-inner">⚠️ <strong>Atenção às Compras:</strong> Faltam <strong>${calc.barsToBuy} barra(s)</strong> para concluir esta obra.</div>`;
 
       function renderBarAngleBadge(c) { return isSquareMode ? `<span class="angle-badge">90° / 90°</span>` : `<span class="angle-badge">${c.esq}° / ${c.dir}°</span>`; }
@@ -1079,6 +1063,31 @@
           else if (calc.status === 'pausado_compra') html += `<div class="mt-8 p-6 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-inner no-print"><i class="fa-solid fa-truck-fast text-3xl text-blue-500/50 mb-3"></i><h3 class="text-white font-bold text-lg mb-1">O Material Chegou?</h3><button onclick="receiveMaterial()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg mt-4"><i class="fa-solid fa-box-open"></i> DESTRAVAR CORTES</button></div>`;
       }
       html += `</div>`; document.getElementById('output').innerHTML = html;
+
+      // Monta os botões contextuais de Salvar/Atualizar no final
+      let postCalcHtml = '';
+      if (currentCalculationIdx >= 0) {
+          postCalcHtml = `
+          <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex flex-wrap justify-between items-center gap-4 shadow-inner">
+              <span class="text-amber-400 text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Editando Perfil Salvo</span>
+              <div class="flex gap-2">
+                  <button onclick="editLoteItem(${currentCalculationIdx})" class="px-6 py-3 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-xl text-xs font-bold transition-colors shadow-sm"><i class="fa-solid fa-rotate-left"></i> Desfazer Edição</button>
+                  <button onclick="deleteItemFromLote(${currentCalculationIdx})" class="px-6 py-3 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 rounded-xl text-xs font-bold transition-colors shadow-sm"><i class="fa-solid fa-trash"></i> Excluir Perfil</button>
+                  <button onclick="saveToLote()" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black transition-colors shadow-lg"><i class="fa-solid fa-floppy-disk"></i> ATUALIZAR NA OBRA</button>
+              </div>
+          </div>`;
+      } else {
+          postCalcHtml = `
+          <div class="bg-indigo-500/10 border border-indigo-500/30 p-4 rounded-2xl flex flex-wrap justify-between items-center gap-4 shadow-inner">
+              <span class="text-indigo-400 text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> Cálculo Concluído!</span>
+              <button onclick="saveToLote()" class="w-full sm:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-floppy-disk"></i> SALVAR PERFIL NA OBRA</button>
+          </div>`;
+      }
+      const postActionsContainer = document.getElementById('postCalcActions');
+      if (postActionsContainer) {
+          postActionsContainer.innerHTML = postCalcHtml;
+          postActionsContainer.classList.remove('hidden');
+      }
     }
 
     // =========================================================
@@ -1276,7 +1285,9 @@
       const allProjects = JSON.parse(localStorage.getItem('oppah_saved_projects') || '[]'); const project = allProjects.find(p => p.id === id);
       if(project) {
         currentProjectName = project.title; loteSaved = project.data || []; renderLoteSummary(); closeSavedProjectsModal();
-        document.getElementById('output').innerHTML = ''; document.getElementById('postCalcActions').classList.replace('flex', 'hidden');
+        document.getElementById('output').innerHTML = ''; 
+        const actionBtn = document.getElementById('postCalcActions');
+        if(actionBtn) { actionBtn.classList.add('hidden'); actionBtn.innerHTML = ''; }
         pieces = []; stocks = []; currentCalculation = null; currentCalculationIdx = -1; renderLists(); showToast(`Obra "${project.title}" carregada!`, 'success');
       }
     }
@@ -1291,13 +1302,16 @@
       if(loteSaved.length > 0 && !confirm("Fechar a obra atual e começar uma nova?")) return;
       if (currentCalculation && currentCalculation.status === 'cortando') pauseProduction();
       loteSaved = []; currentProjectName = null; currentCalculation = null; currentCalculationIdx = -1; pieces = []; stocks = [];
-      renderLists(); renderLoteSummary(); document.getElementById('postCalcActions').classList.replace('flex', 'hidden');
+      renderLists(); renderLoteSummary(); 
+      const actionBtn = document.getElementById('postCalcActions');
+      if(actionBtn) { actionBtn.classList.add('hidden'); actionBtn.innerHTML = ''; }
       document.getElementById('output').innerHTML = ''; showToast("Nova obra iniciada.");
     }
     function clearForNextProfile() {
       if (currentCalculation && currentCalculation.status === 'cortando') pauseProduction();
       pieces = []; stocks = []; currentCalculation = null; currentCalculationIdx = -1; renderLists();
-      document.getElementById('postCalcActions').classList.replace('flex', 'hidden');
+      const actionBtn = document.getElementById('postCalcActions');
+      if(actionBtn) { actionBtn.classList.add('hidden'); actionBtn.innerHTML = ''; }
       document.getElementById('output').innerHTML = ''; document.getElementById('pieceClient').value = ''; document.getElementById('pieceName').value = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1361,14 +1375,20 @@
         if(item.status === 'pausado_compra') stBadge = '<span class="text-rose-400 font-bold"><i class="fa-solid fa-cart-shopping"></i> Falta Material</span>';
         if(item.status === 'concluido') stBadge = '<span class="text-indigo-400 font-bold"><i class="fa-solid fa-check-double"></i> Concluído</span>';
 
-        // Lógica precisa do semáforo
+        // Lógica precisa do semáforo: Avalia barras físicas E retalhos
         let dotColor = 'bg-slate-500';
-        if (item.newBarsCount > 0) {
-            if(item.barsToBuy === 0) dotColor = 'bg-emerald-500'; // Todo estoque ok
-            else if(item.barsToBuy > 0 && item.barsToBuy < item.newBarsCount) dotColor = 'bg-amber-400'; // Parcial
-            else if(item.barsToBuy === item.newBarsCount) dotColor = 'bg-rose-500'; // Comprar tudo
-        } else { 
-            dotColor = 'bg-emerald-500'; // Só usou retalho, então estoque OK
+        let localBarsUsed = item.newBarsCount - item.barsToBuy;
+        let localRetalhosUsed = item.stockUsedCount || 0; // Quantos retalhos foram usados
+
+        if (item.barsToBuy === 0) {
+            dotColor = 'bg-emerald-500'; // Tudo OK (100% material local)
+        } else {
+            // Precisa comprar, MAS usou pelo menos 1 retalho OU 1 barra local
+            if (localBarsUsed > 0 || localRetalhosUsed > 0) {
+                dotColor = 'bg-amber-400'; // Parcial
+            } else {
+                dotColor = 'bg-rose-500'; // Comprar tudo
+            }
         }
 
         html += `<tr class="hover:bg-slate-800/50 transition-colors">
@@ -1392,7 +1412,7 @@
       if (!loteSaved[idx]) return;
       if (currentCalculation && currentCalculation.status === 'cortando' && currentCalculation !== loteSaved[idx]) pauseProduction(); 
       currentCalculation = loteSaved[idx]; currentCalculationIdx = idx; renderResultOutput();
-      document.getElementById('postCalcActions').classList.replace('hidden', 'flex'); document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
     }
     function editLoteItem(idx) {
       if (!loteSaved[idx]) return;
@@ -1411,12 +1431,16 @@
       item.stockPlans.forEach(p => { p.done = false; p.cuts.forEach(c => c.done = false); });
       item.newBarPlans.forEach(p => { p.done = false; p.cuts.forEach(c => c.done = false); });
       
-      currentCalculation = item; currentCalculationIdx = idx; renderResultOutput(); document.getElementById('postCalcActions').classList.replace('hidden', 'flex');
+      currentCalculation = item; currentCalculationIdx = idx; renderResultOutput(); 
       window.scrollTo({ top: 0, behavior: 'smooth' }); showToast(`Modo edição ativado: ${item.profile}`, "success");
     }
     function deleteItemFromLote(idx) {
         if(confirm("Remover este perfil da obra?")) {
-            if(currentCalculation === loteSaved[idx]) { currentCalculation = null; currentCalculationIdx = -1; document.getElementById('output').innerHTML = ''; }
+            if(currentCalculation === loteSaved[idx]) { 
+                currentCalculation = null; currentCalculationIdx = -1; document.getElementById('output').innerHTML = ''; 
+                const actionBtn = document.getElementById('postCalcActions');
+                if(actionBtn) { actionBtn.classList.add('hidden'); actionBtn.innerHTML = ''; }
+            }
             loteSaved.splice(idx, 1); if(currentProjectName) persistCurrentProject(); 
             renderLoteSummary(); showToast("Perfil removido.");
         }
