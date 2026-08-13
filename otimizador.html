@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.4.0 (Cloud Beta)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.4.1 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -202,7 +202,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.0</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.1</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -439,11 +439,13 @@
             if (upLine === "EMISSÃO :") { state = "EXPECT_OBRA"; return; }
             if (state === "EXPECT_OBRA") { globalObra = cleanLine; state = "SEARCHING"; return; }
 
-            // Melhoria na extração da cor exata
-            let foundColor = colorKeywords.find(c => upLine.includes(c));
-            if (foundColor) {
-                let matchR = upLine.match(/RAL\s*\d+/);
-                currentColor = matchR ? matchR[0] : foundColor;
+            // Melhoria RAL
+            let ralMatch = upLine.match(/RAL\s*\d{4}/);
+            if (ralMatch) {
+                currentColor = ralMatch[0];
+            } else {
+                let foundColor = colorKeywords.find(c => upLine.includes(c));
+                if (foundColor) currentColor = foundColor;
             }
 
             const isProfileMatch = /^([A-Z]{2,4}-?\d{2,4}[A-Z]?|\d+X\d+)$/i.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15;
@@ -453,12 +455,13 @@
             }
 
             if (state === "EXPECT_COLOR") {
-                let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
-                if (checkColor) {
-                    let matchR2 = cleanLine.toUpperCase().match(/RAL\s*\d+/);
-                    currentColor = matchR2 ? matchR2[0] : checkColor;
+                let ralMatch2 = cleanLine.toUpperCase().match(/RAL\s*\d{4}/);
+                if (ralMatch2) {
+                    currentColor = ralMatch2[0];
                 } else {
-                    currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
+                    let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
+                    if (checkColor) currentColor = checkColor;
+                    else currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
                 }
                 state = "SEARCHING"; return;
             }
@@ -521,11 +524,13 @@
             if (upLine === "PADRÕES DE CORTES") { state = "EXPECT_VENDA_CEM"; return; }
             if (state === "EXPECT_VENDA_CEM") { globalVenda = cleanLine; state = "SEARCHING"; return; }
 
-            // Melhoria na extração da cor exata
-            let foundColor = colorKeywords.find(c => upLine.includes(c));
-            if (foundColor) {
-                let matchR = upLine.match(/RAL\s*\d+/);
-                currentColor = matchR ? matchR[0] : foundColor;
+            // Melhoria RAL
+            let ralMatch = upLine.match(/RAL\s*\d{4}/);
+            if (ralMatch) {
+                currentColor = ralMatch[0];
+            } else {
+                let foundColor = colorKeywords.find(c => upLine.includes(c));
+                if (foundColor) currentColor = foundColor;
             }
 
             if (/^[A-Z]{2,4}-?\d{2,4}[A-Z]?$/.test(cleanLine) && !cleanLine.includes("RAL") && cleanLine.length <= 15) {
@@ -533,12 +538,13 @@
             }
 
             if (state === "EXPECT_COLOR_CEM") {
-                let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
-                if (checkColor) {
-                    let matchR2 = cleanLine.toUpperCase().match(/RAL\s*\d+/);
-                    currentColor = matchR2 ? matchR2[0] : checkColor;
+                let ralMatch2 = cleanLine.toUpperCase().match(/RAL\s*\d{4}/);
+                if (ralMatch2) {
+                    currentColor = ralMatch2[0];
                 } else {
-                    currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
+                    let checkColor = colorKeywords.find(c => cleanLine.toUpperCase().includes(c));
+                    if (checkColor) currentColor = checkColor;
+                    else currentColor = cleanLine.replace(/^6000\s*/, '').replace(/^\d+\s*x\s*\d+\s*/i, '').trim(); 
                 }
                 state = "SEARCHING"; return;
             }
