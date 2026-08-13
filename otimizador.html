@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.4.4 (Cloud Beta)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.4.6 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -205,7 +205,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.4</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.6</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -374,7 +374,7 @@
         let ral = up.match(/RAL\s*\d{4}/);
         let res = [];
         if (found) res.push(found);
-        if (ral) res.push(ral[0]);
+        if (ral && (!found || !found.includes(ral[0]))) res.push(ral[0]);
         if (res.length > 0) return res.join(" ");
         return null;
     }
@@ -576,7 +576,9 @@
                 else if (isAngle(window[0]) && isSize(window[1]) && isQty(window[2]) && isItem(window[3])) { size = parseFloat(window[1].replace(',', '.')); qty = parseInt(window[2]); [esq, dir] = window[0].split('/'); name = window[3]; matched = true; }
 
                 if (matched && size >= 10 && qty > 0) {
-                    if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
+                    let profileKey = currentProfile + " | " + currentColor;
+                    if(!extractedProfilesGlobal[profileKey]) extractedProfilesGlobal[profileKey] = [];
+                    
                     let finalName = name; if (/^\d+$/.test(name)) finalName = "Item " + name;
                     let finalClientString = "";
                     if (globalVenda) finalClientString += `(Ped. ${globalVenda}) `;
@@ -585,7 +587,7 @@
                     else if (!globalCliente && globalObra) finalClientString += globalObra;
                     if (finalClientString === "") finalClientString = "Projeto Geral";
 
-                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: finalName, client: finalClientString, color: currentColor }); buffer = []; 
+                    extractedProfilesGlobal[profileKey].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: finalName, client: finalClientString, color: currentColor, rawProfile: currentProfile }); buffer = []; 
                 } 
             }
             if(buffer.length > 6) buffer.shift();
@@ -649,10 +651,13 @@
                 if (isQty(window[0]) && isSize(window[1]) && isAngle(window[2]) && isItem(window[3])) { qty = parseInt(window[0]); size = parseFloat(window[1].replace(',', '.')); [esq, dir] = window[2].split('/'); name = window[3]; matched = true; }
 
                 if (matched && size >= 10 && qty > 0) {
-                    if(!extractedProfilesGlobal[currentProfile]) extractedProfilesGlobal[currentProfile] = [];
+                    let profileKey = currentProfile + " | " + currentColor;
+                    if(!extractedProfilesGlobal[profileKey]) extractedProfilesGlobal[profileKey] = [];
+                    
                     let fullObraStr = globalObra || "Obra Geral"; let descCliente = globalCliente ? ` - ${globalCliente}` : "";
                     let finalClientString = `${fullObraStr}${descCliente}`; if (globalVenda) finalClientString += ` (Ped: ${globalVenda})`;
-                    extractedProfilesGlobal[currentProfile].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: name, client: finalClientString, color: currentColor }); buffer = []; 
+                    
+                    extractedProfilesGlobal[profileKey].push({ qty, size, esq: parseFloat(esq), dir: parseFloat(dir), name: name, client: finalClientString, color: currentColor, rawProfile: currentProfile }); buffer = []; 
                 } 
             }
             if(buffer.length > 6) buffer.shift();
@@ -675,24 +680,25 @@
         if(colInput) colInput.classList.add('hidden'); if(btnVoltar) btnVoltar.classList.remove('hidden');
 
         let html = ''; let globalPieces = 0;
-        keys.forEach(prof => {
-            let pts = profiles[prof]; let totalPcs = pts.reduce((acc, p) => acc + p.qty, 0);
-            let profColor = pts.length > 0 ? pts[0].color : "Sem cor"; globalPieces += totalPcs;
+        keys.forEach(profKey => {
+            let pts = profiles[profKey]; let totalPcs = pts.reduce((acc, p) => acc + p.qty, 0);
+            let rawProf = pts[0].rawProfile || profKey.split(' | ')[0];
+            let profColor = pts[0].color || "Sem cor"; globalPieces += totalPcs;
 
             html += `
             <div class="bg-slate-900/80 border border-slate-700 p-5 rounded-2xl shadow-sm mb-4">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-                    <div><h3 class="font-black text-white text-lg flex items-center gap-2">${prof}</h3><p class="text-[10px] text-slate-400 mt-1">Cor Identificada: <strong class="text-white">${profColor}</strong></p></div>
+                    <div><h3 class="font-black text-white text-lg flex items-center gap-2">${rawProf}</h3><p class="text-[10px] text-slate-400 mt-1">Cor Identificada: <strong class="text-white">${profColor}</strong></p></div>
                     <span class="text-xs bg-slate-800 text-sky-400 border border-slate-700 px-3 py-1 rounded-lg font-bold">${totalPcs} peças</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             `;
             pts.forEach((p, idx) => {
-                let cardId = `card-${prof}-${idx}`;
+                let cardId = `card-${profKey.replace(/[^a-zA-Z0-9]/g, '')}-${idx}`;
                 html += `
                 <label id="${cardId}" class="piece-card unchecked bg-slate-800/50 border border-slate-700/50 p-3 rounded-xl flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <input type="checkbox" class="piece-checkbox" data-prof="${prof}" data-idx="${idx}" data-card-id="${cardId}" onchange="togglePieceCard(this)">
+                        <input type="checkbox" class="piece-checkbox" data-prof="${profKey}" data-idx="${idx}" data-card-id="${cardId}" onchange="togglePieceCard(this)">
                         <div class="max-w-[150px]">
                             <span class="block text-[9px] text-slate-400 mb-0.5 truncate" title="${p.client}">Obra: <strong class="text-emerald-400">${p.client}</strong></span>
                             <span class="block text-[10px] text-slate-400 mb-1 truncate" title="${p.name}">Etiq: <strong class="text-white">${p.name}</strong></span>
@@ -711,19 +717,19 @@
         let checkboxes = document.querySelectorAll('.piece-checkbox'); let finalApprovedProfiles = {}; let totalApprovedPieces = 0;
         checkboxes.forEach(chk => {
             if(chk.checked) {
-                let prof = chk.getAttribute('data-prof'); let idx = parseInt(chk.getAttribute('data-idx'));
-                if(!finalApprovedProfiles[prof]) finalApprovedProfiles[prof] = [];
-                let piece = extractedProfilesGlobal[prof][idx];
-                for(let i = 0; i < piece.qty; i++) { finalApprovedProfiles[prof].push({ client: piece.client, name: piece.name, size: piece.size, esq: piece.esq, dir: piece.dir, color: piece.color }); }
+                let profKey = chk.getAttribute('data-prof'); let idx = parseInt(chk.getAttribute('data-idx'));
+                if(!finalApprovedProfiles[profKey]) finalApprovedProfiles[profKey] = [];
+                let piece = extractedProfilesGlobal[profKey][idx];
+                for(let i = 0; i < piece.qty; i++) { finalApprovedProfiles[profKey].push({ client: piece.client, name: piece.name, size: piece.size, esq: piece.esq, dir: piece.dir, color: piece.color }); }
                 totalApprovedPieces += piece.qty;
             }
         });
         if(totalApprovedPieces === 0) { showToast("Marque ao menos um item.", "error"); return; }
         
         let filaExistente = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
-        Object.keys(finalApprovedProfiles).forEach(prof => {
-            if(!filaExistente[prof]) filaExistente[prof] = [];
-            filaExistente[prof] = filaExistente[prof].concat(finalApprovedProfiles[prof]);
+        Object.keys(finalApprovedProfiles).forEach(profKey => {
+            if(!filaExistente[profKey]) filaExistente[profKey] = [];
+            filaExistente[profKey] = filaExistente[profKey].concat(finalApprovedProfiles[profKey]);
         });
         localStorage.setItem('oppah_fila_importacao', JSON.stringify(filaExistente)); showToast(`Sucesso! ${totalApprovedPieces} peças na Fila.`, "success");
         setTimeout(() => { closeImportadorModal(); renderImportQueue(); resetImportador(); }, 800);
@@ -746,6 +752,8 @@
     // --- LÓGICA DO OTIMIZADOR ---
     let stocks = []; let pieces = []; let loteSaved = []; let currentProjectName = null; let currentCalculation = null; let currentCalculationIdx = -1;
     const clientColors = {}; const colorPalette = ['#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#a855f7', '#14b8a6', '#f97316'];
+    const pieceColors = {}; // Inteligência de Cores para as Etiquetas
+    
     let userPreferences = {}; let uiTimerInterval = null; let idleTimeout = null; let warningTimeout = null; let warningCountdownInterval = null;
     const IDLE_LIMIT_MS = 1 * 60 * 1000;
 
@@ -813,7 +821,15 @@
 
     function toggleLimitBarsInput() { document.getElementById('limitBarsInputGroup').style.display = document.getElementById('limitBarsCheckbox').checked ? 'block' : 'none'; }
     function toggleSpliceInput() { document.getElementById('spliceInputGroup').style.display = document.getElementById('allowSpliceCheckbox').checked ? 'block' : 'none'; }
+    
     function getClientBadgeHTML(clientName) { if (!clientColors[clientName]) clientColors[clientName] = colorPalette[Object.keys(clientColors).length % colorPalette.length]; return `<span class="client-badge" style="background-color: ${clientColors[clientName]};">[${clientName}]</span>`; }
+    
+    // Função para Etiqueta Colorida
+    function getPieceNameHTML(name, isSplice = false) {
+        if(isSplice) return `<strong class="text-amber-400 bg-amber-500/10 px-1 rounded border border-amber-500/30">${name}</strong>`;
+        if (!pieceColors[name]) pieceColors[name] = colorPalette[(Object.keys(pieceColors).length + 2) % colorPalette.length];
+        return `<strong style="color: ${pieceColors[name]}; text-shadow: 0 0 10px ${pieceColors[name]}40;">${name}</strong>`;
+    }
 
     function addStock() {
       const input = document.getElementById('stockInput'); const val = parseFloat(input.value);
@@ -842,7 +858,7 @@
 
       document.getElementById('pieceList').innerHTML = pieces.map((p, i) => `
         <li class="flex justify-between items-center p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200">
-          <span class="truncate max-w-[200px]" title="${p.client}">${getClientBadgeHTML(p.client)} <span class="piece-tag">${p.name}</span> (${p.size}${userPreferences.unit || 'mm'}) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span>
+          <span class="truncate max-w-[200px]" title="${p.client}">${getClientBadgeHTML(p.client)} ${getPieceNameHTML(p.name)} (${p.size}${userPreferences.unit || 'mm'}) <span class="angle-badge">${p.esq}° / ${p.dir}°</span></span>
           <button onclick="removePiece(${i})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
         </li>
       `).join('');
@@ -1063,7 +1079,7 @@
       if (calc.stockPlans.length > 0) {
         html += `<h3 class="font-bold text-amber-400 mb-3"><i class="fa-solid fa-recycle"></i> Etapa 1: Retalhos do Estoque ${isSquareMode ? '(Todos em 90°)' : ''}</h3>`;
         calc.stockPlans.forEach((plan, idx) => {
-          html += `<div class="bar-result stock ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleBarState('stock', ${idx}, this.checked)"><span class="bar-title">Retalho #${idx+1} (${plan.original}${u})</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleCutState('stock', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="${c.isSplicePart ? 'text-amber-300' : 'text-white'}">${c.name}</strong> (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)}) ${c.exactMatch ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1 rounded ml-1 uppercase font-bold tracking-wider">Encaixe Perfeito (0 Refilo)</span>' : ''}</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
+          html += `<div class="bar-result stock ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleBarState('stock', ${idx}, this.checked)"><span class="bar-title">Retalho #${idx+1} (${plan.original}${u})</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="toggleCutState('stock', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} ${getPieceNameHTML(c.name, c.isSplicePart)} (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)}) ${c.exactMatch ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1 rounded ml-1 uppercase font-bold tracking-wider">Encaixe Perfeito (0 Refilo)</span>' : ''}</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
         });
       }
 
@@ -1081,7 +1097,7 @@
           else if (isReceived) { badgeHtml = '<span class="text-blue-400 text-[10px] bg-blue-500/20 px-1 rounded"><i class="fa-solid fa-box-open"></i> MATERIAL RECEBIDO</span>'; barClass = 'received'; } 
           else { badgeHtml = '<span class="text-emerald-400 text-[10px] bg-emerald-500/20 px-1 rounded">(ESTOQUE LOCAL)</span>'; }
 
-          html += `<div class="bar-result ${barClass} ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleBarState('new', ${idx}, this.checked)"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${badgeHtml}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleCutState('new', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} <strong class="${c.isSplicePart ? 'text-amber-300' : 'text-white'}">${c.name}</strong> (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
+          html += `<div class="bar-result ${barClass} ${plan.done ? 'completed' : ''}"><div class="flex items-center gap-2 text-white font-bold"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${plan.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleBarState('new', ${idx}, this.checked)"><span class="bar-title">Barra #${idx+1} [${calc.color}] ${badgeHtml}</span></div><div class="ml-6 mt-2 space-y-1">${plan.cuts.map((c, cIdx) => `<div class="cut-item-row ${c.done ? 'done' : ''}"><input type="checkbox" class="chk-cut no-print ${itemLocked ? 'opacity-50 cursor-not-allowed' : ''}" ${c.done ? 'checked' : ''} ${itemLocked ? 'disabled' : ''} onchange="toggleCutState('new', ${idx}, ${cIdx}, this.checked)"> <span class="text-slate-300">${getClientBadgeHTML(c.client)} ${getPieceNameHTML(c.name, c.isSplicePart)} (${c.size.toFixed(1)}${u} ${renderBarAngleBadge(c)})</span></div>`).join('')}<div class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Sobra Útil: ${plan.leftover.toFixed(1)} ${u}</div></div></div>`;
         });
       }
 
@@ -1238,7 +1254,8 @@
                     html += `<div class="bar-result stock"><strong>Retalho #${pIdx+1} (${plan.original}mm)</strong> <span style="font-size:12px; color:#666;">(Sobra Útil: ${plan.leftover.toFixed(1)}mm)</span><br>`;
                     plan.cuts.forEach(c => { 
                         let exactBadge = c.exactMatch ? '<span class="badge badge-exact">ENCAIXE PERFEITO (0 Refilo)</span>' : '';
-                        html += `<div class="cut-item">- [${c.client}] | <b>${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;] ${exactBadge}</div>`; 
+                        // Na impressão, força a cor original do texto para preto para melhor leitura no papel
+                        html += `<div class="cut-item">- [${c.client}] | <b style="color: #000">${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;] ${exactBadge}</div>`; 
                     });
                     html += `</div>`;
                 });
@@ -1247,7 +1264,7 @@
                 html += `<h3>Barras Novas (${calc.barSize}mm)</h3>`;
                 calc.newBarPlans.forEach((plan, pIdx) => {
                     html += `<div class="bar-result"><strong>Barra #${pIdx+1}</strong> <span style="font-size:12px; color:#666;">(Sobra Útil: ${plan.leftover.toFixed(1)}mm)</span><br>`;
-                    plan.cuts.forEach(c => { html += `<div class="cut-item">- [${c.client}] | <b>${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;]</div>`; });
+                    plan.cuts.forEach(c => { html += `<div class="cut-item">- [${c.client}] | <b style="color: #000">${c.name}</b> (${c.size.toFixed(1)}mm) [${c.esq}&deg;/${c.dir}&deg;]</div>`; });
                     html += `</div>`;
                 });
             }
@@ -1503,20 +1520,28 @@
         list.innerHTML = html;
     }
 
-    function pullFromQueue(prof) {
+    function pullFromQueue(profKey) {
         if (pieces.length > 0) { if(!confirm("Atenção: A lista atual não está vazia. Substituir os itens atuais?")) return; }
         let queue = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
-        document.getElementById('profileCode').value = prof; pieces = [...queue[prof]];
+        
+        // Separa o Perfil e a Cor da chave composta
+        let parts = profKey.split(" | ");
+        let profCode = parts[0] ? parts[0].trim() : profKey;
+        let profColor = parts[1] ? parts[1].trim() : "Sem cor";
+        
+        document.getElementById('profileCode').value = profCode;
+        document.getElementById('profileColor').value = profColor;
+        
+        pieces = [...queue[profKey]];
         if(pieces.length > 0) {
-            if(pieces[0].color && pieces[0].color !== "Sem cor") document.getElementById('profileColor').value = pieces[0].color;
             if(pieces[0].client) document.getElementById('pieceClient').value = pieces[0].client;
         }
-        delete queue[prof]; localStorage.setItem('oppah_fila_importacao', JSON.stringify(queue));
-        renderLists(); renderImportQueue(); showToast(`Perfil ${prof} carregado!`, "success");
+        delete queue[profKey]; localStorage.setItem('oppah_fila_importacao', JSON.stringify(queue));
+        renderLists(); renderImportQueue(); showToast(`Perfil carregado!`, "success");
     }
 
     function deleteFromQueue(prof) {
-        if(!confirm(`Excluir definitivamente o perfil ${prof} da fila de importação?`)) return;
+        if(!confirm(`Excluir definitivamente o perfil da fila de importação?`)) return;
         let queue = JSON.parse(localStorage.getItem('oppah_fila_importacao') || '{}');
         delete queue[prof]; localStorage.setItem('oppah_fila_importacao', JSON.stringify(queue));
         renderImportQueue(); showToast(`Perfil excluído da fila.`, "success");
