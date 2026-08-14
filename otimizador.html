@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.4.8 (Cloud Beta)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.4.9 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -205,7 +205,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.8</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.9</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -1432,12 +1432,28 @@
 
       const titleText = currentProjectName ? `Projeto Atual: <span class="text-white">${currentProjectName}</span>` : `Lote Consolidado`;
 
-      // Regra da Porcentagem de Estoque e Compras
+      // Regra da Porcentagem de Estoque, Compras e Repintura
       let totalBarrasNovas = 0; let totalComprar = 0;
-      loteSaved.forEach(item => { totalBarrasNovas += item.newBarsCount; totalComprar += item.barsToBuy; });
+      let totalPecasObra = 0; let pecasRepintura = 0;
+      
+      loteSaved.forEach(item => { 
+          totalBarrasNovas += item.newBarsCount; 
+          totalComprar += item.barsToBuy; 
+          
+          (item.stockPlans || []).forEach(plan => {
+              let qtdCuts = plan.cuts.length;
+              totalPecasObra += qtdCuts;
+              if(plan.repintura) pecasRepintura += qtdCuts;
+          });
+          (item.newBarPlans || []).forEach(plan => {
+              totalPecasObra += plan.cuts.length;
+          });
+      });
+      
       let totalEstoqueUsado = totalBarrasNovas - totalComprar;
       let pctEstoque = totalBarrasNovas > 0 ? Math.round((totalEstoqueUsado / totalBarrasNovas) * 100) : 0;
       let pctComprar = totalBarrasNovas > 0 ? Math.round((totalComprar / totalBarrasNovas) * 100) : 0;
+      let pctRepintura = totalPecasObra > 0 ? Math.round((pecasRepintura / totalPecasObra) * 100) : 0;
 
       let html = `<div class="glass-card p-5 rounded-3xl border-indigo-500/30 shadow-xl"><div class="flex justify-between items-center mb-4 flex-wrap gap-3">
         <div class="flex-1 min-w-[250px]">
@@ -1448,12 +1464,17 @@
              <span class="text-xs font-bold ${tColor} whitespace-nowrap">${statusText}</span>
           </div>
           
-          <div class="flex justify-between items-center mt-2">
+          <div class="flex justify-between items-center mt-3">
               <p class="text-[10px] text-slate-500">${prog.done} de ${prog.total} peças | Tempo Total: ${formatMsToTime(prog.time)}</p>
-              <p class="text-[10px] text-slate-400 font-bold bg-slate-900 px-2 py-1 rounded border border-slate-700">📦 Uso do Estoque Local: <span class="text-emerald-400">${pctEstoque}%</span> | 🛒 Necessidade de Compra: <span class="text-rose-400">${pctComprar}%</span></p>
+              
+              <p class="text-[10px] text-slate-400 font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 flex flex-wrap gap-2 items-center">
+                  <span title="Barras físicas do estoque">📦 Estoque Local: <span class="text-emerald-400">${pctEstoque}%</span></span> <span class="text-slate-600">|</span> 
+                  <span title="Barras que precisam ser compradas">🛒 Compras: <span class="text-rose-400">${pctComprar}%</span></span> <span class="text-slate-600">|</span> 
+                  <span title="Volume total da obra que será repintado">🎨 Vai p/ Repintura: <span class="text-fuchsia-400">${pctRepintura}%</span></span>
+              </p>
           </div>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 mt-2 sm:mt-0">
           <button onclick="showTimeReport()" class="bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2" title="Ver relatório de tempo por perfil"><i class="fa-solid fa-clock"></i> Tempos</button>
           
           <button onclick="printRepinturaReport()" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2 ${hasRepintura ? 'shadow-[0_0_15px_rgba(217,70,239,0.4)] animate-pulse' : 'opacity-50 cursor-not-allowed'}" title="Imprimir lista de peças para repintura"><i class="fa-solid fa-paint-roller"></i> Repintura</button>
