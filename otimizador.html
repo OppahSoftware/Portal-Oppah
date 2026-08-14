@@ -759,7 +759,7 @@
     const pieceColors = {}; 
     
     let userPreferences = {}; let uiTimerInterval = null; let idleTimeout = null; let warningTimeout = null; let warningCountdownInterval = null;
-    const IDLE_LIMIT_MS = 1 * 60 * 1000;
+    const IDLE_LIMIT_MS = 20 * 60 * 1000;
 
     function handleUserActivity() { 
         const warningModal = document.getElementById('modal-idle-warning'); 
