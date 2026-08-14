@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Otimizador Inteligente - Sistema Integrado v3.4.7 (Cloud Beta)</title>
+  <title>Otimizador Inteligente - Sistema Integrado v3.4.9 (Cloud Beta)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -205,7 +205,7 @@
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.7</span></h1>
+          <h1 class="text-xl font-extrabold flex items-center gap-2">Otimizador Integrado <span class="text-[10px] font-normal bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">v3.4.9</span></h1>
           <p class="text-xs text-slate-400">Sistema Único com Importador Multiformato</p>
         </div>
       </div>
@@ -990,6 +990,7 @@
         clearTimeout(idleTimeout); idleTimeout = setTimeout(showIdleWarning, IDLE_LIMIT_MS);
         syncAndSaveProgress(); renderResultOutput();
     }
+    
     function pauseProduction(isAuto = false) {
         if (currentCalculation.status !== 'cortando') return;
         clearInterval(uiTimerInterval); clearTimeout(idleTimeout); clearInterval(warningCountdownInterval);
@@ -997,18 +998,34 @@
         currentCalculation.totalCuttingTime += sessionTime; currentCalculation.lastStartTime = null; currentCalculation.status = 'pausado';
         syncAndSaveProgress(); renderResultOutput(); if(!isAuto) showToast("⏸️ Pausado.");
     }
+    
     function pauseForMaterial() {
         if (currentCalculation.status !== 'cortando') return;
         clearInterval(uiTimerInterval); clearTimeout(idleTimeout); clearInterval(warningCountdownInterval);
         let sessionTime = Date.now() - currentCalculation.lastStartTime; currentCalculation.totalCuttingTime += sessionTime; currentCalculation.lastStartTime = null; currentCalculation.status = 'pausado_compra';
         syncAndSaveProgress(); renderResultOutput(); showToast("⚠️ Aguardando Compra de Material.", "error");
     }
+    
     function receiveMaterial() {
         if(!currentCalculation) return;
         currentCalculation.newBarPlans.forEach(p => { if (p.isToBuy) p.received = true; });
         currentCalculation.barsToBuy = 0; currentCalculation.conferido = true; currentCalculation.status = 'pausado'; 
         syncAndSaveProgress(); renderResultOutput(); showToast("📦 Material recebido! Cortes destravados.", "success");
     }
+
+    function pauseForRepintura() {
+        if (currentCalculation.status !== 'cortando') return;
+        clearInterval(uiTimerInterval); clearTimeout(idleTimeout); clearInterval(warningCountdownInterval);
+        let sessionTime = Date.now() - currentCalculation.lastStartTime; currentCalculation.totalCuttingTime += sessionTime; currentCalculation.lastStartTime = null; currentCalculation.status = 'pausado_repintura';
+        syncAndSaveProgress(); renderResultOutput(); showToast("⚠️ Aguardando Repintura.", "error");
+    }
+
+    function receiveRepintura() {
+        if(!currentCalculation) return;
+        currentCalculation.status = 'pausado'; 
+        syncAndSaveProgress(); renderResultOutput(); showToast("🎨 Material repintado! Cortes destravados.", "success");
+    }
+
     function finishProduction() {
         if (currentCalculation.status === 'cortando') currentCalculation.totalCuttingTime += (Date.now() - currentCalculation.lastStartTime);
         clearInterval(uiTimerInterval); clearTimeout(idleTimeout); clearInterval(warningCountdownInterval);
@@ -1062,6 +1079,7 @@
       else if (calc.status === 'cortando') timeHeaderHTML = `<div class="flex items-center gap-3"><div class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-gear fa-spin"></i> Cortando: <span id="active-timer-display" class="font-mono text-sm">${formatMsToTime(calc.totalCuttingTime + (Date.now() - calc.lastStartTime))}</span></div><button onclick="pauseProduction()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg transition-all flex items-center gap-2"><i class="fa-solid fa-pause"></i> Pausar</button></div>`;
       else if (calc.status === 'pausado') timeHeaderHTML = `<div class="flex items-center gap-3"><div class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-pause"></i> Pausado: <span class="font-mono text-sm">${formatMsToTime(calc.totalCuttingTime)}</span></div><button onclick="startOrResumeProduction()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> Retomar</button></div>`;
       else if (calc.status === 'pausado_compra') timeHeaderHTML = `<div class="flex items-center gap-3"><div class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-cart-shopping"></i> Aguardando Material: <span class="font-mono text-sm">${formatMsToTime(calc.totalCuttingTime)}</span></div><button onclick="startOrResumeProduction()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> Retomar</button></div>`;
+      else if (calc.status === 'pausado_repintura') timeHeaderHTML = `<div class="flex items-center gap-3"><div class="bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-paint-roller"></i> Aguardando Repintura: <span class="font-mono text-sm">${formatMsToTime(calc.totalCuttingTime)}</span></div><button onclick="startOrResumeProduction()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-black shadow-[0_0_15px_rgba(56,189,248,0.4)] transition-all flex items-center gap-2 animate-pulse"><i class="fa-solid fa-play"></i> Retomar</button></div>`;
       else if (calc.status === 'concluido') timeHeaderHTML = `<div class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-flag-checkered"></i> Tempo do Perfil: <span class="font-mono text-sm text-white">${formatMsToTime(calc.totalCuttingTime)}</span></div>`;
 
       let html = actionBarHtml + `<div class="flex justify-between items-center mb-4 flex-wrap gap-3 no-print"><h2 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span>Plano de Corte — <span class="bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded border border-sky-500/30">${calc.profile}</span></span></h2><div class="flex gap-3 items-center">${timeHeaderHTML}</div></div>`;
@@ -1102,7 +1120,7 @@
         const angularPieces = [...calc.stockPlans.flatMap(p => p.cuts), ...calc.newBarPlans.flatMap(p => p.cuts)].filter(p => p.esq !== 90 || p.dir !== 90);
         if (angularPieces.length > 0) {
           html += `<div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl mt-6 shadow-inner"><h3 class="font-bold text-amber-400 mb-2">📐 Guia de Refilo Angular</h3><ul class="space-y-2">`;
-          angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 p-2 rounded-lg border border-slate-800"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} ${getPieceNameHTML(p.name)} (${p.size.toFixed(1)}${u}) <i class="fa-solid fa-arrow-right-long text-slate-600 mx-2"></i> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; });
+          angularPieces.forEach(p => { html += `<li class="flex items-center gap-2 text-sm text-slate-300 bg-slate-900/50 p-2 rounded-lg border border-slate-800"><i class="fa-solid fa-angle-right text-amber-500/50"></i> ${getClientBadgeHTML(p.client)} <strong class="text-white">${p.name}</strong> (${p.size.toFixed(1)}${u}) <i class="fa-solid fa-arrow-right-long text-slate-600 mx-2"></i> Esq: <span class="text-amber-400 font-bold">${p.esq}°</span> | Dir: <span class="text-amber-400 font-bold">${p.dir}°</span></li>`; });
           html += `</ul></div>`;
         }
       }
@@ -1111,6 +1129,13 @@
           if (calc.status === 'cortando' || calc.status === 'pausado') html += `<div class="mt-8 p-6 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-inner no-print"><i class="fa-solid fa-boxes-stacked text-3xl text-rose-500/50 mb-3"></i><h3 class="text-white font-bold text-lg mb-1">Acabou o Estoque Local?</h3><button onclick="pauseForMaterial()" class="bg-rose-600 hover:bg-rose-500 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg mt-4"><i class="fa-solid fa-cart-arrow-down"></i> PAUSAR: AGUARDANDO COMPRA</button></div>`;
           else if (calc.status === 'pausado_compra') html += `<div class="mt-8 p-6 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-inner no-print"><i class="fa-solid fa-truck-fast text-3xl text-blue-500/50 mb-3"></i><h3 class="text-white font-bold text-lg mb-1">O Material Chegou?</h3><button onclick="receiveMaterial()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg mt-4"><i class="fa-solid fa-box-open"></i> DESTRAVAR CORTES</button></div>`;
       }
+      
+      const hasRepintura = calc.stockPlans && calc.stockPlans.some(p => p.repintura);
+      if (hasRepintura) {
+          if (calc.status === 'cortando' || calc.status === 'pausado') html += `<div class="mt-4 p-6 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-inner no-print"><i class="fa-solid fa-paint-roller text-3xl text-fuchsia-500/50 mb-3"></i><h3 class="text-white font-bold text-lg mb-1">Peça foi para a pintura?</h3><button onclick="pauseForRepintura()" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg mt-4"><i class="fa-solid fa-pause"></i> PAUSAR: AGUARDANDO REPINTURA</button></div>`;
+          else if (calc.status === 'pausado_repintura') html += `<div class="mt-4 p-6 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-2xl flex flex-col items-center justify-center text-center shadow-inner no-print"><i class="fa-solid fa-palette text-3xl text-fuchsia-500/50 mb-3"></i><h3 class="text-white font-bold text-lg mb-1">O Material Voltou da Pintura?</h3><button onclick="receiveRepintura()" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg mt-4"><i class="fa-solid fa-check"></i> MATERIAL REPINTADO (DESTRAVAR)</button></div>`;
+      }
+      
       html += `</div>`; document.getElementById('output').innerHTML = html;
     }
 
@@ -1393,23 +1418,42 @@
       const totalBuy = loteSaved.reduce((acc, item) => acc + item.barsToBuy, 0);
       const prog = calculateProjectProgress(loteSaved);
       const isWaitingMaterial = loteSaved.some(item => item.status === 'pausado_compra');
+      const isWaitingRepintura = loteSaved.some(item => item.status === 'pausado_repintura');
       let hasRepintura = loteSaved.some(calc => calc.stockPlans && calc.stockPlans.some(plan => plan.repintura));
       
       let pColor = 'bg-amber-500'; let tColor = 'text-amber-400'; let statusText = `${prog.pct}% Concluído`;
 
       if (prog.pct === 0 && isWaitingMaterial) { pColor = 'bg-rose-500'; tColor = 'text-rose-400'; statusText = `Não Iniciada (Falta Material)`; } 
+      else if (prog.pct === 0 && isWaitingRepintura) { pColor = 'bg-fuchsia-500'; tColor = 'text-fuchsia-400'; statusText = `Não Iniciada (Aguard. Repintura)`; }
       else if (prog.pct === 100) { pColor = 'bg-emerald-500'; tColor = 'text-emerald-400'; statusText = `100% Concluída`; } 
       else if (isWaitingMaterial) { pColor = 'bg-rose-500'; tColor = 'text-rose-400'; statusText = `Falta Material (${prog.pct}%)`; } 
+      else if (isWaitingRepintura) { pColor = 'bg-fuchsia-500'; tColor = 'text-fuchsia-400'; statusText = `Aguardando Repintura (${prog.pct}%)`; }
       else if (prog.pct > 0) { pColor = 'bg-sky-500'; tColor = 'text-sky-400'; statusText = `Em Produção (${prog.pct}%)`; }
 
       const titleText = currentProjectName ? `Projeto Atual: <span class="text-white">${currentProjectName}</span>` : `Lote Consolidado`;
 
-      // Regra da Porcentagem de Estoque e Compras
+      // Regra da Porcentagem de Estoque, Compras e Repintura
       let totalBarrasNovas = 0; let totalComprar = 0;
-      loteSaved.forEach(item => { totalBarrasNovas += item.newBarsCount; totalComprar += item.barsToBuy; });
+      let totalPecasObra = 0; let pecasRepintura = 0;
+      
+      loteSaved.forEach(item => { 
+          totalBarrasNovas += item.newBarsCount; 
+          totalComprar += item.barsToBuy; 
+          
+          (item.stockPlans || []).forEach(plan => {
+              let qtdCuts = plan.cuts.length;
+              totalPecasObra += qtdCuts;
+              if(plan.repintura) pecasRepintura += qtdCuts;
+          });
+          (item.newBarPlans || []).forEach(plan => {
+              totalPecasObra += plan.cuts.length;
+          });
+      });
+      
       let totalEstoqueUsado = totalBarrasNovas - totalComprar;
       let pctEstoque = totalBarrasNovas > 0 ? Math.round((totalEstoqueUsado / totalBarrasNovas) * 100) : 0;
       let pctComprar = totalBarrasNovas > 0 ? Math.round((totalComprar / totalBarrasNovas) * 100) : 0;
+      let pctRepintura = totalPecasObra > 0 ? Math.round((pecasRepintura / totalPecasObra) * 100) : 0;
 
       let html = `<div class="glass-card p-5 rounded-3xl border-indigo-500/30 shadow-xl"><div class="flex justify-between items-center mb-4 flex-wrap gap-3">
         <div class="flex-1 min-w-[250px]">
@@ -1420,12 +1464,17 @@
              <span class="text-xs font-bold ${tColor} whitespace-nowrap">${statusText}</span>
           </div>
           
-          <div class="flex justify-between items-center mt-2">
+          <div class="flex justify-between items-center mt-3">
               <p class="text-[10px] text-slate-500">${prog.done} de ${prog.total} peças | Tempo Total: ${formatMsToTime(prog.time)}</p>
-              <p class="text-[10px] text-slate-400 font-bold bg-slate-900 px-2 py-1 rounded border border-slate-700">📦 Uso do Estoque Local: <span class="text-emerald-400">${pctEstoque}%</span> | 🛒 Necessidade de Compra: <span class="text-rose-400">${pctComprar}%</span></p>
+              
+              <p class="text-[10px] text-slate-400 font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 flex flex-wrap gap-2 items-center">
+                  <span title="Barras físicas do estoque">📦 Estoque Local: <span class="text-emerald-400">${pctEstoque}%</span></span> <span class="text-slate-600">|</span> 
+                  <span title="Barras que precisam ser compradas">🛒 Compras: <span class="text-rose-400">${pctComprar}%</span></span> <span class="text-slate-600">|</span> 
+                  <span title="Volume total da obra que será repintado">🎨 Vai p/ Repintura: <span class="text-fuchsia-400">${pctRepintura}%</span></span>
+              </p>
           </div>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 mt-2 sm:mt-0">
           <button onclick="showTimeReport()" class="bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2" title="Ver relatório de tempo por perfil"><i class="fa-solid fa-clock"></i> Tempos</button>
           
           <button onclick="printRepinturaReport()" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition-all no-print flex items-center gap-2 ${hasRepintura ? 'shadow-[0_0_15px_rgba(217,70,239,0.4)] animate-pulse' : 'opacity-50 cursor-not-allowed'}" title="Imprimir lista de peças para repintura"><i class="fa-solid fa-paint-roller"></i> Repintura</button>
@@ -1442,6 +1491,7 @@
         if(item.status === 'cortando') stBadge = '<span class="text-emerald-400 font-bold animate-pulse"><i class="fa-solid fa-gear fa-spin"></i> Em Produção</span>';
         if(item.status === 'pausado') stBadge = '<span class="text-amber-400 font-bold"><i class="fa-solid fa-pause"></i> Pausado</span>';
         if(item.status === 'pausado_compra') stBadge = '<span class="text-rose-400 font-bold"><i class="fa-solid fa-cart-shopping"></i> Falta Material</span>';
+        if(item.status === 'pausado_repintura') stBadge = '<span class="text-fuchsia-400 font-bold"><i class="fa-solid fa-paint-roller"></i> Aguard. Repintura</span>';
         if(item.status === 'concluido') stBadge = '<span class="text-indigo-400 font-bold"><i class="fa-solid fa-check-double"></i> Concluído</span>';
 
         let dotColor = 'bg-slate-500';
