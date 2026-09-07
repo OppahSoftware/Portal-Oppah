@@ -1,1 +1,1194 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Terceirizações</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }
+                    }
+                }
+            }
+        }
+    </script>
 
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .table-container {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        thead { position: sticky; top: 0; z-index: 10; }
+        
+        .modal-overlay { transition: opacity 0.2s ease-out; }
+        .modal-panel { transition: transform 0.2s ease-out, opacity 0.2s ease-out; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .table-container { max-height: none !important; overflow: visible !important; }
+            body { background: white !important; color: black !important; }
+            input[type="date"], input[type="text"], input[type="number"] { border: none !important; background: transparent !important; color: black !important; outline: none !important; box-shadow: none !important; padding: 0 !important; width: auto !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .print-break-inside-avoid { break-inside: avoid; }
+            @page { margin: 1cm; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300">
+
+    <!-- Top Header Standalone -->
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="ph ph-buildings text-3xl text-brand-600 dark:text-brand-500"></i>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white">Terceirizações</h1>
+            </div>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <i id="theme-icon-light" class="ph ph-sun text-2xl hidden text-gray-400 hover:text-yellow-400"></i>
+                <i id="theme-icon-dark" class="ph ph-moon text-2xl text-gray-500 hover:text-blue-400"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-8" id="app-content">
+        <!-- Views will be injected here -->
+    </main>
+
+    <!-- MODALS CONTAINER -->
+    <div id="modal-container" class="fixed inset-0 z-50 hidden no-print" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-gray-900/75 dark:bg-gray-950/80 modal-overlay backdrop-blur-sm" id="modal-bg" onclick="closeModal()"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl modal-panel" id="modal-content" onclick="event.stopPropagation()">
+                    <!-- Modal dynamic content goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set up PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        // Fake Database
+        let db = {
+            terceirizados: [],
+            obras: [],
+            itens: []
+        };
+
+        let currentView = 'dashboard';
+        let currentTerceirizadoId = null;
+        let currentObraId = null;
+        let originalTheme = 'light';
+
+        // Theme Management
+        function initTheme() {
+            const html = document.documentElement;
+            const iconLight = document.getElementById('theme-icon-light');
+            const iconDark = document.getElementById('theme-icon-dark');
+            
+            try {
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    html.classList.add('dark');
+                    iconLight.classList.remove('hidden');
+                    iconDark.classList.add('hidden');
+                    originalTheme = 'dark';
+                } else {
+                    html.classList.remove('dark');
+                    iconLight.classList.add('hidden');
+                    iconDark.classList.remove('hidden');
+                    originalTheme = 'light';
+                }
+            } catch(e) { 
+                html.classList.remove('dark');
+                iconLight.classList.add('hidden');
+                iconDark.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const html = document.documentElement;
+            const iconLight = document.getElementById('theme-icon-light');
+            const iconDark = document.getElementById('theme-icon-dark');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                iconLight.classList.add('hidden');
+                iconDark.classList.remove('hidden');
+                try { localStorage.theme = 'light'; } catch(e){}
+                originalTheme = 'light';
+            } else {
+                html.classList.add('dark');
+                iconLight.classList.remove('hidden');
+                iconDark.classList.add('hidden');
+                try { localStorage.theme = 'dark'; } catch(e){}
+                originalTheme = 'dark';
+            }
+        });
+
+        window.onbeforeprint = () => {
+            const html = document.documentElement;
+            if(html.classList.contains('dark')){
+                html.classList.remove('dark');
+            }
+        };
+        window.onafterprint = () => {
+            const html = document.documentElement;
+            if(originalTheme === 'dark'){
+                html.classList.add('dark');
+            }
+        };
+
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const formatMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
+        function openModal(contentHtml) {
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = contentHtml;
+            container.classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('modal-bg').classList.add('opacity-100');
+                document.getElementById('modal-bg').classList.remove('opacity-0');
+                content.classList.add('translate-y-0', 'opacity-100', 'scale-100');
+                content.classList.remove('translate-y-4', 'opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            const bg = document.getElementById('modal-bg');
+            
+            bg.classList.remove('opacity-100');
+            bg.classList.add('opacity-0');
+            content.classList.remove('translate-y-0', 'opacity-100', 'scale-100');
+            content.classList.add('translate-y-4', 'opacity-0', 'scale-95');
+            
+            setTimeout(() => { container.classList.add('hidden'); }, 200);
+        }
+
+        function customAlert(title, message) {
+            const html = `
+                <div class="px-6 py-6">
+                    <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 rounded-full">
+                        <i class="ph ph-info text-2xl text-blue-600 dark:text-blue-300"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">${title}</h3>
+                    <p class="text-center text-gray-600 dark:text-gray-300">${message}</p>
+                    <div class="mt-6">
+                        <button onclick="closeModal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">Entendi</button>
+                    </div>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        function customConfirm(title, message, confirmCallback) {
+            const html = `
+                <div class="px-6 py-6">
+                    <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-900 rounded-full">
+                        <i class="ph ph-warning-circle text-2xl text-red-600 dark:text-red-300"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">${title}</h3>
+                    <p class="text-center text-gray-600 dark:text-gray-300">${message}</p>
+                    <div class="mt-6 flex gap-3">
+                        <button onclick="closeModal()" class="flex-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
+                        <button id="confirm-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">Confirmar Exclusão</button>
+                    </div>
+                </div>
+            `;
+            openModal(html);
+            document.getElementById('confirm-btn').onclick = () => {
+                confirmCallback();
+                closeModal();
+            };
+        }
+
+        function renderDashboard() {
+            currentView = 'dashboard';
+            const container = document.getElementById('app-content');
+            
+            let html = `
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Terceirizados</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Gerencie seus prestadores de serviço.</p>
+                    </div>
+                    <button onclick="modalNovoTerceirizado()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+                        <i class="ph ph-plus-circle text-xl"></i> Novo Terceirizado
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            `;
+
+            if (db.terceirizados.length === 0) {
+                html += `
+                    <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
+                        <i class="ph ph-users text-5xl text-gray-400 dark:text-gray-500 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Nenhum terceirizado cadastrado</h3>
+                        <p class="text-gray-500 dark:text-gray-400 mt-1 mb-4">Comece adicionando seu primeiro prestador de serviço.</p>
+                        <button onclick="modalNovoTerceirizado()" class="text-brand-600 dark:text-brand-400 font-medium hover:underline">Cadastrar agora</button>
+                    </div>
+                `;
+            } else {
+                db.terceirizados.forEach(t => {
+                    const obrasDoTerc = db.obras.filter(o => o.terceirizadoId === t.id).length;
+                    html += `
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow cursor-pointer" onclick="renderTerceirizado('${t.id}')">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xl">
+                                        ${t.nome.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg text-gray-900 dark:text-white leading-tight">${t.nome}</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><i class="ph ph-user"></i> ${t.responsavel}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <p class="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2"><i class="ph ph-phone text-gray-400"></i> ${t.telefone}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2"><i class="ph ph-identification-card text-gray-400"></i> ${t.cpf_cnpj}</p>
+                            </div>
+                            <div class="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">${obrasDoTerc} obra(s) associada(s)</span>
+                                <i class="ph ph-arrow-right text-brand-600 dark:text-brand-400"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function renderTerceirizado(id) {
+            currentView = 'terceirizado';
+            currentTerceirizadoId = id;
+            const t = db.terceirizados.find(x => x.id === id);
+            const container = document.getElementById('app-content');
+            
+            const obras = db.obras.filter(o => o.terceirizadoId === id);
+            
+            let totalObras = obras.length;
+            let obrasPagas100 = 0;
+            let valTotalGeral = 0;
+            let valPagoGeral = 0;
+
+            obras.forEach(o => {
+                const itensObra = db.itens.filter(i => i.obraId === o.id);
+                let oTotal = 0;
+                let oPago = 0;
+                itensObra.forEach(item => {
+                    oTotal += item.valor || 0;
+                    if (item.pago) oPago += item.valor || 0;
+                });
+                valTotalGeral += oTotal;
+                valPagoGeral += oPago;
+                
+                // Se a obra tem itens registrados com valor, e o total = pago, ela está 100% concluída.
+                if (itensObra.length > 0 && oTotal > 0 && oTotal === oPago) {
+                    obrasPagas100++;
+                }
+            });
+
+            let valEmAberto = valTotalGeral - valPagoGeral;
+            let obrasEmAberto = totalObras - obrasPagas100;
+
+            let html = `
+                <div class="mb-6">
+                    <button onclick="renderDashboard()" class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center gap-1 mb-4 transition-colors">
+                        <i class="ph ph-arrow-left"></i> Voltar para Terceirizados
+                    </button>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">${t.nome}</h2>
+                            <p class="text-gray-500 dark:text-gray-400 mt-1">Responsável: ${t.responsavel} | Chave PIX: ${t.pix}</p>
+                        </div>
+                        <button onclick="modalNovaObra()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+                            <i class="ph ph-folder-plus text-xl"></i> Nova Obra
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DASHBOARD FINANCEIRO GLOBAL DO TERCEIRIZADO -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 border-t-4 border-t-blue-500">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg"><i class="ph ph-buildings text-lg"></i></div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Total de Obras</p>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-2">${totalObras}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 border-t-4 border-t-orange-500">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="p-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg"><i class="ph ph-clock-countdown text-lg"></i></div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Obras em Aberto</p>
+                        </div>
+                        <p class="text-2xl font-bold text-orange-500 mt-2">${obrasEmAberto}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 border-t-4 border-t-green-500">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="p-1.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg"><i class="ph ph-check-circle text-lg"></i></div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Obras Pagas 100%</p>
+                        </div>
+                        <p class="text-2xl font-bold text-green-500 mt-2">${obrasPagas100}</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 border-t-4 border-t-red-500 relative overflow-hidden">
+                        <div class="flex items-center gap-3 mb-1 relative z-10">
+                            <div class="p-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg"><i class="ph ph-warning-circle text-lg"></i></div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Valor em Aberto (Total)</p>
+                        </div>
+                        <p class="text-2xl font-bold text-red-500 mt-2 relative z-10">${formatMoney(valEmAberto)}</p>
+                        <i class="ph ph-currency-circle-dollar text-6xl text-red-50 dark:text-red-900/20 absolute -bottom-2 -right-2"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            `;
+
+            if (obras.length === 0) {
+                html += `
+                    <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
+                        <i class="ph ph-buildings text-5xl text-gray-400 dark:text-gray-500 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Nenhuma obra cadastrada</h3>
+                        <p class="text-gray-500 dark:text-gray-400 mt-1 mb-4">Crie uma obra para importar os PDFs e gerenciar os pagamentos.</p>
+                        <button onclick="modalNovaObra()" class="text-brand-600 dark:text-brand-400 font-medium hover:underline">Criar Nova Obra</button>
+                    </div>
+                `;
+            } else {
+                obras.forEach(o => {
+                    const itensObra = db.itens.filter(i => i.obraId === o.id);
+                    
+                    let prodPendenteQtd = 0, prodPendenteValor = 0;
+                    let prodPagoQtd = 0, prodPagoValor = 0;
+                    let instPendenteQtd = 0, instPendenteValor = 0;
+                    let instPagoQtd = 0, instPagoValor = 0;
+
+                    itensObra.forEach(item => {
+                        if (item.etapa === 'Produção') {
+                            if (item.pago) { prodPagoQtd++; prodPagoValor += item.valor; } 
+                            else { prodPendenteQtd++; prodPendenteValor += item.valor; }
+                        } else {
+                            if (item.pago) { instPagoQtd++; instPagoValor += item.valor; } 
+                            else { instPendenteQtd++; instPendenteValor += item.valor; }
+                        }
+                    });
+
+                    let prcConcluido = itensObra.length > 0 ? Math.round(((prodPagoQtd + instPagoQtd) / itensObra.length) * 100) : 0;
+
+                    html += `
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex flex-col relative group">
+                            <button onclick="excluirObra('${o.id}')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" title="Excluir Obra">
+                                <i class="ph ph-trash text-xl"></i>
+                            </button>
+
+                            <div class="mb-4">
+                                <h3 class="font-bold text-lg text-gray-900 dark:text-white cursor-pointer hover:text-brand-600 transition-colors" onclick="renderObra('${o.id}')">${o.nome}</h3>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                                    <div class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: ${prcConcluido}%"></div>
+                                </div>
+                                <p class="text-xs text-right mt-1 text-gray-500 dark:text-gray-400">${prcConcluido}% Pago</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 flex-1 cursor-pointer" onclick="renderObra('${o.id}')">
+                                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
+                                    <h4 class="text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-2">Produção</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-green-600 dark:text-green-400 flex items-center gap-1"><i class="ph ph-check-circle"></i> Pagos (${prodPagoQtd})</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">${formatMoney(prodPagoValor)}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-orange-500 dark:text-orange-400 flex items-center gap-1"><i class="ph ph-clock text-orange-500"></i> Pend. (${prodPendenteQtd})</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">${formatMoney(prodPendenteValor)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
+                                    <h4 class="text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-2">Instalação</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-green-600 dark:text-green-400 flex items-center gap-1"><i class="ph ph-check-circle"></i> Pagos (${instPagoQtd})</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">${formatMoney(instPagoValor)}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-orange-500 dark:text-orange-400 flex items-center gap-1"><i class="ph ph-clock text-orange-500"></i> Pend. (${instPendenteQtd})</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">${formatMoney(instPendenteValor)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="renderObra('${o.id}')" class="mt-4 w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 rounded-lg text-sm font-medium transition-colors">
+                                Abrir Painel da Obra
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function modalNovoTerceirizado() {
+            const html = `
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Novo Terceirizado</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="ph ph-x text-xl"></i></button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome da Empresa</label>
+                    <input type="text" id="t-empresa" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></div>
+                    
+                    <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Responsável</label>
+                    <input type="text" id="t-resp" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></div>
+                    
+                    <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CPF/CNPJ</label>
+                    <input type="text" id="t-doc" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></div>
+                    
+                    <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone / WhatsApp</label>
+                    <input type="text" id="t-tel" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></div>
+                    
+                    <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chave PIX</label>
+                    <input type="text" id="t-pix" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end gap-3">
+                    <button onclick="closeModal()" class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">Cancelar</button>
+                    <button onclick="salvarTerceirizado()" class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">Salvar</button>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        function salvarTerceirizado() {
+            const empresa = document.getElementById('t-empresa').value;
+            if(!empresa) { customAlert('Erro', 'Nome da empresa é obrigatório'); return; }
+            db.terceirizados.push({
+                id: generateId(),
+                nome: empresa,
+                responsavel: document.getElementById('t-resp').value || '-',
+                cpf_cnpj: document.getElementById('t-doc').value || '-',
+                telefone: document.getElementById('t-tel').value || '-',
+                pix: document.getElementById('t-pix').value || '-'
+            });
+            closeModal();
+            renderDashboard();
+        }
+
+        function modalNovaObra() {
+            const html = `
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Nova Obra</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="ph ph-x text-xl"></i></button>
+                </div>
+                <div class="p-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome/Identificador da Obra</label>
+                    <input type="text" id="o-nome" placeholder="Ex: OS #461 - Edifício Veredas" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end gap-3">
+                    <button onclick="closeModal()" class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">Cancelar</button>
+                    <button onclick="salvarObra()" class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">Criar Obra</button>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        function salvarObra() {
+            const nome = document.getElementById('o-nome').value;
+            if(!nome) { customAlert('Erro', 'Nome da obra é obrigatório'); return; }
+            db.obras.push({ id: generateId(), terceirizadoId: currentTerceirizadoId, nome: nome });
+            closeModal();
+            renderTerceirizado(currentTerceirizadoId);
+        }
+
+        function excluirObra(obraId) {
+            customConfirm('Atenção!', 'Tem certeza que deseja excluir esta Obra? Todos os itens e pagamentos vinculados a ela serão apagados.', () => {
+                db.obras = db.obras.filter(o => o.id !== obraId);
+                db.itens = db.itens.filter(i => i.obraId !== obraId);
+                renderTerceirizado(currentTerceirizadoId);
+            });
+        }
+
+        function excluirItemConfirm(itemId) {
+            customConfirm('Excluir Peça?', 'Tem certeza que deseja remover esta etapa? O resumo financeiro será atualizado imediatamente.', () => {
+                db.itens = db.itens.filter(i => i.id !== itemId);
+                atualizarResumoFinancas();
+                renderTabelaObra();
+            });
+        }
+
+        function renderObra(id) {
+            currentView = 'obra';
+            currentObraId = id;
+            const o = db.obras.find(x => x.id === id);
+            const t = db.terceirizados.find(x => x.id === o.terceirizadoId);
+            const container = document.getElementById('app-content');
+            
+            let html = `
+                <div class="mb-6 flex justify-between items-center no-print">
+                    <button onclick="renderTerceirizado('${t.id}')" class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center gap-1 transition-colors">
+                        <i class="ph ph-arrow-left"></i> Voltar para Obra
+                    </button>
+                    <button onclick="window.print()" class="bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                        <i class="ph ph-printer text-lg"></i> Imprimir Relatório
+                    </button>
+                </div>
+                
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${o.nome} • ${t.nome}</h2>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Painel financeiro de produção e instalação.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 print-break-inside-avoid">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg"><i class="ph ph-wallet text-xl"></i></div>
+                            <h3 class="font-semibold text-gray-700 dark:text-gray-200">Total da Obra</h3>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white" id="res-total">R$ 0,00</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">R$ <span id="res-total-m2">0,00</span>/m²</p>
+                            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between text-sm">
+                                <span class="text-green-600 dark:text-green-400 font-medium">Pago: <span id="res-total-pago">R$ 0,00</span></span>
+                                <span class="text-orange-500 dark:text-orange-400 font-medium">Devendo: <span id="res-total-dev">R$ 0,00</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 print-break-inside-avoid">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg"><i class="ph ph-hammer text-xl"></i></div>
+                            <h3 class="font-semibold text-gray-700 dark:text-gray-200">Produção</h3>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-xl font-bold text-gray-900 dark:text-white" id="res-prod">R$ 0,00</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">R$ <span id="res-prod-m2">0,00</span>/m²</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 print-break-inside-avoid">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg"><i class="ph ph-wrench text-xl"></i></div>
+                            <h3 class="font-semibold text-gray-700 dark:text-gray-200">Instalação</h3>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-xl font-bold text-gray-900 dark:text-white" id="res-inst">R$ 0,00</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">R$ <span id="res-inst-m2">0,00</span>/m²</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 no-print">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <h4 class="font-semibold text-blue-900 dark:text-blue-300 text-sm">Passo 1: Extrair Peças</h4>
+                            <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">Faça upload do PDF (Croqui) da engenharia.</p>
+                        </div>
+                        <label class="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-colors shadow-sm whitespace-nowrap">
+                            <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="importarPDF()">
+                            <i class="ph ph-upload-simple"></i> Enviar PDF
+                        </label>
+                    </div>
+
+                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <h4 class="font-semibold text-green-900 dark:text-green-300 text-sm">Passo 2: Injetar Valores</h4>
+                            <p class="text-xs text-green-700 dark:text-green-400 mt-1">Cole a negociação do WhatsApp.</p>
+                        </div>
+                        <button onclick="abrirWhatsAppModal()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap">
+                            <i class="ph ph-whatsapp-logo"></i> Colar Texto
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Peças - Com colunas atualizadas -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden print-break-inside-avoid">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 dark:text-white">Listagem de Peças (Produção / Instalação)</h3>
+                        <button onclick="modalItemManual()" class="no-print text-sm text-brand-600 dark:text-brand-400 font-medium hover:underline flex items-center gap-1">
+                            <i class="ph ph-plus"></i> Item Manual
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-white dark:bg-gray-800 shadow-sm">
+                                <tr>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">ID / Item</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">Tipo</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">Descrição</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">Localização</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">Medidas</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">M²</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">Etapa</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">Valor (R$)</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">Data</th>
+                                    <th class="p-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 text-center whitespace-nowrap">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-corpo" class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+            
+            atualizarResumoFinancas();
+            renderTabelaObra();
+        }
+
+        async function importarPDF() {
+            const fileInput = document.getElementById('pdf-upload');
+            if (fileInput.files.length === 0) {
+                customAlert('Atenção', 'Selecione um arquivo PDF primeiro.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const fileReader = new FileReader();
+
+            fileReader.onload = async function() {
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    
+                    let lines = [];
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        
+                        let rows = [];
+                        textContent.items.forEach(item => {
+                            let str = item.str.trim();
+                            if(!str) return; 
+                            
+                            let y = Math.round(item.transform[5]);
+                            let x = Math.round(item.transform[4]);
+                            
+                            let row = rows.find(r => Math.abs(r.y - y) <= 4);
+                            if(row) {
+                                row.items.push({x, str});
+                            } else {
+                                rows.push({y, items: [{x, str}]});
+                            }
+                        });
+                        
+                        rows.sort((a, b) => b.y - a.y);
+                        
+                        rows.forEach(r => {
+                            r.items.sort((a, b) => a.x - b.x);
+                            let lineText = r.items.map(i => i.str).join(' ');
+                            lines.push(lineText);
+                        });
+                    }
+
+                    let extractedItens = [];
+                    let currentDesc = "";
+                    let currentLocalFallback = "";
+
+                    // REGEX DEFINITIVO PADRÃO: 
+                    // [Tipo Opcional] [Qtde] [Larg] [Alt] [Item ID] [M2] [Localização Opcional]
+                    const dataRegex = /^([a-zA-Z0-9-]{2,10}\s+)?(\d{1,3})\s+(\d{2,5})\s+(\d{2,5})\s+(\d{1,5})\s+(\d+[,.]\d{1,3})(?:\s+(.+))?$/;
+
+                    for (let i = 0; i < lines.length; i++) {
+                        let line = lines[i].replace(/\|/g, '').trim(); 
+                        line = line.replace(/\s+/g, ' '); 
+                        
+                        // Pula cabeçalhos da tabela e linhas de detalhes irrelevantes
+                        if (!line || line.includes("QTDE.") || line.includes("LARGURA")) continue;
+                        if (line.includes("COR VIDRO") || line.includes("COR ESQUADRIA") || line.includes("COR ACESSÓRIO")) continue;
+                        
+                        // REGRA PEDIDA: Ignorar a linha de Código completamente (ex: GOLCB-JC4-01)
+                        if (line.match(/^[A-Z0-9-]{5,25}$/) && !line.match(/(JANELA|PORTA|MAXIM-AR|FIXO|VENEZIANA)/i)) {
+                            continue; 
+                        }
+
+                        let match = line.match(dataRegex);
+                        
+                        if (match) {
+                            // Encontrou a linha de dados!
+                            let tipo = match[1] ? match[1].trim() : "-";
+                            let qtde = parseInt(match[2]);
+                            let larg = match[3];
+                            let alt = match[4];
+                            let rawId = match[5];
+                            let m2Total = parseFloat(match[6].replace(',', '.'));
+                            let rest = (match[7] || "").trim();
+                            
+                            let local = rest || currentLocalFallback || "NÃO INFORMADO";
+                            local = local.replace(/Este relatório.*/i, '').trim();
+
+                            let finalDesc = currentDesc || "SEM DESCRIÇÃO";
+                            let unitM2 = qtde > 0 ? (m2Total / qtde) : m2Total;
+
+                            for (let q = 0; q < qtde; q++) {
+                                let finalId = qtde > 1 ? `Item ${rawId}.${q+1}` : `Item ${rawId}`;
+                                
+                                extractedItens.push({ id: generateId(), obraId: currentObraId, pid: finalId, tipo: tipo, desc: finalDesc.toUpperCase(), local: local.toUpperCase(), largura: larg, altura: alt, m2: unitM2, etapa: 'Produção', valor: 0, pago: false, data: '', obs: '' });
+                                extractedItens.push({ id: generateId(), obraId: currentObraId, pid: finalId, tipo: tipo, desc: finalDesc.toUpperCase(), local: local.toUpperCase(), largura: larg, altura: alt, m2: unitM2, etapa: 'Instalação', valor: 0, pago: false, data: '', obs: '' });
+                            }
+                            
+                            currentDesc = ""; // Reseta a descrição após vincular à peça
+                            
+                        } else {
+                            // Captura de Localização fora da tabela (se houver)
+                            if (line.toUpperCase().includes("*LOCAL/AMBIENTE:")) {
+                                currentLocalFallback = line.substring(line.toUpperCase().indexOf(":") + 1).trim();
+                                continue;
+                            }
+
+                            // Captura a Descrição Limpa
+                            if (line.match(/(JANELA|PORTA|MAXIM-AR|FIXO|VENEZIANA|PORTÃO|QUADRO|ALÇAPÃO)/i)) {
+                                // Se o código vier grudado no começo da frase, remove ele também
+                                let firstWord = line.split(' ')[0];
+                                if (firstWord.match(/^[A-Z0-9-]{5,20}$/) && !firstWord.match(/(JANELA|PORTA|MAXIM)/i)) {
+                                    line = line.substring(firstWord.length).trim();
+                                }
+                                currentDesc = line;
+                            }
+                        }
+                    }
+
+                    if (extractedItens.length === 0) {
+                        customAlert('Aviso', 'O PDF foi lido, mas não encontrou linhas no formato padrão de medidas.');
+                        return;
+                    }
+
+                    extractedItens.forEach(item => db.itens.push(item));
+
+                    customAlert('Sucesso!', `${extractedItens.length / 2} peças cadastradas! Itens com múltiplas quantidades foram separados individualmente.`);
+                    atualizarResumoFinancas();
+                    renderTabelaObra();
+                    
+                    fileInput.value = '';
+
+                } catch(e) {
+                    console.error(e);
+                    customAlert('Erro', 'Falha ao processar o arquivo PDF.');
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        function abrirWhatsAppModal() {
+            const html = `
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><i class="ph ph-whatsapp-logo text-green-500"></i> Texto do WhatsApp</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="ph ph-x text-xl"></i></button>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Cole aqui o texto enviado pelo prestador informando os valores. O sistema buscará as palavras-chave (ex: "Porta", "Janela") e aplicará os preços detectados.</p>
+                    <textarea id="whatsapp-text" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-sm font-mono bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none" placeholder="Ex:\nPorta 1 - Produção 350.00 / Instalação 150.00\nJanela - 200,00"></textarea>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end gap-3">
+                    <button onclick="closeModal()" class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">Cancelar</button>
+                    <button onclick="processarWhatsApp()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">Processar Valores <i class="ph ph-magic-wand"></i></button>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        function processarWhatsApp() {
+            const text = document.getElementById('whatsapp-text').value;
+            if(!text.trim()) { customAlert('Aviso', 'A caixa de texto está vazia. Cole o conteúdo primeiro.'); return; }
+
+            let updatedCount = 0;
+            const linhas = text.toLowerCase().split('\n');
+
+            db.itens.forEach(item => {
+                if (item.obraId === currentObraId) {
+                    // Pega a primeira palavra (ex: "JANELA")
+                    const primeiraPalavra = item.desc.split(' ')[0].toLowerCase();
+                    
+                    // Extrai apenas o número do ID (tira o "Item " e os decimais se tiver)
+                    let cleanPid = item.pid.replace('Item ', '');
+                    cleanPid = cleanPid.split('.')[0]; 
+                    
+                    const linhaCorrespondente = linhas.find(l => 
+                        l.includes(` ${cleanPid} `) || 
+                        l.startsWith(`${cleanPid} `) || 
+                        l.includes(primeiraPalavra)
+                    );
+                    
+                    if (linhaCorrespondente) {
+                        const nums = linhaCorrespondente.match(/\d{2,}(?:[.,]\d+)?/g);
+                        if (nums && nums.length > 0) {
+                            let valProd = parseFloat(nums[0].replace(',', '.'));
+                            let valInst = nums.length > 1 ? parseFloat(nums[1].replace(',', '.')) : valProd;
+                            
+                            item.valor = (item.etapa === 'Produção') ? valProd : valInst;
+                            updatedCount++;
+                        }
+                    }
+                }
+            });
+
+            closeModal();
+            if (updatedCount > 0) {
+                customAlert('Concluído', `Valores atualizados em ${updatedCount} etapas baseando-se no texto do WhatsApp!`);
+            } else {
+                customAlert('Aviso', 'Não foi possível fazer o cruzamento automático. Verifique se as palavras digitadas no WhatsApp coincidem com o que o PDF extraiu.');
+            }
+            
+            atualizarResumoFinancas();
+            renderTabelaObra();
+        }
+
+        function modalItemManual() {
+            const html = `
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Adicionar Item Manual</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="ph ph-x text-xl"></i></button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item / ID (Ex: Item 10)</label>
+                            <input type="text" id="m-pid" placeholder="Item 10" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo / Código</label>
+                            <input type="text" id="m-tipo" placeholder="Ex: JA04" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição</label>
+                            <input type="text" id="m-desc" placeholder="Ex: JANELA DE CORRER 02 FOLHAS" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Localização</label>
+                            <input type="text" id="m-local" placeholder="Ex: COZINHA" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Largura</label>
+                            <input type="text" id="m-larg" placeholder="Ex: 2000" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Altura</label>
+                            <input type="text" id="m-alt" placeholder="Ex: 1000" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">M²</label>
+                            <input type="number" step="0.01" id="m-m2" placeholder="Ex: 2.00" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor Produção (R$)</label>
+                            <input type="number" step="0.01" id="m-val-prod" placeholder="0.00" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor Instalação (R$)</label>
+                            <input type="number" step="0.01" id="m-val-inst" placeholder="0.00" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end gap-3">
+                    <button onclick="closeModal()" class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">Cancelar</button>
+                    <button onclick="salvarItemManual()" class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">Adicionar Item</button>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        function salvarItemManual() {
+            let pid = document.getElementById('m-pid').value || 'Item S/N';
+            if(!pid.toLowerCase().includes('item')) pid = 'Item ' + pid; // Força padrão
+            const local = document.getElementById('m-local').value.toUpperCase() || 'NÃO INFORMADO';
+            const tipo = document.getElementById('m-tipo').value.toUpperCase() || '-';
+            const desc = document.getElementById('m-desc').value.toUpperCase();
+            const larg = document.getElementById('m-larg').value || '-';
+            const alt = document.getElementById('m-alt').value || '-';
+            const m2 = parseFloat(document.getElementById('m-m2').value) || 1.0;
+            const valProd = parseFloat(document.getElementById('m-val-prod').value) || 0;
+            const valInst = parseFloat(document.getElementById('m-val-inst').value) || 0;
+
+            if(!desc) { customAlert('Erro', 'Descrição é obrigatória'); return; }
+
+            db.itens.push({ id: generateId(), obraId: currentObraId, pid: pid, tipo: tipo, desc: desc, local: local, largura: larg, altura: alt, m2: m2, etapa: 'Produção', valor: valProd, pago: false, data: '', obs: '' });
+            db.itens.push({ id: generateId(), obraId: currentObraId, pid: pid, tipo: tipo, desc: desc, local: local, largura: larg, altura: alt, m2: m2, etapa: 'Instalação', valor: valInst, pago: false, data: '', obs: '' });
+
+            closeModal();
+            atualizarResumoFinancas();
+            renderTabelaObra();
+        }
+
+        function atualizarResumoFinancas() {
+            const itensObra = db.itens.filter(i => i.obraId === currentObraId);
+            
+            let tProd = 0, tInst = 0, m2Total = 0, valPago = 0, valDev = 0;
+            let m2Set = new Set(); // Para não contar o M2 duas vezes (Prod vs Instalação da mesma peça)
+
+            itensObra.forEach(item => {
+                if(item.etapa === 'Produção') tProd += item.valor;
+                if(item.etapa === 'Instalação') tInst += item.valor;
+                if(item.pago) valPago += item.valor; else valDev += item.valor;
+                
+                if(!m2Set.has(item.pid)) {
+                    m2Total += item.m2;
+                    m2Set.add(item.pid);
+                }
+            });
+
+            const tGeral = tProd + tInst;
+            
+            document.getElementById('res-total').textContent = formatMoney(tGeral);
+            document.getElementById('res-total-pago').textContent = formatMoney(valPago);
+            document.getElementById('res-total-dev').textContent = formatMoney(valDev);
+            document.getElementById('res-prod').textContent = formatMoney(tProd);
+            document.getElementById('res-inst').textContent = formatMoney(tInst);
+
+            document.getElementById('res-total-m2').textContent = (m2Total > 0 ? (tGeral / m2Total).toFixed(2) : '0.00').replace('.', ',');
+            document.getElementById('res-prod-m2').textContent = (m2Total > 0 ? (tProd / m2Total).toFixed(2) : '0.00').replace('.', ',');
+            document.getElementById('res-inst-m2').textContent = (m2Total > 0 ? (tInst / m2Total).toFixed(2) : '0.00').replace('.', ',');
+        }
+
+        function renderTabelaObra() {
+            const itensObra = db.itens.filter(i => i.obraId === currentObraId);
+            const tbody = document.getElementById('tabela-corpo');
+            let html = '';
+
+            if (itensObra.length === 0) {
+                html = `<tr><td colspan="10" class="p-8 text-center text-gray-500 dark:text-gray-400">Nenhum item importado ainda. Faça upload do PDF ou cadastre manualmente.</td></tr>`;
+            } else {
+                itensObra.forEach(item => {
+                    const bgClass = item.etapa === 'Produção' ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-800/80';
+                    const iconeEtapa = item.etapa === 'Produção' ? '<i class="ph ph-hammer text-indigo-500"></i>' : '<i class="ph ph-wrench text-emerald-500"></i>';
+                    
+                    let statusHtml = '';
+                    if (item.pago) {
+                        statusHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"><i class="ph ph-check"></i> Pago</span>`;
+                    } else if (item.data !== '') {
+                        statusHtml = `<button onclick="pagarItem('${item.id}')" class="no-print w-full bg-brand-600 hover:bg-brand-700 text-white text-xs py-1.5 px-3 rounded shadow-sm transition-colors font-medium">Pagar</button><span class="hidden print:inline text-orange-500">Pendente</span>`;
+                    } else {
+                        statusHtml = `<span class="text-xs text-gray-400 dark:text-gray-500 flex items-center justify-center gap-1"><i class="ph ph-lock-key"></i> Insira data</span>`;
+                    }
+
+                    // Tabela Nova com as colunas perfeitamente separadas de acordo com o padrão exigido
+                    html += `
+                        <tr class="${bgClass} hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                            <!-- Coluna 1: ID -->
+                            <td class="p-4 align-top font-mono text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                ${item.pid}
+                            </td>
+                            
+                            <!-- Coluna 2: Tipo -->
+                            <td class="p-4 align-top font-mono text-sm font-bold text-brand-600 dark:text-brand-400 whitespace-nowrap">
+                                ${item.tipo}
+                            </td>
+                            
+                            <!-- Coluna 3: Descrição -->
+                            <td class="p-4 align-top text-sm font-medium text-gray-800 dark:text-gray-200 min-w-[250px]">
+                                ${item.desc}
+                            </td>
+                            
+                            <!-- Coluna 4: Localização -->
+                            <td class="p-4 align-top text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                                <span class="flex items-center gap-1"><i class="ph ph-map-pin"></i> ${item.local}</span>
+                            </td>
+                            
+                            <!-- Coluna 5: Medidas -->
+                            <td class="p-4 align-top text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                                ${item.largura} <span class="text-xs text-gray-400">x</span> ${item.altura}
+                            </td>
+                            
+                            <!-- Coluna 6: M² -->
+                            <td class="p-4 align-top text-sm font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                                ${item.m2.toFixed(2)} m²
+                            </td>
+                            
+                            <!-- Coluna 7: Etapa -->
+                            <td class="p-4 text-sm text-gray-600 dark:text-gray-300 align-top whitespace-nowrap">
+                                <div class="flex items-center gap-2">${iconeEtapa} ${item.etapa}</div>
+                            </td>
+                            
+                            <!-- Coluna 8: Valor -->
+                            <td class="p-4 align-top whitespace-nowrap">
+                                <input type="number" step="0.01" value="${item.valor}" onchange="atualizarValor('${item.id}', this.value)" class="w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-brand-500 outline-none" ${item.pago ? 'disabled' : ''}>
+                            </td>
+                            
+                            <!-- Coluna 9: Data -->
+                            <td class="p-4 align-top whitespace-nowrap">
+                                <input type="date" value="${item.data}" onchange="atualizarData('${item.id}', this.value)" class="w-[125px] px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-brand-500 outline-none" ${item.pago ? 'disabled' : ''}>
+                            </td>
+                            
+                            <!-- Coluna 10: Status -->
+                            <td class="p-4 text-center align-top min-w-[100px]">
+                                ${statusHtml}
+                                <div class="mt-2 flex justify-center gap-2 no-print">
+                                    <button onclick="anotar('${item.id}')" class="text-gray-400 hover:text-brand-600 transition-colors" title="Anotações"><i class="ph ph-note-pencil text-lg"></i></button>
+                                    <button onclick="excluirItemConfirm('${item.id}')" class="text-gray-400 hover:text-red-500 transition-colors" title="Excluir"><i class="ph ph-trash text-lg"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            tbody.innerHTML = html;
+        }
+
+        function atualizarValor(id, val) {
+            const item = db.itens.find(i => i.id === id);
+            item.valor = parseFloat(val) || 0;
+            atualizarResumoFinancas();
+        }
+
+        function atualizarData(id, val) {
+            const item = db.itens.find(i => i.id === id);
+            item.data = val;
+            renderTabelaObra();
+        }
+
+        function pagarItem(id) {
+            const item = db.itens.find(i => i.id === id);
+            if (item.valor <= 0) {
+                customAlert('Aviso', 'Defina um valor maior que zero antes de pagar.');
+                return;
+            }
+            item.pago = true;
+            atualizarResumoFinancas();
+            renderTabelaObra();
+        }
+
+        function anotar(id) {
+            const item = db.itens.find(i => i.id === id);
+            const obsAtual = item.obs || '';
+            const html = `
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Anotações do Item</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="ph ph-x text-xl"></i></button>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">${item.desc} (${item.etapa})</p>
+                    <textarea id="nota-texto" rows="4" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Escreva observações aqui...">${obsAtual}</textarea>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end gap-3">
+                    <button onclick="closeModal()" class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">Fechar</button>
+                    <button onclick="salvarNota('${id}')" class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">Salvar</button>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        function salvarNota(id) {
+            const item = db.itens.find(i => i.id === id);
+            item.obs = document.getElementById('nota-texto').value;
+            closeModal();
+        }
+
+        // --- SISTEMA DE VERSIONAMENTO / BACKUP ---
+        function modalVersionamento() {
+            const html = `
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><i class="ph ph-clock-counter-clockwise text-brand-500"></i> Controle de Versões (Backup)</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="ph ph-x text-xl"></i></button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">O sistema armazena os dados localmente. Use esta ferramenta para salvar versões físicas do seu banco de dados e manter seu trabalho seguro.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="border border-gray-200 dark:border-gray-600 rounded-xl p-4 bg-gray-50 dark:bg-gray-700/50 flex flex-col items-center text-center">
+                            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="ph ph-download-simple text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 dark:text-white mb-1">Salvar Versão Atual</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Baixa um arquivo seguro com todos os Terceirizados, Obras e Pagamentos feitos até agora.</p>
+                            <button onclick="salvarVersaoBackup()" class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">Fazer Backup</button>
+                        </div>
+
+                        <div class="border border-gray-200 dark:border-gray-600 rounded-xl p-4 bg-gray-50 dark:bg-gray-700/50 flex flex-col items-center text-center">
+                            <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="ph ph-upload-simple text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 dark:text-white mb-1">Restaurar Versão</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Carrega um arquivo de backup salvo anteriormente, recuperando todos os seus dados.</p>
+                            <label class="mt-auto w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center">
+                                <input type="file" accept=".json" class="hidden" onchange="restaurarVersaoBackup(event)">
+                                <span class="flex items-center gap-2"><i class="ph ph-folder-open"></i> Abrir Arquivo</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            openModal(html);
+        }
+
+        function salvarVersaoBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+            const downloadAnchorNode = document.createElement('a');
+            const dataAtual = new Date().toISOString().split('T')[0];
+            const horaAtual = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+            
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `terceirizacoes-v-${dataAtual}-${horaAtual}.json`);
+            document.body.appendChild(downloadAnchorNode); 
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            closeModal();
+            customAlert('Sucesso!', 'A versão atual do seu banco de dados foi salva nos seus downloads.');
+        }
+
+        function restaurarVersaoBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedDb = JSON.parse(e.target.result);
+                    if (importedDb && importedDb.terceirizados && importedDb.obras && importedDb.itens) {
+                        db = importedDb;
+                        closeModal();
+                        customAlert('Restaurado!', 'O banco de dados foi carregado com sucesso para a versão selecionada.');
+                        renderDashboard();
+                    } else {
+                        customAlert('Erro de Leitura', 'O arquivo selecionado não possui a estrutura correta deste sistema.');
+                    }
+                } catch (error) {
+                    customAlert('Erro de Arquivo', 'Falha ao ler o arquivo. Ele pode estar corrompido.');
+                }
+                event.target.value = ''; // Limpa o input
+            };
+            reader.readAsText(file);
+        }
+
+        window.onload = () => {
+            initTheme();
+            renderDashboard();
+        };
+    </script>
+</body>
+</html>
