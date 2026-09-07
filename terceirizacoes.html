@@ -29,11 +29,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
-        .table-container {
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-        
+        .table-container { max-height: 60vh; overflow-y: auto; }
         thead { position: sticky; top: 0; z-index: 10; }
         
         .modal-overlay { transition: opacity 0.2s ease-out; }
@@ -58,11 +54,18 @@
             <div class="flex items-center gap-2">
                 <i class="ph ph-buildings text-3xl text-brand-600 dark:text-brand-500"></i>
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white">Terceirizações</h1>
+                <span class="ml-2 text-xs font-bold bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-300 px-2.5 py-0.5 rounded-full border border-brand-200 dark:border-brand-800">v1.0</span>
             </div>
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                <i id="theme-icon-light" class="ph ph-sun text-2xl hidden text-gray-400 hover:text-yellow-400"></i>
-                <i id="theme-icon-dark" class="ph ph-moon text-2xl text-gray-500 hover:text-blue-400"></i>
-            </button>
+            <div class="flex items-center gap-4">
+                <button onclick="modalVersionamento()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400" title="Controle de Versões (Backup)">
+                    <i class="ph ph-clock-counter-clockwise text-2xl"></i>
+                </button>
+                <div class="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i id="theme-icon-light" class="ph ph-sun text-2xl hidden text-gray-400 hover:text-yellow-400"></i>
+                    <i id="theme-icon-dark" class="ph ph-moon text-2xl text-gray-500 hover:text-blue-400"></i>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -84,10 +87,8 @@
     </div>
 
     <script>
-        // Set up PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        // Fake Database
         let db = {
             terceirizados: [],
             obras: [],
@@ -99,7 +100,9 @@
         let currentObraId = null;
         let originalTheme = 'light';
 
-        // Theme Management
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const formatMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
         function initTheme() {
             const html = document.documentElement;
             const iconLight = document.getElementById('theme-icon-light');
@@ -144,21 +147,15 @@
             }
         });
 
+        // Configuração de Impressão
         window.onbeforeprint = () => {
             const html = document.documentElement;
-            if(html.classList.contains('dark')){
-                html.classList.remove('dark');
-            }
+            if(html.classList.contains('dark')){ html.classList.remove('dark'); }
         };
         window.onafterprint = () => {
             const html = document.documentElement;
-            if(originalTheme === 'dark'){
-                html.classList.add('dark');
-            }
+            if(originalTheme === 'dark'){ html.classList.add('dark'); }
         };
-
-        const generateId = () => Math.random().toString(36).substr(2, 9);
-        const formatMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
         function openModal(contentHtml) {
             const container = document.getElementById('modal-container');
@@ -222,6 +219,128 @@
                 closeModal();
             };
         }
+
+        const ImportadorPDF = {
+            // Regra Matemática: (Qtde) (Larg) (Alt) (Id) (M2)
+            regexMedidas: /(?:^|\s)(\d{1,3})\s+(\d{2,5})\s+(\d{2,5})\s+(\d{1,5})\s+(\d+[,.]\d{1,3})/,
+
+            async extrairTexto(file) {
+                return new Promise((resolve, reject) => {
+                    const fileReader = new FileReader();
+                    fileReader.onload = async function() {
+                        try {
+                            const typedarray = new Uint8Array(this.result);
+                            if (typeof pdfjsLib === 'undefined') throw new Error("PDF.js não carregado");
+                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                            let lines = [];
+                            
+                            for (let i = 1; i <= pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const textContent = await page.getTextContent();
+                                
+                                let rows = [];
+                                textContent.items.forEach(item => {
+                                    let str = item.str.trim();
+                                    if(!str) return; 
+                                    
+                                    let y = Math.round(item.transform[5]);
+                                    let x = Math.round(item.transform[4]);
+                                    
+                                    let row = rows.find(r => Math.abs(r.y - y) <= 4);
+                                    if(row) { row.items.push({x, str}); } 
+                                    else { rows.push({y, items: [{x, str}]}); }
+                                });
+                                
+                                rows.sort((a, b) => b.y - a.y);
+                                rows.forEach(r => {
+                                    r.items.sort((a, b) => a.x - b.x);
+                                    lines.push(r.items.map(i => i.str).join(' '));
+                                });
+                            }
+                            resolve(lines);
+                        } catch(e) {
+                            reject(e);
+                        }
+                    };
+                    fileReader.onerror = () => reject(new Error("Erro na leitura local"));
+                    fileReader.readAsArrayBuffer(file);
+                });
+            },
+
+            processar(lines, obraId) {
+                let extractedItens = [];
+                let currentDesc = "";
+
+                for (let i = 0; i < lines.length; i++) {
+                    // Substitui pipe por espaço e limpa sobras
+                    let line = lines[i].replace(/\|/g, ' ').replace(/\s+/g, ' ').trim(); 
+                    
+                    if (!line || line.includes("QTDE") || line.includes("LARGURA") || line.includes("METRAGEM")) continue;
+                    if (line.includes("COR VIDRO") || line.includes("COR ESQUADRIA") || line.includes("COR ACESSÓRIO")) continue;
+                    
+                    // PASSO 1: Captura a Descrição Limpa (Ignorando se a primeira palavra for um código estranho)
+                    if (line.match(/(JANELA|PORTA|MAXIM|FIXO|VENEZIANA|PORTÃO|QUADRO|ALÇAPÃO)/i)) {
+                        let palavras = line.split(' ');
+                        // Limpa o código (ex: GOLCB-JC4-01) colado na frente da palavra Janela
+                        if (palavras[0].match(/^[A-Z0-9-]{5,20}$/) && !palavras[0].match(/(JANELA|PORTA|MAXIM)/i)) {
+                            line = line.substring(palavras[0].length).trim();
+                        }
+                        currentDesc = line;
+                        continue; 
+                    }
+
+                    // PASSO 2: REGRA DA IMAGEM "Não usar o código"
+                    // Se a linha for apenas um código (Ex: GOLCB-JC4-01), o sistema ignora para não bagunçar a extração.
+                    if (line.match(/^[A-Z0-9-]{5,25}$/) && !line.match(/(JANELA|PORTA|MAXIM|FIXO)/i)) {
+                        continue; 
+                    }
+
+                    // PASSO 3: Identificar a Tabela Física com Matemática
+                    let match = line.match(this.regexMedidas);
+                    if (match) {
+                        let indexDoMatch = match.index;
+                        
+                        let textBefore = line.substring(0, indexDoMatch).trim();
+                        let textAfter = line.substring(indexDoMatch + match[0].length).trim();
+                        
+                        // Captura o TIPO apenas se ele estiver preenchido antes dos números (ex: JA04). Se for vazio, põe "-"
+                        let tipo = "-"; 
+                        if (textBefore && textBefore.length <= 15) {
+                            tipo = textBefore; 
+                        }
+
+                        let qtde = parseInt(match[1]);
+                        let larg = match[2];
+                        let alt = match[3];
+                        let rawId = match[4];
+                        let m2Total = parseFloat(match[5].replace(',', '.'));
+                        
+                        // Captura LOCALIZAÇÃO (O que vem depois dos números)
+                        let local = textAfter || "NÃO INFORMADO";
+                        local = local.replace(/Este relatório.*/i, '').trim(); 
+                        if(!local) local = "NÃO INFORMADO";
+
+                        let finalDesc = currentDesc || "SEM DESCRIÇÃO";
+                        let unitM2 = qtde > 0 ? (m2Total / qtde) : m2Total;
+
+                        // Adiciona as Peças no BD (Dividindo quantidades > 1 de forma independente)
+                        for (let q = 0; q < qtde; q++) {
+                            let finalId = qtde > 1 ? `Item ${rawId}.${q+1}` : `Item ${rawId}`;
+                            
+                            // Gerando IDs únicos internamente no módulo
+                            let idProd = Math.random().toString(36).substr(2, 9);
+                            let idInst = Math.random().toString(36).substr(2, 9);
+                            
+                            extractedItens.push({ id: idProd, obraId: obraId, pid: finalId, tipo: tipo, desc: finalDesc.toUpperCase(), local: local.toUpperCase(), largura: larg, altura: alt, m2: unitM2, etapa: 'Produção', valor: 0, pago: false, data: '', obs: '' });
+                            extractedItens.push({ id: idInst, obraId: obraId, pid: finalId, tipo: tipo, desc: finalDesc.toUpperCase(), local: local.toUpperCase(), largura: larg, altura: alt, m2: unitM2, etapa: 'Instalação', valor: 0, pago: false, data: '', obs: '' });
+                        }
+                        
+                        currentDesc = ""; // Reseta a descrição para a próxima peça
+                    }
+                }
+                return extractedItens;
+            }
+        };
 
         function renderDashboard() {
             currentView = 'dashboard';
@@ -291,6 +410,7 @@
             
             const obras = db.obras.filter(o => o.terceirizadoId === id);
             
+            // Cálculos Globais do Prestador
             let totalObras = obras.length;
             let obrasPagas100 = 0;
             let valTotalGeral = 0;
@@ -307,7 +427,6 @@
                 valTotalGeral += oTotal;
                 valPagoGeral += oPago;
                 
-                // Se a obra tem itens registrados com valor, e o total = pago, ela está 100% concluída.
                 if (itensObra.length > 0 && oTotal > 0 && oTotal === oPago) {
                     obrasPagas100++;
                 }
@@ -332,7 +451,7 @@
                     </div>
                 </div>
 
-                <!-- DASHBOARD FINANCEIRO GLOBAL DO TERCEIRIZADO -->
+                <!-- Dashboard Financeiro Total -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 border-t-4 border-t-blue-500">
                         <div class="flex items-center gap-3 mb-1">
@@ -361,7 +480,7 @@
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 border-t-4 border-t-red-500 relative overflow-hidden">
                         <div class="flex items-center gap-3 mb-1 relative z-10">
                             <div class="p-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg"><i class="ph ph-warning-circle text-lg"></i></div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Valor em Aberto (Total)</p>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Valor em Aberto</p>
                         </div>
                         <p class="text-2xl font-bold text-red-500 mt-2 relative z-10">${formatMoney(valEmAberto)}</p>
                         <i class="ph ph-currency-circle-dollar text-6xl text-red-50 dark:text-red-900/20 absolute -bottom-2 -right-2"></i>
@@ -376,7 +495,7 @@
                     <div class="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-dashed border-gray-300 dark:border-gray-600 p-12 text-center">
                         <i class="ph ph-buildings text-5xl text-gray-400 dark:text-gray-500 mb-4"></i>
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Nenhuma obra cadastrada</h3>
-                        <p class="text-gray-500 dark:text-gray-400 mt-1 mb-4">Crie uma obra para importar os PDFs e gerenciar os pagamentos.</p>
+                        <p class="text-gray-500 dark:text-gray-400 mt-1 mb-4">Crie uma obra para gerenciar o PDF e os pagamentos.</p>
                         <button onclick="modalNovaObra()" class="text-brand-600 dark:text-brand-400 font-medium hover:underline">Criar Nova Obra</button>
                     </div>
                 `;
@@ -627,7 +746,7 @@
                     </div>
                 </div>
 
-                <!-- Tabela de Peças - Com colunas atualizadas -->
+                <!-- Tabela de Peças -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden print-break-inside-avoid">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
                         <h3 class="font-bold text-gray-800 dark:text-white">Listagem de Peças (Produção / Instalação)</h3>
@@ -672,129 +791,30 @@
             }
 
             const file = fileInput.files[0];
-            const fileReader = new FileReader();
+            
+            try {
+                // Invoca o Motor Semântico do PDF
+                const linhasExtraidas = await ImportadorPDF.extrairTexto(file);
+                const itensProcessados = ImportadorPDF.processar(linhasExtraidas, currentObraId);
 
-            fileReader.onload = async function() {
-                try {
-                    const typedarray = new Uint8Array(this.result);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    
-                    let lines = [];
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-                        
-                        let rows = [];
-                        textContent.items.forEach(item => {
-                            let str = item.str.trim();
-                            if(!str) return; 
-                            
-                            let y = Math.round(item.transform[5]);
-                            let x = Math.round(item.transform[4]);
-                            
-                            let row = rows.find(r => Math.abs(r.y - y) <= 4);
-                            if(row) {
-                                row.items.push({x, str});
-                            } else {
-                                rows.push({y, items: [{x, str}]});
-                            }
-                        });
-                        
-                        rows.sort((a, b) => b.y - a.y);
-                        
-                        rows.forEach(r => {
-                            r.items.sort((a, b) => a.x - b.x);
-                            let lineText = r.items.map(i => i.str).join(' ');
-                            lines.push(lineText);
-                        });
-                    }
-
-                    let extractedItens = [];
-                    let currentDesc = "";
-                    let currentLocalFallback = "";
-
-                    // REGEX DEFINITIVO PADRÃO: 
-                    // [Tipo Opcional] [Qtde] [Larg] [Alt] [Item ID] [M2] [Localização Opcional]
-                    const dataRegex = /^([a-zA-Z0-9-]{2,10}\s+)?(\d{1,3})\s+(\d{2,5})\s+(\d{2,5})\s+(\d{1,5})\s+(\d+[,.]\d{1,3})(?:\s+(.+))?$/;
-
-                    for (let i = 0; i < lines.length; i++) {
-                        let line = lines[i].replace(/\|/g, '').trim(); 
-                        line = line.replace(/\s+/g, ' '); 
-                        
-                        // Pula cabeçalhos da tabela e linhas de detalhes irrelevantes
-                        if (!line || line.includes("QTDE.") || line.includes("LARGURA")) continue;
-                        if (line.includes("COR VIDRO") || line.includes("COR ESQUADRIA") || line.includes("COR ACESSÓRIO")) continue;
-                        
-                        // REGRA PEDIDA: Ignorar a linha de Código completamente (ex: GOLCB-JC4-01)
-                        if (line.match(/^[A-Z0-9-]{5,25}$/) && !line.match(/(JANELA|PORTA|MAXIM-AR|FIXO|VENEZIANA)/i)) {
-                            continue; 
-                        }
-
-                        let match = line.match(dataRegex);
-                        
-                        if (match) {
-                            // Encontrou a linha de dados!
-                            let tipo = match[1] ? match[1].trim() : "-";
-                            let qtde = parseInt(match[2]);
-                            let larg = match[3];
-                            let alt = match[4];
-                            let rawId = match[5];
-                            let m2Total = parseFloat(match[6].replace(',', '.'));
-                            let rest = (match[7] || "").trim();
-                            
-                            let local = rest || currentLocalFallback || "NÃO INFORMADO";
-                            local = local.replace(/Este relatório.*/i, '').trim();
-
-                            let finalDesc = currentDesc || "SEM DESCRIÇÃO";
-                            let unitM2 = qtde > 0 ? (m2Total / qtde) : m2Total;
-
-                            for (let q = 0; q < qtde; q++) {
-                                let finalId = qtde > 1 ? `Item ${rawId}.${q+1}` : `Item ${rawId}`;
-                                
-                                extractedItens.push({ id: generateId(), obraId: currentObraId, pid: finalId, tipo: tipo, desc: finalDesc.toUpperCase(), local: local.toUpperCase(), largura: larg, altura: alt, m2: unitM2, etapa: 'Produção', valor: 0, pago: false, data: '', obs: '' });
-                                extractedItens.push({ id: generateId(), obraId: currentObraId, pid: finalId, tipo: tipo, desc: finalDesc.toUpperCase(), local: local.toUpperCase(), largura: larg, altura: alt, m2: unitM2, etapa: 'Instalação', valor: 0, pago: false, data: '', obs: '' });
-                            }
-                            
-                            currentDesc = ""; // Reseta a descrição após vincular à peça
-                            
-                        } else {
-                            // Captura de Localização fora da tabela (se houver)
-                            if (line.toUpperCase().includes("*LOCAL/AMBIENTE:")) {
-                                currentLocalFallback = line.substring(line.toUpperCase().indexOf(":") + 1).trim();
-                                continue;
-                            }
-
-                            // Captura a Descrição Limpa
-                            if (line.match(/(JANELA|PORTA|MAXIM-AR|FIXO|VENEZIANA|PORTÃO|QUADRO|ALÇAPÃO)/i)) {
-                                // Se o código vier grudado no começo da frase, remove ele também
-                                let firstWord = line.split(' ')[0];
-                                if (firstWord.match(/^[A-Z0-9-]{5,20}$/) && !firstWord.match(/(JANELA|PORTA|MAXIM)/i)) {
-                                    line = line.substring(firstWord.length).trim();
-                                }
-                                currentDesc = line;
-                            }
-                        }
-                    }
-
-                    if (extractedItens.length === 0) {
-                        customAlert('Aviso', 'O PDF foi lido, mas não encontrou linhas no formato padrão de medidas.');
-                        return;
-                    }
-
-                    extractedItens.forEach(item => db.itens.push(item));
-
-                    customAlert('Sucesso!', `${extractedItens.length / 2} peças cadastradas! Itens com múltiplas quantidades foram separados individualmente.`);
-                    atualizarResumoFinancas();
-                    renderTabelaObra();
-                    
-                    fileInput.value = '';
-
-                } catch(e) {
-                    console.error(e);
-                    customAlert('Erro', 'Falha ao processar o arquivo PDF.');
+                if (itensProcessados.length === 0) {
+                    customAlert('Aviso', 'O PDF foi lido, mas a tabela de medidas/valores não foi encontrada no formato padrão.');
+                    return;
                 }
-            };
-            fileReader.readAsArrayBuffer(file);
+
+                // Injeta no BD
+                itensProcessados.forEach(item => db.itens.push(item));
+
+                customAlert('Sucesso!', `${itensProcessados.length / 2} peças cadastradas com sucesso! Itens múltiplos foram divididos inteligentemente.`);
+                atualizarResumoFinancas();
+                renderTabelaObra();
+                
+                fileInput.value = '';
+
+            } catch(e) {
+                console.error(e);
+                customAlert('Erro', 'Falha ao processar o arquivo PDF. Tente novamente.');
+            }
         }
 
         function abrirWhatsAppModal() {
@@ -804,8 +824,8 @@
                     <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="ph ph-x text-xl"></i></button>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Cole aqui o texto enviado pelo prestador informando os valores. O sistema buscará as palavras-chave (ex: "Porta", "Janela") e aplicará os preços detectados.</p>
-                    <textarea id="whatsapp-text" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-sm font-mono bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none" placeholder="Ex:\nPorta 1 - Produção 350.00 / Instalação 150.00\nJanela - 200,00"></textarea>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Cole aqui o texto enviado pelo prestador informando os valores. O sistema buscará as palavras-chave e aplicará os preços detectados.</p>
+                    <textarea id="whatsapp-text" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-sm font-mono bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none" placeholder="Ex:\nPorta 1 - Produção 350.00 / Instalação 150.00"></textarea>
                 </div>
                 <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end gap-3">
                     <button onclick="closeModal()" class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">Cancelar</button>
@@ -824,12 +844,8 @@
 
             db.itens.forEach(item => {
                 if (item.obraId === currentObraId) {
-                    // Pega a primeira palavra (ex: "JANELA")
                     const primeiraPalavra = item.desc.split(' ')[0].toLowerCase();
-                    
-                    // Extrai apenas o número do ID (tira o "Item " e os decimais se tiver)
-                    let cleanPid = item.pid.replace('Item ', '');
-                    cleanPid = cleanPid.split('.')[0]; 
+                    let cleanPid = item.pid.replace('Item ', '').split('.')[0]; 
                     
                     const linhaCorrespondente = linhas.find(l => 
                         l.includes(` ${cleanPid} `) || 
@@ -854,7 +870,7 @@
             if (updatedCount > 0) {
                 customAlert('Concluído', `Valores atualizados em ${updatedCount} etapas baseando-se no texto do WhatsApp!`);
             } else {
-                customAlert('Aviso', 'Não foi possível fazer o cruzamento automático. Verifique se as palavras digitadas no WhatsApp coincidem com o que o PDF extraiu.');
+                customAlert('Aviso', 'Não foi possível fazer o cruzamento automático. Verifique se as palavras coincidem.');
             }
             
             atualizarResumoFinancas();
@@ -926,7 +942,7 @@
 
         function salvarItemManual() {
             let pid = document.getElementById('m-pid').value || 'Item S/N';
-            if(!pid.toLowerCase().includes('item')) pid = 'Item ' + pid; // Força padrão
+            if(!pid.toLowerCase().includes('item')) pid = 'Item ' + pid;
             const local = document.getElementById('m-local').value.toUpperCase() || 'NÃO INFORMADO';
             const tipo = document.getElementById('m-tipo').value.toUpperCase() || '-';
             const desc = document.getElementById('m-desc').value.toUpperCase();
@@ -950,7 +966,7 @@
             const itensObra = db.itens.filter(i => i.obraId === currentObraId);
             
             let tProd = 0, tInst = 0, m2Total = 0, valPago = 0, valDev = 0;
-            let m2Set = new Set(); // Para não contar o M2 duas vezes (Prod vs Instalação da mesma peça)
+            let m2Set = new Set(); 
 
             itensObra.forEach(item => {
                 if(item.etapa === 'Produção') tProd += item.valor;
@@ -997,55 +1013,21 @@
                         statusHtml = `<span class="text-xs text-gray-400 dark:text-gray-500 flex items-center justify-center gap-1"><i class="ph ph-lock-key"></i> Insira data</span>`;
                     }
 
-                    // Tabela Nova com as colunas perfeitamente separadas de acordo com o padrão exigido
                     html += `
                         <tr class="${bgClass} hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                            <!-- Coluna 1: ID -->
-                            <td class="p-4 align-top font-mono text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                                ${item.pid}
-                            </td>
-                            
-                            <!-- Coluna 2: Tipo -->
-                            <td class="p-4 align-top font-mono text-sm font-bold text-brand-600 dark:text-brand-400 whitespace-nowrap">
-                                ${item.tipo}
-                            </td>
-                            
-                            <!-- Coluna 3: Descrição -->
-                            <td class="p-4 align-top text-sm font-medium text-gray-800 dark:text-gray-200 min-w-[250px]">
-                                ${item.desc}
-                            </td>
-                            
-                            <!-- Coluna 4: Localização -->
-                            <td class="p-4 align-top text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                                <span class="flex items-center gap-1"><i class="ph ph-map-pin"></i> ${item.local}</span>
-                            </td>
-                            
-                            <!-- Coluna 5: Medidas -->
-                            <td class="p-4 align-top text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                                ${item.largura} <span class="text-xs text-gray-400">x</span> ${item.altura}
-                            </td>
-                            
-                            <!-- Coluna 6: M² -->
-                            <td class="p-4 align-top text-sm font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                                ${item.m2.toFixed(2)} m²
-                            </td>
-                            
-                            <!-- Coluna 7: Etapa -->
-                            <td class="p-4 text-sm text-gray-600 dark:text-gray-300 align-top whitespace-nowrap">
-                                <div class="flex items-center gap-2">${iconeEtapa} ${item.etapa}</div>
-                            </td>
-                            
-                            <!-- Coluna 8: Valor -->
+                            <td class="p-4 align-top font-mono text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">${item.pid}</td>
+                            <td class="p-4 align-top font-mono text-sm font-bold text-brand-600 dark:text-brand-400 whitespace-nowrap">${item.tipo}</td>
+                            <td class="p-4 align-top text-sm font-medium text-gray-800 dark:text-gray-200 min-w-[250px]">${item.desc}</td>
+                            <td class="p-4 align-top text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap"><span class="flex items-center gap-1"><i class="ph ph-map-pin"></i> ${item.local}</span></td>
+                            <td class="p-4 align-top text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">${item.largura} <span class="text-xs text-gray-400">x</span> ${item.altura}</td>
+                            <td class="p-4 align-top text-sm font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">${item.m2.toFixed(2)} m²</td>
+                            <td class="p-4 text-sm text-gray-600 dark:text-gray-300 align-top whitespace-nowrap"><div class="flex items-center gap-2">${iconeEtapa} ${item.etapa}</div></td>
                             <td class="p-4 align-top whitespace-nowrap">
                                 <input type="number" step="0.01" value="${item.valor}" onchange="atualizarValor('${item.id}', this.value)" class="w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-brand-500 outline-none" ${item.pago ? 'disabled' : ''}>
                             </td>
-                            
-                            <!-- Coluna 9: Data -->
                             <td class="p-4 align-top whitespace-nowrap">
                                 <input type="date" value="${item.data}" onchange="atualizarData('${item.id}', this.value)" class="w-[125px] px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-brand-500 outline-none" ${item.pago ? 'disabled' : ''}>
                             </td>
-                            
-                            <!-- Coluna 10: Status -->
                             <td class="p-4 text-center align-top min-w-[100px]">
                                 ${statusHtml}
                                 <div class="mt-2 flex justify-center gap-2 no-print">
@@ -1109,7 +1091,6 @@
             closeModal();
         }
 
-        // --- SISTEMA DE VERSIONAMENTO / BACKUP ---
         function modalVersionamento() {
             const html = `
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -1180,7 +1161,7 @@
                 } catch (error) {
                     customAlert('Erro de Arquivo', 'Falha ao ler o arquivo. Ele pode estar corrompido.');
                 }
-                event.target.value = ''; // Limpa o input
+                event.target.value = ''; 
             };
             reader.readAsText(file);
         }
